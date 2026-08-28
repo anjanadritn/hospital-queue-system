@@ -1,0 +1,16 @@
+[Unit]
+Description=Gunicorn daemon for Smart Hospital Queue Management System Backend
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/hospital-queue-backend/backend
+Environment="PATH=/home/ubuntu/hospital-queue-backend/backend/venv/bin"
+EnvironmentFile=/home/ubuntu/hospital-queue-backend/backend/.env
+ExecStart=/home/ubuntu/hospital-queue-backend/backend/venv/bin/gunicorn --workers 4 --bind 0.0.0.0:5000 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
