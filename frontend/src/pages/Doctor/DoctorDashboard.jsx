@@ -15,20 +15,30 @@ const DoctorDashboard = () => {
 
   // Fetch logged in doctor profile to get doctor_id
   useEffect(() => {
-    api.get('/doctors')
-      .then(res => {
-        const myDoc = res.data.find(d => d.email === user?.email) || res.data[0];
-        if (myDoc) {
-          setDoctorId(myDoc.id);
+    const loadDoctorProfile = async () => {
+      try {
+        const user = await api.get('/auth/me');
+        if (user.data?.doctor_id) {
+          setDoctorId(user.data.doctor_id);
+        } else {
+          // Fallback to first doctor
+          const docs = await api.get('/doctors');
+          if (docs.data?.[0]) {
+            setDoctorId(docs.data[0].doctor_id);
+          }
         }
-      })
-      .catch(console.error);
-  }, [user]);
+      } catch (err) {
+        console.error('Failed to load doctor profile:', err);
+      }
+    };
+    
+    loadDoctorProfile();
+  }, []);
 
   const fetchQueue = async () => {
     if (!doctorId) return;
     try {
-      const res = await api.get(`/queue/${doctorId}`);
+      const res = await api.get(`/queue/doctor/${doctorId}`);
       setQueueSnapshot(res.data);
     } catch (e) {
       console.error('Failed to fetch doctor queue:', e);

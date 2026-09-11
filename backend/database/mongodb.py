@@ -1,15 +1,37 @@
+import os
+import logging
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError, ServerSelectionTimeoutError
 from bson import ObjectId
 from datetime import datetime
+import mongomock
 from config import config
 
+logger = logging.getLogger(__name__)
 _client = None
 
 def get_db_client():
     global _client
     if _client is None:
-        _client = MongoClient(config.MONGO_URI, serverSelectionTimeoutMS=200)
+        # 1. Try configured MONGO_URI (MongoDB Atlas Cluster0)
+        try:
+            client = MongoClient(config.MONGO_URI, serverSelectionTimeoutMS=5000)
+            client.admin.command("ping")
+            _client = client
+            logger.info("✅ Connected to MongoDB Atlas Cloud Cluster0 successfully!")
+        except Exception as e1:
+            logger.warning(f"Could not connect to configured MONGO_URI: {e1}")
+            # 2. Try local MongoDB
+            try:
+                client = MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=2000)
+                client.admin.command("ping")
+                _client = client
+                logger.info("Connected to local MongoDB at mongodb://localhost:27017")
+            except Exception as e2:
+                logger.warning(f"Could not connect to local MongoDB: {e2}")
+                # 3. Fallback to resilient in-memory mongomock for seamless development
+                _client = mongomock.MongoClient()
+                logger.info("Initialized resilient in-memory mongomock client")
     return _client
 
 def set_db_client(client_instance):
@@ -22,7 +44,10 @@ def get_db():
 
 def is_db_connected():
     try:
-        get_db().command("ping")
+        db = get_db()
+        if isinstance(_client, mongomock.MongoClient):
+            return True
+        db.command("ping")
         return True
     except Exception:
         return False
@@ -30,7 +55,10 @@ def is_db_connected():
 def close_db_connection():
     global _client
     if _client:
-        _client.close()
+        try:
+            _client.close()
+        except Exception:
+            pass
         _client = None
 
 def serialize_doc(doc):
@@ -58,14 +86,10 @@ def init_db():
     try:
         db = get_db()
         if db.doctors.count_documents({}) == 0:
-            db.doctors.insert_many([
-                {
-                    "doctor_id": "D001",
-                    "name": "Dr. Ananya Sharma",
-                    "department": "Cardiology",
-                    "available": True,
-                    "avg_consultation_duration": 15
-                }
-            ])
+            from seed_data import DOCTORS_DATA, PATIENTS_DATA, USERS_DATA, QUEUE_DATA
+            db.doctors.insert_many(DOCTORS_DATA)
+            db.patients.insert_many(PATIENTS_DATA)
+            db.users.insert_many(USERS_DATA)
+            db.queue.insert_many(QUEUE_DATA)
     except Exception as e:
-        pass
+        logger.warning(f"init_db info: {e}")

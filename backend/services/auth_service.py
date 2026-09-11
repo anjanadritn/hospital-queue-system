@@ -1,20 +1,21 @@
-import os
 import re
 import random
+import logging
 import jwt
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Tuple, List
+from datetime import datetime, timezone, timedelta
+from typing import Optional, Tuple, List
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from config import config
 
-JWT_SECRET = os.getenv("JWT_SECRET_KEY", "super-secret-key-smart-hospital-2026")
-DEVELOPMENT_MODE = True
+logger = logging.getLogger(__name__)
+
+JWT_SECRET = config.JWT_SECRET_KEY
+DEVELOPMENT_MODE = True  # Set to True for local development and testing
 
 IN_MEMORY_USERS = []
 IN_MEMORY_AUTH_OTPS = {}
 
-# Initial Development Seed Users
 INITIAL_USERS = [
     {
         "user_id": "U_ADMIN",
@@ -44,7 +45,19 @@ INITIAL_USERS = [
         "patient_id": "P001",
         "name": "Anjan",
         "phone": "9876543211",
-        "email": "patient@smarthospital.org",
+        "email": "anjan@hospital.local",
+        "password_hash": generate_password_hash("PatientPass123!"),
+        "role": "patient",
+        "phone_verified": True,
+        "status": "VERIFIED",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
+        "user_id": "U_PAT_P002",
+        "patient_id": "P002",
+        "name": "Priya Sharma",
+        "phone": "9876543212",
+        "email": "priya@hospital.local",
         "password_hash": generate_password_hash("PatientPass123!"),
         "role": "patient",
         "phone_verified": True,
@@ -56,12 +69,24 @@ INITIAL_USERS = [
 def init_seed_users():
     try:
         db = get_db()
-        if db.users.count_documents({}) == 0:
-            db.users.insert_many(INITIAL_USERS)
-    except Exception:
-        pass
-    if not IN_MEMORY_USERS:
-        IN_MEMORY_USERS.extend(INITIAL_USERS)
+        for seed_u in INITIAL_USERS:
+            db.users.update_one(
+                {"phone": seed_u["phone"]},
+                {"$set": dict(seed_u)},
+                upsert=True
+            )
+    except Exception as e:
+        logger.warning(f"init_seed_users warning: {e}")
+
+    for seed_u in INITIAL_USERS:
+        found = False
+        for idx, u in enumerate(IN_MEMORY_USERS):
+            if u.get("phone") == seed_u["phone"]:
+                IN_MEMORY_USERS[idx] = dict(seed_u)
+                found = True
+                break
+        if not found:
+            IN_MEMORY_USERS.append(dict(seed_u))
 
 init_seed_users()
 
@@ -94,10 +119,30 @@ def normalize_phone(phone_input: str) -> str:
         digits = digits[1:]
     return digits
 
+def get_user_by_phone(phone: str) -> Optional[dict]:
+    clean_phone = normalize_phone(phone)
+    try:
+        db = get_db()
+        doc = db.users.find_one({"phone": clean_phone})
+        if doc:
+            return serialize_doc(doc)
+    except Exception:
+        pass
+
+    for u in IN_MEMORY_USERS:
+        if u.get("phone") == clean_phone:
+            return serialize_doc(u)
+    return None
+
 def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Optional[dict], Optional[str]]:
     clean_phone = normalize_phone(phone)
     if not clean_phone or len(clean_phone) < 10:
         return None, "Valid 10-digit phone number is required"
+
+    if purpose == "ACCOUNT_VERIFICATION":
+        existing = get_user_by_phone(clean_phone)
+        if existing:
+            return None, f"An account with phone number '{clean_phone}' already exists. Please login."
 
     now = datetime.now(timezone.utc)
     expires_at = now + timedelta(minutes=5)
@@ -128,10 +173,9 @@ def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Op
     response = {
         "message": f"OTP sent to {clean_phone} for {purpose}",
         "phone": clean_phone,
-        "purpose": purpose
+        "purpose": purpose,
+        "development_otp": otp_code
     }
-    if DEVELOPMENT_MODE:
-        response["development_otp"] = otp_code
 
     return response, None
 
@@ -243,26 +287,7 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         user_clean.pop("password_hash", None)
         return {"user": user_clean, "token": token}, None
 
-def get_user_by_phone(phone: str) -> Optional[dict]:
-    clean_phone = normalize_phone(phone)
-    try:
-        db = get_db()
-        doc = db.users.find_one({"phone": clean_phone})
-        if doc:
-            return serialize_doc(doc)
-    except Exception:
-        pass
-
-    for u in IN_MEMORY_USERS:
-        if u.get("phone") == clean_phone:
-            return serialize_doc(u)
-    return None
-
 def login_user(phone: str, password: str, role: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
-    """
-    Login Engine with Phone Normalization, Password Check & Role Matching:
-    Validates phone exists, is phone_verified == True, password matches, and matches selected role.
-    """
     clean_phone = normalize_phone(phone)
     if not clean_phone or len(clean_phone) < 10:
         return None, "Invalid phone number or password."

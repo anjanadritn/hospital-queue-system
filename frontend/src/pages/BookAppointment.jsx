@@ -2,28 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, User, Stethoscope, Clock, CheckCircle2, AlertCircle, Loader2, DoorOpen, Navigation, ArrowRight } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useAuth } from '../context/AuthContext';
 import SymptomSelector from '../components/SymptomSelector';
 import DepartureCard from '../components/DepartureCard';
 
 export default function BookAppointment() {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
 
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
 
-  // Form State
-  const [patientId, setPatientId] = useState('P001');
-  const [patientName, setPatientName] = useState('Anjan');
+  // Form State - Use authenticated user's data
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
   const [selectedDept, setSelectedDept] = useState('General Medicine');
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [consultationDate, setConsultationDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [selectedSymptoms, setSelectedSymptoms] = useState(['Fever']);
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [customSymptoms, setCustomSymptoms] = useState('');
   const [priority, setPriority] = useState('normal');
 
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState(null);
   const [bookingResult, setBookingResult] = useState(null);
+
+  const [joiningQueue, setJoiningQueue] = useState(false);
+
+  // Initialize patient info from authenticated user
+  useEffect(() => {
+    if (!authLoading && user) {
+      setPatientId(user.patient_id || user.user_id || '');
+      setPatientName(user.name || user.full_name || 'Patient');
+    }
+  }, [user, authLoading]);
 
   // Dates: Today, Tomorrow, Day After Tomorrow (Max 2 Days Advance Booking)
   const today = new Date();
@@ -80,6 +92,33 @@ export default function BookAppointment() {
       setError(err.response?.data?.error || 'Failed to book appointment. Please verify backend status.');
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  const handleTrackConsultation = async () => {
+    if (!bookingResult) return;
+    setJoiningQueue(true);
+    try {
+      const res = await hospitalApi.joinQueue({
+        patient_id: bookingResult.patient_id || patientId,
+        doctor_id: bookingResult.doctor_id || selectedDoctorId,
+        department: bookingResult.department || selectedDept,
+        priority: bookingResult.priority || priority,
+        symptoms: bookingResult.symptoms || selectedSymptoms,
+        custom_symptoms: bookingResult.custom_symptoms || customSymptoms
+      });
+
+      const queueId = res.queue_id || res.data?.queue_id;
+
+      if (queueId) {
+        navigate(`/tracking?queue_id=${queueId}`);
+      } else {
+        console.error('No queue_id returned from join queue response', res);
+      }
+    } catch (err) {
+      console.error('Failed to join queue', err);
+    } finally {
+      setJoiningQueue(false);
     }
   };
 
@@ -239,10 +278,11 @@ export default function BookAppointment() {
 
             <div className="flex justify-center gap-3">
               <button
-                onClick={() => navigate(`/tracking?queue_id=${bookingResult.booking_id}`)}
-                className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2"
+                onClick={handleTrackConsultation}
+                disabled={joiningQueue}
+                className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2 disabled:opacity-60"
               >
-                <span>Track Consultation & Departure</span>
+                <span>{joiningQueue ? 'Joining Queue...' : 'Join Queue & Track Consultation'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

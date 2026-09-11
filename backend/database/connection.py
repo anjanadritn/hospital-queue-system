@@ -10,15 +10,15 @@ _mongo_client: Optional[MongoClient] = None
 
 def get_client() -> MongoClient:
     """
-    Returns a singleton MongoClient instance based on configured MONGODB_URI.
+    Returns a singleton MongoClient instance based on configured MONGO_URI.
     Avoids creating new MongoClient connection pools on every HTTP request.
     """
     global _mongo_client
     if _mongo_client is None:
         try:
-            logger.info(f"Initializing MongoClient with URI: {config.MONGODB_URI}")
+            logger.info(f"Initializing MongoClient with URI: {config.MONGO_URI}")
             _mongo_client = MongoClient(
-                config.MONGODB_URI,
+                config.MONGO_URI,
                 serverSelectionTimeoutMS=2000,
                 connectTimeoutMS=2000
             )
@@ -37,7 +37,7 @@ def get_db():
     Returns the configured MongoDB database handle.
     """
     client = get_client()
-    db_name = config.MONGODB_DATABASE or "hospital_queue"
+    db_name = config.MONGO_DATABASE or "hospital_queue"
     return client[db_name]
 
 def check_db_connection() -> Tuple[bool, str]:

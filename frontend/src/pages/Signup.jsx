@@ -45,8 +45,13 @@ export default function Signup() {
         setOtpInput(res.development_otp);
       }
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || 'Failed to send verification OTP');
+      console.error('OTP Send Error:', err);
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to send verification OTP';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -76,8 +81,13 @@ export default function Signup() {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || 'Account registration failed. Check OTP.');
+      console.error('Registration Error:', err);
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Account registration failed. Check OTP.';
+      setError(message);
     } finally {
       setLoading(false);
     }

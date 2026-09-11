@@ -10,8 +10,8 @@ export default function Login() {
   const { login } = useAuth();
 
   const [role, setRole] = useState('patient');
-  const [phone, setPhone] = useState('9876543211');
-  const [password, setPassword] = useState('PatientPass123!');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -19,16 +19,7 @@ export default function Login() {
 
   const handleRoleChange = (selectedRole) => {
     setRole(selectedRole);
-    if (selectedRole === 'patient') {
-      setPhone('9876543211');
-      setPassword('PatientPass123!');
-    } else if (selectedRole === 'doctor') {
-      setPhone('9876543210');
-      setPassword('DoctorPass123!');
-    } else if (selectedRole === 'admin') {
-      setPhone('9999999999');
-      setPassword('AdminPass123!');
-    }
+    // Don't auto-fill credentials - users must enter their own
   };
 
   const handleLogin = async (e) => {

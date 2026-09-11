@@ -19,7 +19,7 @@ def generate_queue_id() -> str:
 def recalculate_queue_positions(doctor_id: Optional[str] = None, department: Optional[str] = None):
     try:
         db = get_db()
-        query = {"status": {"$in": ["waiting", "arrived", "ready", "OTP_GENERATED"]}}
+        query = {"status": {"$in": ["waiting", "arrived", "ready", "called", "OTP_GENERATED"]}}
         if doctor_id:
             query["doctor_id"] = doctor_id
         elif department:
@@ -41,7 +41,7 @@ def recalculate_queue_positions(doctor_id: Optional[str] = None, department: Opt
             )
             
             new_status = entry.get("status", "waiting")
-            if idx == 1 and (entry.get("arrived_at_hospital") or new_status == "arrived"):
+            if idx == 1 and (entry.get("arrived_at_hospital") or new_status in ["arrived", "waiting"]):
                 new_status = "ready"
                 generate_consultation_otp(entry["queue_id"], entry.get("patient_id", "P001"), entry.get("doctor_id", "D001"))
 
@@ -53,7 +53,7 @@ def recalculate_queue_positions(doctor_id: Optional[str] = None, department: Opt
     except Exception:
         pass
 
-    waiting = [q for q in IN_MEMORY_QUEUE if q.get("status") in ["waiting", "arrived", "ready", "OTP_GENERATED"]]
+    waiting = [q for q in IN_MEMORY_QUEUE if q.get("status") in ["waiting", "arrived", "ready", "called", "OTP_GENERATED"]]
     def p_key(entry):
         p = str(entry.get("priority", "normal")).lower()
         return (0 if p == "emergency" else 1, entry.get("joined_at", ""))
@@ -67,7 +67,7 @@ def recalculate_queue_positions(doctor_id: Optional[str] = None, department: Opt
             priority=entry.get("priority", "normal"),
             queue_position=idx
         )
-        if idx == 1 and (entry.get("arrived_at_hospital") or entry.get("status") == "arrived"):
+        if idx == 1 and (entry.get("arrived_at_hospital") or entry.get("status") in ["arrived", "waiting"]):
             entry["status"] = "ready"
             generate_consultation_otp(entry["queue_id"], entry.get("patient_id", "P001"), entry.get("doctor_id", "D001"))
 
@@ -82,6 +82,18 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     if not patient_id:
         return None, "patient_id is required"
 
+    # Fetch patient profile details
+    patient_name = "Patient"
+    patient_phone = ""
+    try:
+        db = get_db()
+        u = db.users.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
+        if u:
+            patient_name = u.get("name", "Patient")
+            patient_phone = u.get("phone", "")
+    except Exception:
+        pass
+
     queue_id = generate_queue_id()
     now_str = datetime.now(timezone.utc).isoformat()
     clean_priority = "emergency" if priority == "emergency" else "normal"
@@ -91,6 +103,8 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     queue_entry = {
         "queue_id": queue_id,
         "patient_id": patient_id,
+        "patient_name": patient_name,
+        "patient_phone": patient_phone,
         "doctor_id": doctor_id,
         "department": department,
         "priority": clean_priority,
@@ -167,6 +181,48 @@ def mark_patient_arrived(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
 
     return None, f"Queue entry '{queue_id}' not found"
 
+def update_queue_status(queue_id: str, new_status: str) -> Tuple[Optional[dict], Optional[str]]:
+    valid_statuses = ["waiting", "arrived", "ready", "called", "in_consultation", "completed", "no_show", "cancelled"]
+    if new_status not in valid_statuses:
+        return None, f"Invalid status '{new_status}'. Allowed: {valid_statuses}"
+
+    try:
+        db = get_db()
+        entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]}) or db.appointments.find_one({"booking_id": queue_id})
+        if entry:
+            q_id = entry.get("queue_id", queue_id)
+            b_id = entry.get("booking_id", queue_id)
+            now_str = datetime.now(timezone.utc).isoformat()
+            db.queue.update_one({"$or": [{"queue_id": q_id}, {"booking_id": b_id}]}, {"$set": {"status": new_status, "updated_at": now_str}})
+            db.appointments.update_one({"booking_id": b_id}, {"$set": {"status": new_status, "updated_at": now_str}})
+            recalculate_queue_positions(doctor_id=entry.get("doctor_id"), department=entry.get("department"))
+            updated = db.queue.find_one({"$or": [{"queue_id": q_id}, {"booking_id": b_id}]}) or db.appointments.find_one({"booking_id": b_id})
+            res = serialize_doc(updated)
+            create_notification(
+                patient_id=entry.get("patient_id", "P001"),
+                notification_type="QUEUE_STATUS_UPDATED",
+                title=f"Queue Status: {new_status.upper().replace('_', ' ')}",
+                message=f"Your consultation token {q_id} status changed to {new_status.replace('_', ' ')}.",
+                booking_id=q_id
+            )
+            return res, None
+    except Exception:
+        pass
+
+    for q in IN_MEMORY_QUEUE:
+        if q.get("queue_id") == queue_id or q.get("booking_id") == queue_id:
+            q["status"] = new_status
+            recalculate_queue_positions(doctor_id=q.get("doctor_id"), department=q.get("department"))
+            return serialize_doc(q), None
+
+    from services.appointment_service import IN_MEMORY_BOOKINGS
+    for b in IN_MEMORY_BOOKINGS:
+        if b.get("booking_id") == queue_id:
+            b["status"] = new_status
+            return serialize_doc(b), None
+
+    return None, f"Queue token '{queue_id}' not found"
+
 def complete_consultation(booking_id: str, actual_duration_mins: int = 15) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
@@ -220,7 +276,7 @@ def get_queue_status(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
 
     return None, f"Queue entry '{queue_id}' not found"
 
-def get_all_queues(department_filter: Optional[str] = None) -> List[dict]:
+def get_all_queues(department_filter: Optional[str] = None) -> Tuple[List[dict], Optional[str]]:
     try:
         db = get_db()
         query = {}
@@ -233,7 +289,24 @@ def get_all_queues(department_filter: Optional[str] = None) -> List[dict]:
                 p = str(entry.get("priority", "normal")).lower()
                 return (0 if p == "emergency" else 1, entry.get("position", 999), entry.get("joined_at", ""))
             entries.sort(key=priority_sort)
-            return serialize_docs(entries)
+
+            # Attach patient name/phone from the users collection if missing
+            patient_ids = list({e.get("patient_id") for e in entries if e.get("patient_id")})
+            users_lookup = {}
+            if patient_ids:
+                for u in db.users.find({"patient_id": {"$in": patient_ids}}):
+                    users_lookup[u.get("patient_id")] = {
+                        "patient_name": u.get("name"),
+                        "patient_phone": u.get("phone")
+                    }
+            for entry in entries:
+                info = users_lookup.get(entry.get("patient_id"), {})
+                if not entry.get("patient_name") or entry.get("patient_name") == "Unknown":
+                    entry["patient_name"] = info.get("patient_name", "Patient")
+                if not entry.get("patient_phone"):
+                    entry["patient_phone"] = info.get("patient_phone", "")
+
+            return serialize_docs(entries), None
     except Exception:
         pass
 
@@ -241,7 +314,7 @@ def get_all_queues(department_filter: Optional[str] = None) -> List[dict]:
         p = str(entry.get("priority", "normal")).lower()
         return (0 if p == "emergency" else 1, entry.get("position", 999), entry.get("joined_at", ""))
     sorted_mem = sorted(IN_MEMORY_QUEUE, key=p_sort)
-    return serialize_docs(sorted_mem)
+    return serialize_docs(sorted_mem), None
 
 def escalate_emergency(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
     try:

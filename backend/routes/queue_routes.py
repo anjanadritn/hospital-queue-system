@@ -4,7 +4,8 @@ from services.queue_service import (
     get_queue_status,
     get_all_queues,
     escalate_emergency,
-    mark_patient_arrived
+    mark_patient_arrived,
+    update_queue_status
 )
 from services.rbac_middleware import require_auth
 from services.auth_service import decode_jwt_token
@@ -18,7 +19,12 @@ def join_queue_route():
     
     # CRITICAL PATIENT ID SECURITY: Override patient_id with authenticated JWT identity!
     jwt_user = getattr(request, "current_user", {})
-    auth_patient_id = jwt_user.get("patient_id") or jwt_user.get("user_id") or "P001"
+    auth_patient_id = jwt_user.get("patient_id") or jwt_user.get("user_id")
+    
+    # SECURITY: Reject if no valid patient ID in JWT
+    if not auth_patient_id:
+        return jsonify({"error": "Unauthorized: No valid patient identifier in token"}), 401
+    
     data["patient_id"] = auth_patient_id
 
     res, error = join_queue(data)
@@ -27,26 +33,16 @@ def join_queue_route():
     return jsonify(res), 201
 
 @queue_bp.route("/queue/status/<queue_id>", methods=["GET"])
+@require_auth(allowed_roles=["patient", "doctor", "admin"])
 def queue_status_route(queue_id):
     """
     Private Queue Tracker Status:
-    Requires authentication. Patients can ONLY view their own queue status.
+    Patients can ONLY view their own queue status.
     Doctors and Admins can view any queue status for operational oversight.
     """
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header:
-        return jsonify({
-            "error": "Authentication required. Please login to track your consultation queue."
-        }), 401
-
-    decoded = decode_jwt_token(auth_header)
-    if not decoded:
-        return jsonify({
-            "error": "Your session has expired. Please login again to track your queue."
-        }), 401
-
-    user_role = decoded.get("role", "patient")
-    auth_patient_id = decoded.get("patient_id") or decoded.get("user_id")
+    jwt_user = getattr(request, "current_user", {})
+    user_role = jwt_user.get("role", "patient")
+    auth_patient_id = jwt_user.get("patient_id") or jwt_user.get("user_id")
 
     res, error = get_queue_status(queue_id)
     if error:
@@ -71,6 +67,41 @@ def all_queues_route():
         return jsonify({"error": error}), 400
     return jsonify(res), 200
 
+@queue_bp.route("/queue/doctor/<doctor_id>", methods=["GET"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def doctor_queue_route(doctor_id):
+    """Get queue for a specific doctor"""
+    res, error = get_all_queues()
+    if error:
+        return jsonify({"error": error}), 400
+    
+    # Filter for this doctor only
+    doctor_queue = [q for q in (res or []) if q.get("doctor_id") == doctor_id]
+    return jsonify(doctor_queue), 200
+
+@queue_bp.route("/queue/my", methods=["GET"])
+@require_auth(allowed_roles=["patient"])
+def my_queue_route():
+    """Get current authenticated patient's active queue token"""
+    jwt_user = getattr(request, "current_user", {})
+    auth_patient_id = jwt_user.get("patient_id") or jwt_user.get("user_id")
+    
+    from database.mongodb import get_db, serialize_doc
+    db = get_db()
+    
+    try:
+        queue_entry = db.queue.find_one({
+            "patient_id": auth_patient_id,
+            "status": {"$nin": ["completed", "cancelled", "no_show"]}
+        }, sort=[("joined_at", -1)])
+        
+        if queue_entry:
+            return jsonify(serialize_doc(queue_entry)), 200
+    except Exception:
+        pass
+    
+    return jsonify({"error": "No active queue found for this patient"}), 404
+
 @queue_bp.route("/queue/emergency", methods=["POST"])
 @require_auth(allowed_roles=["patient", "doctor", "admin"])
 def emergency_route():
@@ -89,7 +120,6 @@ def emergency_route():
 @queue_bp.route("/queue/<queue_id>/arrive", methods=["POST"])
 @require_auth(allowed_roles=["patient"])
 def mark_arrived_route(queue_id):
-    # Verify queue entry exists and belongs to authenticated patient identity
     queue_data, error = get_queue_status(queue_id)
     if error:
         return jsonify({"error": error}), 404
@@ -97,13 +127,52 @@ def mark_arrived_route(queue_id):
     jwt_user = getattr(request, "current_user", {})
     auth_patient_id = jwt_user.get("patient_id") or jwt_user.get("user_id")
 
-    # PATIENT OWNERSHIP VERIFICATION
     if queue_data.get("patient_id") and queue_data.get("patient_id") != auth_patient_id:
         return jsonify({
             "error": "Unauthorized access. You can only mark arrival for your own queue entry."
         }), 403
 
     res, error = mark_patient_arrived(queue_id)
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/call", methods=["POST"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def call_patient_route(queue_id):
+    res, error = update_queue_status(queue_id, "called")
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/start", methods=["POST"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def start_consultation_route(queue_id):
+    res, error = update_queue_status(queue_id, "in_consultation")
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/complete", methods=["POST"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def complete_queue_route(queue_id):
+    res, error = update_queue_status(queue_id, "completed")
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/cancel", methods=["POST"])
+@require_auth(allowed_roles=["patient", "doctor", "admin"])
+def cancel_queue_route(queue_id):
+    res, error = update_queue_status(queue_id, "cancelled")
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/no-show", methods=["POST"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def no_show_queue_route(queue_id):
+    res, error = update_queue_status(queue_id, "no_show")
     if error:
         return jsonify({"error": error}), 400
     return jsonify(res), 200

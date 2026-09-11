@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from services.auth_service import (
     send_auth_otp,
     verify_auth_otp,
@@ -10,7 +12,14 @@ from services.auth_service import (
 
 auth_bp = Blueprint("auth_bp", __name__)
 
+# SECURITY: Rate limiting on sensitive endpoints
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
 @auth_bp.route("/auth/send-otp", methods=["POST"])
+@limiter.limit("5 per minute")
 def request_send_otp():
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -22,6 +31,7 @@ def request_send_otp():
     return jsonify(res), 200
 
 @auth_bp.route("/auth/verify-otp", methods=["POST"])
+@limiter.limit("10 per minute")
 def request_verify_otp():
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -38,6 +48,7 @@ def request_verify_otp():
     return jsonify({"verified": True, "message": "Phone number verified successfully"}), 200
 
 @auth_bp.route("/auth/register", methods=["POST"])
+@limiter.limit("5 per minute")
 def request_register():
     data = request.get_json(silent=True) or {}
     res, error = register_patient(data)
@@ -46,6 +57,7 @@ def request_register():
     return jsonify(res), 201
 
 @auth_bp.route("/auth/login", methods=["POST"])
+@limiter.limit("10 per minute")
 def request_login():
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")

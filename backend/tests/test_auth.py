@@ -21,6 +21,18 @@ def test_patient_otp_send_and_verify(client):
     assert verify_res.get_json()["verified"] == True
 
 def test_patient_registration_flow(client):
+    # Clean up test user phone number to ensure idempotent test runs
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.users.delete_many({"phone": "9777766666"})
+        db.auth_otps.delete_many({"phone": "9777766666"})
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_USERS, IN_MEMORY_AUTH_OTPS
+    IN_MEMORY_USERS[:] = [u for u in IN_MEMORY_USERS if u.get("phone") != "9777766666"]
+    IN_MEMORY_AUTH_OTPS.pop("9777766666_ACCOUNT_VERIFICATION", None)
+
     # Send OTP
     send_res = client.post("/auth/send-otp", json={"phone": "9777766666", "purpose": "ACCOUNT_VERIFICATION"})
     otp = send_res.get_json()["development_otp"]

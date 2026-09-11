@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional, Tuple
-from database.connection import get_db
-from utils.serializers import serialize_doc
+from database.mongodb import get_db, serialize_doc
 
 def generate_patient_id() -> str:
     db = get_db()

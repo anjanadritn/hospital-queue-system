@@ -109,7 +109,10 @@ export const hospitalApi = {
   },
 
   // 6. Consultation Verification OTP (Patient & Doctor)
-  generateConsultationOtp: async (bookingId, patientId = 'P001', doctorId = 'D001') => {
+  generateConsultationOtp: async (bookingId, patientId, doctorId) => {
+    if (!patientId || !doctorId) {
+      throw new Error("Patient ID and Doctor ID are required for consultation OTP generation");
+    }
     const response = await apiClient.post(`/consultation/${bookingId}/generate-otp`, { patient_id: patientId, doctor_id: doctorId });
     return response.data;
   },
@@ -135,18 +138,50 @@ export const hospitalApi = {
     const response = await apiClient.get(`/queue/status/${queueId}`);
     return response.data;
   },
+  getMyActiveQueue: async () => {
+    const response = await apiClient.get('/queue/my');
+    return response.data;
+  },
   getAllQueues: async (department = '') => {
     const response = await apiClient.get(`/queue/all${department ? `?department=${encodeURIComponent(department)}` : ''}`);
+    return response.data;
+  },
+  getDoctorQueue: async (doctorId) => {
+    const response = await apiClient.get(`/queue/doctor/${doctorId}`);
     return response.data;
   },
   escalateEmergency: async (queueId) => {
     const response = await apiClient.post('/queue/emergency', { queue_id: queueId });
     return response.data;
   },
+  callPatient: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/call`);
+    return response.data;
+  },
+  startConsultation: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/start`);
+    return response.data;
+  },
+  completeQueueToken: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/complete`);
+    return response.data;
+  },
+  cancelQueueToken: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/cancel`);
+    return response.data;
+  },
+  markNoShow: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/no-show`);
+    return response.data;
+  },
 
-  // 8. ML Prediction
+  // 8. ML Prediction & Analytics
   predictWaitTime: async (payload) => {
     const response = await apiClient.post('/predict', payload);
+    return response.data;
+  },
+  getAnalytics: async () => {
+    const response = await apiClient.get('/analytics');
     return response.data;
   },
 
@@ -157,6 +192,10 @@ export const hospitalApi = {
   },
   markNotificationRead: async (notificationId) => {
     const response = await apiClient.post(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+  markAllNotificationsRead: async (patientId) => {
+    const response = await apiClient.post(`/notifications/patient/${patientId}/read-all`);
     return response.data;
   }
 };
