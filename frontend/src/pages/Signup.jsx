@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HeartPulse, User, Phone, Mail, Lock, ShieldCheck, AlertCircle, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import {
+  HeartPulse,
+  User,
+  Phone,
+  Mail,
+  Lock,
+  ShieldCheck,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Sparkles,
+  KeyRound,
+  GraduationCap,
+  Activity,
+  Cpu
+} from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 
 export default function Signup() {
@@ -26,7 +44,7 @@ export default function Signup() {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!phone || phone.length < 10) {
-      setError('Please enter a valid 10-digit phone number');
+      setError('Please enter a valid 10-digit mobile number');
       return;
     }
     if (password !== confirmPassword) {
@@ -68,7 +86,7 @@ export default function Signup() {
     setError(null);
 
     try {
-      const res = await hospitalApi.registerPatient({
+      await hospitalApi.registerPatient({
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim(),
@@ -86,7 +104,7 @@ export default function Signup() {
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
-        'Account registration failed. Check OTP.';
+        'Account registration failed. Please verify your OTP.';
       setError(message);
     } finally {
       setLoading(false);
@@ -94,184 +112,323 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-12">
-      <div className="bg-white rounded-3xl p-6 sm:p-10 max-w-md w-full border border-slate-200/80 shadow-xl relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-4 sm:p-6 lg:p-10">
+      <div className="max-w-6xl w-full bg-white rounded-3xl border border-slate-200/90 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
         
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-tr from-sky-600 to-teal-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-md">
-            <HeartPulse className="w-7 h-7" />
+        {/* LEFT COLUMN: Modern Healthcare Brand Showcase (5 cols) */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-sky-950 to-teal-950 p-8 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-tr from-sky-500 to-teal-400 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+                <HeartPulse className="w-7 h-7" />
+              </div>
+              <div>
+                <span className="font-extrabold text-xl tracking-tight text-white block">
+                  SMART<span className="text-sky-400">HOSPITAL</span>
+                </span>
+                <span className="text-[11px] text-teal-300 font-semibold uppercase tracking-wider block">
+                  Patient Portal Registration
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-400/30">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified Patient Network</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+                Begin Your Connected Clinical Journey
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Register with your mobile phone number to unlock advance specialist booking, live queue position tracking, and smart departure alerts.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3 text-xs bg-white/5 p-3 rounded-2xl border border-white/10">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30 shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-emerald-200 block">Instant SMS OTP Verification</span>
+                  <span className="text-slate-400 text-[11px]">Secure patient authentication protocol</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs bg-white/5 p-3 rounded-2xl border border-white/10">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center border border-purple-400/30 shrink-0">
+                  <Cpu className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-purple-200 block">Personalized Waiting Prediction</span>
+                  <span className="text-slate-400 text-[11px]">Real-time queue latency calculated for your turn</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs bg-white/5 p-3 rounded-2xl border border-white/10">
+                <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-300 flex items-center justify-center border border-sky-400/30 shrink-0">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-sky-200 block">Shridevi Hospital Campus Access</span>
+                  <span className="text-slate-400 text-[11px]">Direct integration with Tumkur clinical wings</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Create Patient Account
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">Mandatory Phone Verification Required</p>
+
+          <div className="relative z-10 pt-6 mt-6 border-t border-white/10 text-xs text-slate-400 flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-teal-400 shrink-0" />
+            <span className="leading-tight">
+              Final-Year Engineering Project • Shridevi Institute of Engineering & Technology, Tumkur
+            </span>
+          </div>
         </div>
 
-        {error && (
-          <div className="mb-6 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {success ? (
-          <div className="text-center py-6">
-            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Phone Number Verified!</h3>
-            <p className="text-xs text-slate-500">Account created with status VERIFIED. Redirecting to login...</p>
-          </div>
-        ) : !otpSent ? (
-          /* STEP 1: ACCOUNT DETAILS & SEND OTP */
-          <form onSubmit={handleSendOtp} className="space-y-4">
+        {/* RIGHT COLUMN: Signup Form Console (7 cols) */}
+        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
+          <div className="max-w-md w-full mx-auto space-y-6">
+            
+            {/* Header */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter full name"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                />
-              </div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block mb-1">
+                New Patient Enrollment
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Create Patient Account
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Enter your details to generate your patient ID and verify your phone.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number (Mandatory Verification)</label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-md transition focus:outline-none"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+            {/* Error Banner */}
+            {error && (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                <div className="flex-1">
+                  <span className="font-extrabold block">Registration Issue</span>
+                  <p className="mt-0.5">{error}</p>
                 </div>
               </div>
+            )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                    className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-md transition focus:outline-none"
+            {/* Success State */}
+            {success ? (
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                  <CheckCircle2 className="w-9 h-9" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">Account Verified & Created!</h3>
+                  <p className="text-xs text-slate-500">
+                    Your patient profile has been registered in the SmartHospital database. Redirecting to login...
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 text-white text-xs font-bold rounded-xl hover:bg-sky-700 transition"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                    <span>Proceed to Sign In</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
+            ) : !otpSent ? (
+              /* STEP 1: INITIAL DETAILS */
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ramesh Kumar"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number</label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="10-digit number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Email (Optional)</label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <input
+                        type="email"
+                        placeholder="patient@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Create password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Confirm password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 cursor-pointer mt-4"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending OTP Verification Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send OTP Code & Verify Phone</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* STEP 2: OTP VERIFICATION */
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-800 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <KeyRound className="w-4 h-4 text-sky-600" />
+                    <span>Verification Code Sent</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    We sent a 6-digit OTP code to <span className="font-bold text-slate-900">+91 {phone}</span>.
+                  </p>
+                  {devOtp && (
+                    <div className="pt-2">
+                      <span className="px-2 py-0.5 bg-sky-200/80 text-sky-900 font-mono font-bold rounded-md text-[10px]">
+                        Demo Auto-Filled OTP: {devOtp}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 text-center">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    autoFocus
+                    placeholder="123456"
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                    className="w-full text-center py-3 text-2xl font-mono font-extrabold tracking-[0.3em] bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 focus:bg-white focus:border-sky-600 focus:outline-none transition"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setOtpSent(false)}
+                    className="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer"
+                  >
+                    Edit Phone
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || otpInput.length !== 6}
+                    className="w-2/3 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-slate-300 disabled:to-slate-400 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verifying & Creating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Complete Registration</span>
+                        <CheckCircle2 className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Login Link */}
+            <div className="pt-4 border-t border-slate-100 text-center">
+              <p className="text-xs text-slate-500">
+                Already have an account?{' '}
+                <Link to="/login" className="text-sky-600 font-extrabold hover:underline">
+                  Sign In Here
+                </Link>
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2 mt-6"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Verification OTP'}
-            </button>
-          </form>
-        ) : (
-          /* STEP 2: VERIFY PHONE OTP */
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="bg-sky-50 p-4 rounded-2xl border border-sky-100 text-center mb-4">
-              <span className="text-xs font-semibold text-slate-600 block">OTP Sent to Phone</span>
-              <span className="text-base font-bold text-sky-900">{phone}</span>
-              {devOtp && (
-                <span className="text-[11px] font-mono text-emerald-700 font-bold block mt-1">
-                  Development OTP: {devOtp}
-                </span>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 text-center">
-                Enter 6-Digit Phone Verification OTP
-              </label>
-              <input
-                type="text"
-                maxLength={6}
-                required
-                autoFocus
-                value={otpInput}
-                onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                placeholder="123456"
-                className="w-full text-center py-3 text-2xl font-mono font-extrabold tracking-[0.3em] bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 focus:bg-white focus:border-sky-600 focus:outline-none transition"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || otpInput.length !== 6}
-              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify Phone & Create Account'}
-            </button>
-          </form>
-        )}
-
-        <div className="mt-8 text-center border-t border-slate-100 pt-6">
-          <p className="text-xs text-slate-500">
-            Already have an account?{' '}
-            <Link to="/login" className="font-extrabold text-sky-600 hover:text-sky-700">
-              Login here
-            </Link>
-          </p>
+          </div>
         </div>
 
       </div>

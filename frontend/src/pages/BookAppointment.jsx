@@ -1,14 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, User, Stethoscope, Clock, CheckCircle2, AlertCircle, Loader2, DoorOpen, Navigation, ArrowRight } from 'lucide-react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import {
+  Calendar,
+  User,
+  Stethoscope,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  DoorOpen,
+  Navigation,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  ShieldAlert,
+  Cpu,
+  Sparkles,
+  Phone,
+  Mail,
+  MapPin,
+  Activity,
+  Edit3,
+  HeartPulse
+} from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import SymptomSelector from '../components/SymptomSelector';
 import DepartureCard from '../components/DepartureCard';
 
 export default function BookAppointment() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { t } = useLanguage();
 
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
@@ -16,6 +40,72 @@ export default function BookAppointment() {
   // Form State - Use authenticated user's data
   const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('Male');
+  const [durationDays, setDurationDays] = useState(3);
+  const [heightCm, setHeightCm] = useState('');
+  const [weightKg, setWeightKg] = useState('');
+  const [city, setCity] = useState('Tumakuru');
+  const [originLatitude, setOriginLatitude] = useState(null);
+  const [originLongitude, setOriginLongitude] = useState(null);
+  const [isApproximateLocation, setIsApproximateLocation] = useState(true);
+  const [gpsStatus, setGpsStatus] = useState('idle'); // 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable'
+  const [gpsMessage, setGpsMessage] = useState('');
+  const [pdo, setPdo] = useState('');
+
+  const handleRequestLocation = () => {
+    if (!navigator.geolocation) {
+      setGpsStatus('unavailable');
+      setGpsMessage('Geolocation is not supported by your browser. Using approximate landmark.');
+      setIsApproximateLocation(true);
+      return;
+    }
+
+    setGpsStatus('requesting');
+    setGpsMessage('Requesting GPS location permission...');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = Number(position.coords.latitude.toFixed(6));
+        const lon = Number(position.coords.longitude.toFixed(6));
+        setOriginLatitude(lat);
+        setOriginLongitude(lon);
+        setIsApproximateLocation(false);
+        setGpsStatus('granted');
+        setGpsMessage(`Precise GPS captured: ${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E`);
+        if (!city || city === 'Tumakuru') {
+          setCity('Current GPS Location');
+        }
+      },
+      (geoError) => {
+        setIsApproximateLocation(true);
+        setOriginLatitude(null);
+        setOriginLongitude(null);
+        if (geoError.code === geoError.PERMISSION_DENIED) {
+          setGpsStatus('denied');
+          setGpsMessage('Location permission denied. Using approximate landmark fallback.');
+        } else {
+          setGpsStatus('unavailable');
+          setGpsMessage('GPS location unavailable. Using approximate landmark fallback.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
+  // Proactively ask patient for browser location permission on load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      handleRequestLocation();
+    }
+  }, []);
+
   const [selectedDept, setSelectedDept] = useState('General Medicine');
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [consultationDate, setConsultationDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -23,17 +113,46 @@ export default function BookAppointment() {
   const [customSymptoms, setCustomSymptoms] = useState('');
   const [priority, setPriority] = useState('normal');
 
+  const [isReviewing, setIsReviewing] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState(null);
   const [bookingResult, setBookingResult] = useState(null);
 
-  const [joiningQueue, setJoiningQueue] = useState(false);
+  const [isReturningPatient, setIsReturningPatient] = useState(false);
 
-  // Initialize patient info from authenticated user
+  // Live BMI calculation
+  const calculatedBmi = (heightCm && weightKg && Number(heightCm) > 0 && Number(weightKg) > 0)
+    ? (Number(weightKg) / Math.pow(Number(heightCm) / 100, 2)).toFixed(1)
+    : null;
+
+  // Initialize patient info from authenticated user and persistent profile
   useEffect(() => {
     if (!authLoading && user) {
       setPatientId(user.patient_id || user.user_id || '');
       setPatientName(user.name || user.full_name || 'Patient');
+      setPatientPhone(user.phone || '');
+      if (user.email) setPatientEmail(user.email);
+      if (user.age) setAge(user.age);
+      if (user.gender) setGender(user.gender);
+      if (user.city || user.address) setCity(user.city || user.address);
+      if (user.height_cm) setHeightCm(user.height_cm);
+      if (user.weight_kg) setWeightKg(user.weight_kg);
+
+      // Fetch persistent master profile for returning patient
+      hospitalApi.getMyPatientProfile().then((profile) => {
+        if (profile) {
+          setIsReturningPatient(true);
+          if (profile.patient_id) setPatientId(profile.patient_id);
+          if (profile.name) setPatientName(profile.name);
+          if (profile.phone) setPatientPhone(profile.phone);
+          if (profile.email) setPatientEmail(profile.email);
+          if (profile.age) setAge(profile.age);
+          if (profile.gender) setGender(profile.gender);
+          if (profile.city) setCity(profile.city);
+          if (profile.height_cm) setHeightCm(profile.height_cm);
+          if (profile.weight_kg) setWeightKg(profile.weight_kg);
+        }
+      }).catch(() => {});
     }
   }, [user, authLoading]);
 
@@ -43,22 +162,49 @@ export default function BookAppointment() {
     const d = new Date(today);
     d.setDate(d.getDate() + offset);
     const iso = d.toISOString().split('T')[0];
-    let label = offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : 'Day After Tomorrow';
-    return { iso, label, dateStr: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) };
+    let label = offset === 0 ? t('today', 'Today') : offset === 1 ? t('tomorrow', 'Tomorrow') : '+2 Days';
+    return {
+      iso,
+      label,
+      dateStr: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    };
   });
 
+  const [searchParams] = useSearchParams();
+  const urlDoctorId = searchParams.get('doctorId');
+  const urlDept = searchParams.get('dept');
+
   useEffect(() => {
-    hospitalApi.getDoctors()
+    hospitalApi
+      .getDoctors()
       .then((docs) => {
         setDoctors(docs || []);
         if (docs && docs.length > 0) {
+          if (urlDoctorId) {
+            const matched = docs.find((d) => d.doctor_id === urlDoctorId);
+            if (matched) {
+              setSelectedDoctorId(matched.doctor_id);
+              setSelectedDept(matched.department);
+              return;
+            }
+          }
+          if (urlDept) {
+            const matchedDeptDoc = docs.find(
+              (d) => d.department.toLowerCase() === urlDept.toLowerCase()
+            );
+            if (matchedDeptDoc) {
+              setSelectedDoctorId(matchedDeptDoc.doctor_id);
+              setSelectedDept(matchedDeptDoc.department);
+              return;
+            }
+          }
           setSelectedDoctorId(docs[0].doctor_id);
           setSelectedDept(docs[0].department);
         }
       })
       .catch(console.error)
       .finally(() => setLoadingDoctors(false));
-  }, []);
+  }, [urlDoctorId, urlDept]);
 
   const handleDoctorChange = (docId) => {
     setSelectedDoctorId(docId);
@@ -68,15 +214,62 @@ export default function BookAppointment() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    setError(null);
+
+    if (!selectedDoctorId) {
+      setError('Please select a consulting specialist for your consultation.');
+      return;
+    }
+    if (selectedSymptoms.length === 0 && !customSymptoms.trim()) {
+      setError('Please select at least one primary symptom or describe your symptoms.');
+      return;
+    }
+    if (!patientName.trim()) {
+      setError('Please enter patient full name.');
+      return;
+    }
+    if (!patientPhone.trim()) {
+      setError('Please enter contact phone number.');
+      return;
+    }
+    if (!age || Number(age) < 1) {
+      setError('Please enter a valid age in years.');
+      return;
+    }
+    if (!heightCm || Number(heightCm) < 40) {
+      setError('Please enter patient height in cm for clinical vitals.');
+      return;
+    }
+
+    setIsReviewing(true);
+  };
+
+  const executeBooking = async () => {
     setBookingLoading(true);
     setError(null);
 
     try {
       const payload = {
         patient_id: patientId,
+        patient_name: patientName,
         name: patientName,
+        phone: patientPhone,
+        patient_phone: patientPhone,
+        email: patientEmail,
+        patient_email: patientEmail,
+        age: age ? Number(age) : null,
+        gender: gender,
+        duration_days: durationDays ? Number(durationDays) : 1,
+        height_cm: heightCm ? Number(heightCm) : null,
+        weight_kg: weightKg ? Number(weightKg) : null,
+        city: city || 'Tumakuru',
+        patient_address: city || 'Tumakuru',
+        origin_latitude: originLatitude,
+        origin_longitude: originLongitude,
+        is_approximate_location: isApproximateLocation,
+        pdo: pdo,
         doctor_id: selectedDoctorId,
         department: selectedDept,
         consultation_date: consultationDate,
@@ -87,6 +280,7 @@ export default function BookAppointment() {
 
       const res = await hospitalApi.bookAppointment(payload);
       setBookingResult(res);
+      setIsReviewing(false);
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Failed to book appointment. Please verify backend status.');
@@ -95,203 +289,693 @@ export default function BookAppointment() {
     }
   };
 
-  const handleTrackConsultation = async () => {
-    if (!bookingResult) return;
-    setJoiningQueue(true);
-    try {
-      const res = await hospitalApi.joinQueue({
-        patient_id: bookingResult.patient_id || patientId,
-        doctor_id: bookingResult.doctor_id || selectedDoctorId,
-        department: bookingResult.department || selectedDept,
-        priority: bookingResult.priority || priority,
-        symptoms: bookingResult.symptoms || selectedSymptoms,
-        custom_symptoms: bookingResult.custom_symptoms || customSymptoms
-      });
-
-      const queueId = res.queue_id || res.data?.queue_id;
-
-      if (queueId) {
-        navigate(`/tracking?queue_id=${queueId}`);
-      } else {
-        console.error('No queue_id returned from join queue response', res);
-      }
-    } catch (err) {
-      console.error('Failed to join queue', err);
-    } finally {
-      setJoiningQueue(false);
+  const handleTrackConsultation = () => {
+    const qId = bookingResult?.queue_id || bookingResult?.booking_id;
+    if (qId) {
+      navigate(`/tracking?queue_id=${qId}`);
+    } else {
+      navigate('/patient');
     }
   };
 
   const selectedDoctor = doctors.find((d) => d.doctor_id === selectedDoctorId);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Book Advance Consultation</h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Book up to 2 days in advance and receive Random Forest wait-time predictions & departure alerts
-        </p>
-      </div>
-
-      {!bookingResult ? (
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-          
-          {error && (
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* STEP 1: DATE PICKER (STRICT 2-DAY LIMIT) */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              1. Select Consultation Date (Max 2 Days in Advance)
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              {dateOptions.map((opt) => (
-                <button
-                  key={opt.iso}
-                  type="button"
-                  onClick={() => setConsultationDate(opt.iso)}
-                  className={`p-3 rounded-2xl border text-center transition ${
-                    consultationDate === opt.iso
-                      ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="text-xs font-extrabold">{opt.label}</div>
-                  <div className="text-[11px] font-semibold opacity-90">{opt.dateStr}</div>
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              * Note: To optimize live queue flow, consultations can be booked today, tomorrow, or day after tomorrow only.
-            </p>
+    <div className="min-h-screen bg-slate-50/70 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        {/* Page Header */}
+        <div className="text-center max-w-xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+            <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
+            <span>{t('opd_live', 'Outpatient Department (OPD)')}</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            {t('schedule_consultation', 'Schedule Clinical Consultation')}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500">
+            {t('booking_subtitle', 'Book up to 2 days in advance with automatic queue token allocation, Random Forest AI wait-time estimation, and SIMSRH departure guidance.')}
+          </p>
+        </div>
 
-          {/* STEP 2: DOCTOR SELECTION */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              2. Select Specialist Doctor & Department
-            </label>
-            
-            {loadingDoctors ? (
-              <p className="text-xs text-slate-500 py-2">Loading hospital specialists...</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-56 overflow-y-auto p-1">
-                {doctors.map((doc) => (
-                  <button
-                    key={doc.doctor_id}
-                    type="button"
-                    onClick={() => handleDoctorChange(doc.doctor_id)}
-                    className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between ${
-                      selectedDoctorId === doc.doctor_id
-                        ? 'bg-sky-50 border-sky-400 ring-2 ring-sky-200'
-                        : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-slate-900">{doc.name}</span>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                          {doc.consultation_room || 'Room 204'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-sky-700 font-semibold">{doc.department}</p>
-                      <p className="text-[10px] text-slate-500">{doc.specialization}</p>
-                    </div>
-                  </button>
-                ))}
+        {!bookingResult ? (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-sm space-y-8"
+          >
+            {error && (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                <div>
+                  <span className="font-extrabold block">Booking Encountered An Issue</span>
+                  <span>{error}</span>
+                </div>
               </div>
             )}
-          </div>
 
-          {/* STEP 3: SYMPTOM SELECTOR */}
-          <SymptomSelector
-            selectedSymptoms={selectedSymptoms}
-            onChangeSymptoms={setSelectedSymptoms}
-            customSymptoms={customSymptoms}
-            onChangeCustomSymptoms={setCustomSymptoms}
-          />
-
-          {/* STEP 4: PATIENT DETAILS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+            {/* STEP 1: DATE PICKER */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Patient ID</label>
-              <input
-                type="text"
-                required
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">1</span>
+                  <span>{t('select_date', 'Select Consultation Date (Max 2 Days Ahead)')}</span>
+                </label>
+                <span className="text-[11px] text-slate-400 font-semibold">Active OPD Window</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {dateOptions.map((opt) => {
+                  const isSelected = consultationDate === opt.iso;
+                  return (
+                    <button
+                      key={opt.iso}
+                      type="button"
+                      onClick={() => setConsultationDate(opt.iso)}
+                      className={`p-4 rounded-2xl border text-center transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-sky-600 to-teal-600 text-white border-sky-600 shadow-md ring-4 ring-sky-100'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="text-xs font-extrabold">{opt.label}</div>
+                      <div className={`text-[11px] font-semibold mt-0.5 ${isSelected ? 'text-sky-100' : 'text-slate-500'}`}>
+                        {opt.dateStr}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* STEP 2: DOCTOR SELECTION */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">2</span>
+                  <span>{t('choose_doctor', 'Choose Medical Specialist & Clinic')}</span>
+                </label>
+                <Link to="/doctors" className="text-[11px] font-bold text-sky-600 hover:underline">
+                  {t('browse_specialists', 'Browse All Specialists')}
+                </Link>
+              </div>
+
+              {loadingDoctors ? (
+                <div className="p-8 text-center text-xs text-slate-400">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-sky-600" />
+                  <span>{t('loading', 'Loading specialist registry...')}</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1 pr-2">
+                  {doctors.map((doc) => {
+                    const isSelected = selectedDoctorId === doc.doctor_id;
+                    return (
+                      <button
+                        key={doc.doctor_id}
+                        type="button"
+                        onClick={() => handleDoctorChange(doc.doctor_id)}
+                        className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-sky-50/70 border-sky-500 ring-2 ring-sky-300 shadow-xs'
+                            : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-extrabold text-xs text-slate-900">{doc.name}</span>
+                            <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
+                              doc.available
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {doc.available ? '● Available' : '○ Off-Duty'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-sky-700 font-bold">{doc.department}</div>
+                          <div className="text-[11px] text-slate-500 truncate">{doc.specialization}</div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-200/60 text-[11px]">
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <DoorOpen className="w-3.5 h-3.5" />
+                            <span>{doc.consultation_room || doc.room_number || 'Room 204'}</span>
+                          </span>
+                          <span className="text-purple-700 font-bold flex items-center gap-1">
+                            <Cpu className="w-3 h-3" />
+                            <span>~{doc.avg_consultation_duration || 12}m avg</span>
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* STEP 3: SYMPTOM SELECTOR */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">3</span>
+                <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                  {t('report_symptoms', 'Report Presenting Symptoms')}
+                </span>
+              </div>
+              <SymptomSelector
+                selectedSymptoms={selectedSymptoms}
+                onChangeSymptoms={setSelectedSymptoms}
+                customSymptoms={customSymptoms}
+                onChangeCustomSymptoms={setCustomSymptoms}
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Patient Name</label>
-              <input
-                type="text"
-                required
-                value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-              />
-            </div>
-          </div>
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={bookingLoading}
-            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md"
-          >
-            {bookingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm & Generate Consultation Ticket'}
-          </button>
-
-        </form>
-      ) : (
-        /* BOOKING SUCCESS VIEW */
-        <div className="space-y-6">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-emerald-200 shadow-md text-center">
-            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Consultation Booked!</h2>
-            <p className="text-xs text-slate-500 mb-6">Booking Reference ID: <span className="font-mono font-bold text-sky-700">{bookingResult.booking_id}</span></p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-6 text-xs">
-              <div>
-                <span className="text-slate-400 block font-medium">Doctor</span>
-                <span className="font-bold text-slate-900">{selectedDoctor ? selectedDoctor.name : 'Dr. Ananya Sharma'}</span>
+            {/* STEP 4: CLINICAL CONSULTATION DETAILS (Doctor Handover Information) */}
+            <div className="border-t border-slate-100 pt-6 space-y-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">4</span>
+                  <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                    {t('clinical_details', 'Clinical Consultation Details')}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium">Provided to Doctor at Consultation</span>
               </div>
-              <div>
-                <span className="text-slate-400 block font-medium">Consultation Location</span>
-                <span className="font-bold text-emerald-700">{bookingResult.room_number || 'Room 204'}</span>
+
+              {isReturningPatient && (
+                <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <span>{t('pre_fill_notice')}</span>
+                </div>
+              )}
+
+              {/* Priority Toggle */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPriority('normal')}
+                  className={`p-3.5 rounded-2xl border text-center transition cursor-pointer ${
+                    priority === 'normal'
+                      ? 'bg-sky-50 border-sky-500 text-sky-900 ring-2 ring-sky-200 font-bold'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="text-xs font-extrabold">{t('standard_opd', 'Standard OPD Consultation')}</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">{t('regular_order', 'Regular waiting order')}</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPriority('emergency')}
+                  className={`p-3.5 rounded-2xl border text-center transition cursor-pointer ${
+                    priority === 'emergency'
+                      ? 'bg-rose-50 border-rose-500 text-rose-900 ring-2 ring-rose-200 font-bold'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="text-xs font-extrabold flex items-center justify-center gap-1 text-rose-700">
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    <span>{t('emergency_priority', 'Emergency Priority')}</span>
+                  </div>
+                  <div className="text-[10px] text-rose-600/80 mt-0.5">{t('immediate_triage', 'Immediate triage attention')}</div>
+                </button>
               </div>
-              <div>
-                <span className="text-slate-400 block font-medium">AI Estimated Duration</span>
-                <span className="font-bold text-sky-700">~{bookingResult.predicted_consultation_duration || 15} mins</span>
+
+              {/* Row 1: Name, Phone, Age, Gender */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('full_name', 'Patient Full Name')} *</label>
+                  <input
+                    type="text"
+                    required
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('age_years', 'Age (Years)')} *</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="120"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="e.g. 42"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('gender', 'Gender')} *</label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  >
+                    <option value="Male">{t('male', 'Male')}</option>
+                    <option value="Female">{t('female', 'Female')}</option>
+                    <option value="Other">{t('other', 'Other')}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Duration, Height, Weight, Calculated BMI */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('days_suffering_label', 'Days Suffering Problem *')}</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="365"
+                    value={durationDays}
+                    onChange={(e) => setDurationDays(e.target.value)}
+                    placeholder="e.g. 3 days"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('height_label', 'Height (cm) *')}</label>
+                  <input
+                    type="number"
+                    required
+                    min="40"
+                    max="250"
+                    value={heightCm}
+                    onChange={(e) => setHeightCm(e.target.value)}
+                    placeholder="e.g. 168"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('weight_label', 'Weight (kg, optional)')}</label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="300"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(e.target.value)}
+                    placeholder="e.g. 70"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center gap-1">
+                    <Activity className="w-3.5 h-3.5 text-teal-600" />
+                    <span>{t('calculated_bmi', 'Calculated BMI')}</span>
+                  </label>
+                  <div className="w-full px-3.5 py-2.5 bg-teal-50/70 border border-teal-200 rounded-xl text-xs font-bold text-teal-900 flex items-center justify-between">
+                    <span>{calculatedBmi ? `${calculatedBmi} kg/m²` : 'Enter Ht & Wt'}</span>
+                    {calculatedBmi && (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-200 text-teal-900">
+                        {Number(calculatedBmi) < 18.5 ? 'Underweight' : Number(calculatedBmi) < 25 ? 'Normal' : 'Overweight'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 3: Phone, Email, Origin, PDO */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('contact_phone_label', 'Contact Phone')} *</label>
+                  <div className="relative">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                    <input
+                      type="tel"
+                      required
+                      value={patientPhone}
+                      onChange={(e) => setPatientPhone(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Email Address</label>
+                  <div className="relative">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                    <input
+                      type="email"
+                      value={patientEmail}
+                      onChange={(e) => setPatientEmail(e.target.value)}
+                      placeholder="patient@example.com"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      {t('village_city_label', 'Village / City Origin *')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRequestLocation}
+                      disabled={gpsStatus === 'requesting'}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 border border-sky-200 rounded-lg transition shadow-2xs cursor-pointer disabled:opacity-50"
+                    >
+                      {gpsStatus === 'requesting' ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin text-sky-600" />
+                          <span>Detecting GPS...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Navigation className="w-3 h-3 text-sky-600" />
+                          <span>Use Current Location (GPS)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                    <input
+                      type="text"
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="e.g. Tumakuru, Batawadi, Gubbi"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
+                  </div>
+
+                  {/* Location Accuracy Status Feedback */}
+                  {gpsStatus === 'granted' && originLatitude && originLongitude && (
+                    <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-[11px] text-emerald-800 animate-in fade-in duration-200">
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>
+                          <strong>Exact GPS Captured:</strong> {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 bg-emerald-200/60 rounded text-emerald-900">
+                        Exact Route
+                      </span>
+                    </div>
+                  )}
+
+                  {(gpsStatus === 'denied' || gpsStatus === 'unavailable') && (
+                    <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-[11px] text-amber-800 animate-in fade-in duration-200">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-semibold">{gpsMessage}</div>
+                        <div className="text-[10px] text-amber-700 mt-0.5">
+                          Routing and departure time will use the approximate landmark <strong>"{city}"</strong>.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {gpsStatus === 'idle' && (
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
+                      <span>💡 Allow GPS for accurate road distance and travel time calculation, or keep landmark name above.</span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">PDO / Reference</label>
+                  <input
+                    type="text"
+                    value={pdo}
+                    onChange={(e) => setPdo(e.target.value)}
+                    placeholder="Optional health center ref"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-center gap-3">
+            {/* STEP 5: REVIEW DETAILS BEFORE CONFIRMATION */}
+            {isReviewing ? (
+              <div className="border-t-2 border-teal-300 pt-6 space-y-6 bg-teal-50/30 p-6 rounded-3xl border border-teal-200 animate-fadeIn">
+                <div className="flex items-center justify-between pb-3 border-b border-teal-200">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-teal-700 text-white flex items-center justify-center text-xs font-bold">5</span>
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      Review Details Before Confirmation
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-bold">
+                    Ready to Confirm
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  {/* Summary 1: Patient Information */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-sky-600" /> Patient Information
+                    </span>
+                    <div className="text-sm font-black text-slate-900">{patientName}</div>
+                    <div className="space-y-1 text-slate-600 text-[11px]">
+                      <div>Demographics: <strong className="text-slate-800">{age} yrs • {gender}</strong></div>
+                      <div>Phone: <strong className="text-slate-800 font-mono">{patientPhone}</strong></div>
+                      <div>
+                        Origin: <strong className="text-slate-800">📍 {city}</strong>
+                        {originLatitude && originLongitude ? (
+                          <div className="mt-0.5 text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>GPS: {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E (Exact)</span>
+                          </div>
+                        ) : (
+                          <div className="mt-0.5 text-[10px] text-amber-700 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                            <span>Approximate landmark location</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="pt-1 border-t border-slate-100 text-teal-800 font-semibold">
+                        Vitals: {heightCm} cm • {weightKg ? `${weightKg} kg` : 'Weight not logged'}
+                        {calculatedBmi && ` (BMI: ${calculatedBmi})`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary 2: Clinical Details */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
+                      <HeartPulse className="w-3.5 h-3.5 text-teal-600" /> Clinical Complaints
+                    </span>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Symptoms Reported:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedSymptoms.length > 0 ? (
+                          selectedSymptoms.map((s, idx) => (
+                            <span key={idx} className="px-2 py-0.5 bg-sky-50 text-sky-900 border border-sky-200 rounded text-[11px] font-semibold">
+                              • {s}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-slate-500 italic">General OPD checkup</span>
+                        )}
+                      </div>
+                    </div>
+                    {customSymptoms && (
+                      <div className="text-[11px] text-slate-600 italic bg-slate-50 p-2 rounded border border-slate-100">
+                        "{customSymptoms}"
+                      </div>
+                    )}
+                    <div className="text-[11px] text-slate-600 pt-1">
+                      Duration: <strong className="text-slate-800">{durationDays} day(s)</strong> • Priority: <strong className={priority === 'emergency' ? 'text-rose-700' : 'text-slate-800'}>{priority.toUpperCase()}</strong>
+                    </div>
+                  </div>
+
+                  {/* Summary 3: Appointment & Allocation */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-800 flex items-center gap-1.5">
+                      <Stethoscope className="w-3.5 h-3.5 text-purple-600" /> Specialist & OPD
+                    </span>
+                    <div className="text-sm font-black text-slate-900">
+                      {selectedDoctor?.name || 'Selected Specialist'}
+                    </div>
+                    <div className="text-xs font-bold text-sky-700">{selectedDept}</div>
+                    <div className="space-y-1 text-slate-600 text-[11px] pt-1 border-t border-slate-100">
+                      <div>Consultation Date: <strong className="text-slate-800">{consultationDate}</strong></div>
+                      <div>Room: <strong className="text-emerald-700">{selectedDoctor?.room_number || 'Room 204'}</strong></div>
+                      <div className="text-purple-700 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> AI Wait Time Model Active
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Review Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsReviewing(false)}
+                    className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Edit Details</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={executeBooking}
+                    disabled={bookingLoading}
+                    className="flex-1 w-full py-4 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 cursor-pointer disabled:opacity-60"
+                  >
+                    {bookingLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Confirming OPD Consultation Slot & Allocating Token...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Confirm Booking & Receive Token + Arrival Code</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* PROCEED TO REVIEW DETAILS BUTTON */
               <button
-                onClick={handleTrackConsultation}
-                disabled={joiningQueue}
-                className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2 disabled:opacity-60"
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 cursor-pointer"
               >
-                <span>{joiningQueue ? 'Joining Queue...' : 'Join Queue & Track Consultation'}</span>
+                <span>Proceed to Review Details</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+            )}
+          </form>
+        ) : (
+          /* BOOKING SUCCESS VIEW WITH TOKEN & ARRIVAL OTP */
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-emerald-200 shadow-md text-center space-y-6">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                <CheckCircle2 className="w-9 h-9" />
+              </div>
+
+              <div>
+                <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 block mb-1">
+                  Consultation Confirmed & Token Allocated
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {t('booking_reference', 'Booking Reference')}: <span className="font-mono text-sky-700">{bookingResult.booking_id}</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  Confirmed for {bookingResult.consultation_date} at {t('hospital_name', 'Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)')}, Tumakuru.
+                </p>
+              </div>
+
+              {/* 2 SPOTLIGHT BOXES: TOKEN NUMBER & ARRIVAL OTP */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto text-left">
+                <div className="bg-gradient-to-br from-sky-50 to-teal-50 border-2 border-sky-300 rounded-2xl p-5 shadow-xs">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-800 block mb-1">
+                    {t('queue_token_number', 'Your Queue Token Number')}
+                  </span>
+                  <div className="text-3xl sm:text-4xl font-black text-sky-900 font-mono">
+                    {bookingResult.queue_id || 'Q001'}
+                  </div>
+                  <div className="text-xs font-bold text-sky-700 mt-1">
+                    {t('queue_pos', 'Queue Position')}: #{bookingResult.queue_position || 1}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Live OPD waiting line. Position dynamically updates.
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-50 to-emerald-50 border-2 border-amber-300 rounded-2xl p-5 shadow-xs">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block mb-1">
+                    {t('arrival_code_title', '6-Digit Hospital Arrival Code')}
+                  </span>
+                  <div className="text-3xl sm:text-4xl font-black text-emerald-700 font-mono tracking-widest">
+                    {bookingResult.arrival_otp || '123456'}
+                  </div>
+                  <div className="text-xs font-bold text-amber-800 mt-1">
+                    Verify at Reception Desk
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-1">
+                    🔒 Present this code to reception upon arriving at SIMSRH to verify arrival.
+                  </p>
+                </div>
+              </div>
+
+              {/* CLINICAL SUMMARY BADGES */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-left bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 text-xs">
+                <div>
+                  <span className="text-slate-400 block font-bold text-[10px] uppercase">Specialist Doctor</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {selectedDoctor ? selectedDoctor.name : 'Assigned Specialist'}
+                  </span>
+                  <div className="text-sky-700 font-semibold text-[11px]">{selectedDept}</div>
+                </div>
+
+                <div>
+                  <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('chamber_room', 'Clinic & Room')}</span>
+                  <span className="font-extrabold text-emerald-700 text-sm flex items-center gap-1 mt-0.5">
+                    <DoorOpen className="w-4 h-4" />
+                    <span>{bookingResult.room_number || 'Room 204'}</span>
+                  </span>
+                  <div className="text-slate-500 text-[11px]">OPD Wing B</div>
+                </div>
+
+                <div>
+                  <span className="text-purple-600 block font-bold text-[10px] uppercase flex items-center gap-1">
+                    <Cpu className="w-3 h-3 text-purple-600" />
+                    <span>{t('estimated_wait_time', 'Estimated Wait Time')}</span>
+                  </span>
+                  <span className="font-extrabold text-purple-900 text-sm mt-0.5 block">
+                    ~{bookingResult.predicted_wait_time || 15} mins
+                  </span>
+                  <div className="text-purple-600 text-[11px]">Random Forest ML Model</div>
+                </div>
+
+                <div>
+                  <span className="text-teal-700 block font-bold text-[10px] uppercase flex items-center gap-1">
+                    <Navigation className="w-3 h-3 text-teal-600" />
+                    <span>{t('recommended_departure', 'Recommended Departure')}</span>
+                  </span>
+                  <span className="font-extrabold text-teal-900 text-sm mt-0.5 block">
+                    {bookingResult.travel_info?.recommended_departure_time || 'Leave Soon'}
+                  </span>
+                  <div className="text-teal-700 text-[11px] flex items-center justify-center sm:justify-start gap-1">
+                    <span>From {bookingResult.city || city}</span>
+                    {bookingResult.origin_latitude ? (
+                      <span className="px-1.5 py-0.2 bg-teal-100 text-teal-800 rounded font-semibold text-[10px]">Exact GPS</span>
+                    ) : (
+                      <span className="px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded font-semibold text-[10px]">Approximate</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={handleTrackConsultation}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition shadow-lg shadow-sky-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>{t('track_consultation', 'Track Live Queue Status & Map')}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <Link
+                  to="/patient"
+                  className="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition text-center"
+                >
+                  {t('my_dashboard', 'Go to Patient Dashboard')}
+                </Link>
+              </div>
             </div>
+
+            {/* INTEGRATED TUMKUR DEPARTURE CALCULATOR */}
+            <DepartureCard travelInfo={bookingResult.travel_info} />
           </div>
+        )}
 
-          <DepartureCard travelInfo={bookingResult.travel_info} />
-        </div>
-      )}
-
+      </div>
     </div>
   );
 }

@@ -21,4 +21,14 @@ class Config:
     # JWT Secret Key
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret-change-later-456")
 
+    # OpenRouteService API Key
+    OPENROUTESERVICE_API_KEY = os.getenv("OPENROUTESERVICE_API_KEY", "")
+
+    # MSG91 SMS Provider Configuration
+    MSG91_AUTH_KEY = os.getenv("MSG91_AUTH_KEY", "")
+    MSG91_SENDER_ID = os.getenv("MSG91_SENDER_ID", "SIMSRH")
+    MSG91_SMS_ENABLED = os.getenv("MSG91_SMS_ENABLED", "False").lower() in ("true", "1", "t")
+    MSG91_OTP_TEMPLATE_ID = os.getenv("MSG91_OTP_TEMPLATE_ID", "")
+    MSG91_FLOW_ID = os.getenv("MSG91_FLOW_ID", "")
+
 config = Config()

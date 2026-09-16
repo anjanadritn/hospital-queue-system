@@ -1,192 +1,165 @@
 """
 Random Forest ML Training Pipeline for Wait Time Prediction
-Creates, trains, and evaluates a realistic Random Forest model for consultation duration prediction
+Loads synthetic hospital visit records from dataset.csv, builds a complete
+preprocessing and regression pipeline using OneHotEncoder and RandomForestRegressor,
+and trains to predict wait_time_minutes.
 """
 
 import os
 import pickle
 import logging
 import numpy as np
+import pandas as pd
 from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create synthetic training dataset based on realistic hospital queue patterns
-def generate_training_data(n_samples=1000):
-    """
-    Generate realistic synthetic training data for consultation duration prediction.
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATASET_PATH = os.path.join(CURRENT_DIR, "dataset.csv")
+MODEL_DIR = os.path.join(CURRENT_DIR, "models")
+MODEL_PATH = os.path.join(MODEL_DIR, "wait_time_model.pkl")
+METADATA_PATH = os.path.join(MODEL_DIR, "model_metadata.pkl")
+
+CATEGORICAL_FEATURES = ["doctor_id", "department", "day_of_week", "patient_type"]
+NUMERICAL_FEATURES = ["doctor_avg_consult_minutes", "hour_of_day", "queue_length_ahead"]
+TARGET_COLUMN = "wait_time_minutes"
+
+def load_data(dataset_path: str = DATASET_PATH):
+    """Load dataset.csv and return feature matrix X and target y"""
+    if not os.path.exists(dataset_path):
+        raise FileNotFoundError(f"Dataset file not found at: {dataset_path}")
     
-    Features:
-    - symptoms_count: Number of symptoms reported (1-10)
-    - department_code: Department encoding (0-9)
-    - is_emergency: Whether it's an emergency case (0/1)
-    - queue_position: Patient's position in queue (1-50)
-    - doctor_avg_duration: Doctor's average consultation time (8-25 mins)
-    - time_of_day: Hour of day (0-23)
-    - day_of_week: Day of week (0-6)
-    - num_active_patients: Number of active patients in queue (1-30)
-    """
-    np.random.seed(42)
+    logger.info(f"📊 Loading dataset from {dataset_path}...")
+    df = pd.read_csv(dataset_path)
+    logger.info(f"   Loaded {len(df)} rows and {len(df.columns)} columns")
     
-    n_samples = n_samples
-    symptoms_count = np.random.randint(1, 11, n_samples)  # 1-10 symptoms
-    department_code = np.random.randint(0, 10, n_samples)  # 0-9 (10 departments)
-    is_emergency = np.random.binomial(1, 0.15, n_samples)  # 15% emergency
-    queue_position = np.random.randint(1, 51, n_samples)  # Position 1-50
-    doctor_avg_duration = np.random.uniform(8, 25, n_samples)  # 8-25 mins
-    time_of_day = np.random.randint(8, 17, n_samples)  # 8 AM - 5 PM
-    day_of_week = np.random.randint(0, 7, n_samples)  # Mon-Sun
-    num_active_patients = np.random.randint(1, 31, n_samples)  # 1-30 patients
+    feature_cols = CATEGORICAL_FEATURES + NUMERICAL_FEATURES
+    X = df[feature_cols]
+    y = df[TARGET_COLUMN]
     
-    X = np.column_stack([
-        symptoms_count,
-        department_code,
-        is_emergency,
-        queue_position,
-        doctor_avg_duration,
-        time_of_day,
-        day_of_week,
-        num_active_patients
-    ])
-    
-    # Generate realistic target: consultation duration (5-45 minutes)
-    # Base duration from doctor avg time
-    y = doctor_avg_duration.copy()
-    
-    # Add impact from symptoms (more symptoms = longer duration)
-    y += (symptoms_count * 0.8)
-    
-    # Add emergency penalty (emergencies often need more time)
-    y += (is_emergency * 5)
-    
-    # Add queue position effect (waiting longer doesn't mean longer consultation, but affected by doctor workload)
-    y += (queue_position * 0.1)
-    
-    # Add time of day effect (mornings are fresher, longer consultations; afternoons compressed)
-    afternoon_effect = np.where(time_of_day > 14, -1.5, 0)
-    y += afternoon_effect
-    
-    # Add workload effect (more active patients = compressed consultations)
-    y -= (num_active_patients * 0.15)
-    
-    # Add some random noise
-    y += np.random.normal(0, 2, n_samples)
-    
-    # Clip to realistic range
-    y = np.clip(y, 5, 45)
-    
-    return X, y
+    return X, y, df
+
+def build_pipeline():
+    """Build scikit-learn Pipeline with OneHotEncoder and RandomForestRegressor"""
+    preprocessor = ColumnTransformer(
+        transformers=[
+            (
+                "cat",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                CATEGORICAL_FEATURES,
+            ),
+            ("num", "passthrough", NUMERICAL_FEATURES),
+        ]
+    )
+
+    pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            (
+                "regressor",
+                RandomForestRegressor(
+                    n_estimators=100,
+                    max_depth=15,
+                    min_samples_split=5,
+                    min_samples_leaf=2,
+                    random_state=42,
+                    n_jobs=-1,
+                ),
+            ),
+        ]
+    )
+    return pipeline
 
 def train_model():
-    """Train, evaluate, and save the Random Forest model"""
-    
+    """Train, evaluate, and save the complete Random Forest pipeline"""
     logger.info("=" * 70)
     logger.info("SMART HOSPITAL - RANDOM FOREST WAIT TIME PREDICTION MODEL TRAINING")
     logger.info("=" * 70)
-    
-    # Generate training data
-    logger.info("\n📊 Generating synthetic training dataset...")
-    X, y = generate_training_data(n_samples=1000)
-    logger.info(f"   Generated {X.shape[0]} samples with {X.shape[1]} features")
-    
-    # Split data
+
+    # 1. Load data
+    X, y, df = load_data()
+
+    # 2. Split data
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
     logger.info(f"\n✂️ Split: {len(X_train)} training, {len(X_test)} test samples")
-    
-    # Train model
-    logger.info("\n🤖 Training Random Forest model (100 trees)...")
-    model = RandomForestRegressor(
-        n_estimators=100,
-        max_depth=15,
-        min_samples_split=5,
-        min_samples_leaf=2,
-        random_state=42,
-        n_jobs=-1
-    )
-    model.fit(X_train, y_train)
-    logger.info("   ✅ Model training complete!")
-    
-    # Evaluate on test set
+
+    # 3. Build & fit pipeline
+    logger.info("\n🤖 Building Pipeline and Training Random Forest model (100 trees)...")
+    pipeline = build_pipeline()
+    pipeline.fit(X_train, y_train)
+    logger.info("   ✅ Model pipeline training complete!")
+
+    # 4. Evaluate on test set
     logger.info("\n📈 Evaluating model performance on test set...")
-    y_pred = model.predict(X_test)
-    
+    y_pred = pipeline.predict(X_test)
+
     mae = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     r2 = r2_score(y_test, y_pred)
-    
-    logger.info(f"   Mean Absolute Error (MAE):     {mae:.2f} minutes")
-    logger.info(f"   Root Mean Squared Error (RMSE): {rmse:.2f} minutes")
-    logger.info(f"   R² Score:                       {r2:.4f}")
-    
-    # Feature importance
-    logger.info("\n🎯 Feature Importance (Top 5):")
-    feature_names = [
-        "Symptoms Count",
-        "Department",
-        "Is Emergency",
-        "Queue Position",
-        "Doctor Avg Duration",
-        "Time of Day",
-        "Day of Week",
-        "Active Patients"
-    ]
-    importances = model.feature_importances_
-    indices = np.argsort(importances)[::-1]
-    
-    for i in range(min(5, len(indices))):
-        idx = indices[i]
-        logger.info(f"   {i+1}. {feature_names[idx]}: {importances[idx]:.4f}")
-    
-    # Save model
-    model_dir = "ml/models"
-    os.makedirs(model_dir, exist_ok=True)
-    model_path = os.path.join(model_dir, "wait_time_model.pkl")
-    
-    logger.info(f"\n💾 Saving model to {model_path}...")
-    with open(model_path, 'wb') as f:
-        pickle.dump(model, f)
-    logger.info("   ✅ Model saved successfully!")
-    
-    # Save metadata
+
+    logger.info(f"   Mean Absolute Error (MAE):      {mae:.2f} minutes")
+    logger.info(f"   Root Mean Squared Error (RMSE):  {rmse:.2f} minutes")
+    logger.info(f"   R² Score:                        {r2:.4f}")
+
+    # 5. Extract feature importances from pipeline
+    try:
+        logger.info("\n🎯 Feature Importance (Top 5):")
+        ohe = pipeline.named_steps["preprocessor"].named_transformers_["cat"]
+        encoded_cat_names = list(ohe.get_feature_names_out(CATEGORICAL_FEATURES))
+        all_feature_names = encoded_cat_names + NUMERICAL_FEATURES
+
+        importances = pipeline.named_steps["regressor"].feature_importances_
+        indices = np.argsort(importances)[::-1]
+
+        for i in range(min(5, len(indices))):
+            idx = indices[i]
+            logger.info(f"   {i+1}. {all_feature_names[idx]}: {importances[idx]:.4f}")
+    except Exception as e:
+        logger.warning(f"Could not compute detailed feature importances: {e}")
+
+    # 6. Save complete pipeline
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    logger.info(f"\n💾 Saving complete pipeline to {MODEL_PATH}...")
+    with open(MODEL_PATH, "wb") as f:
+        pickle.dump(pipeline, f)
+    logger.info("   ✅ Model pipeline saved successfully!")
+
+    # 7. Save metadata
     metadata = {
         "trained_at": datetime.now().isoformat(),
-        "samples": X.shape[0],
-        "features": feature_names,
+        "samples": len(df),
+        "categorical_features": CATEGORICAL_FEATURES,
+        "numerical_features": NUMERICAL_FEATURES,
+        "features": CATEGORICAL_FEATURES + NUMERICAL_FEATURES,
+        "target": TARGET_COLUMN,
         "performance": {
             "mae": float(mae),
             "rmse": float(rmse),
-            "r2": float(r2)
+            "r2": float(r2),
         },
-        "test_accuracy": f"{r2*100:.1f}%"
+        "test_accuracy": f"{r2*100:.1f}%",
     }
-    
-    metadata_path = os.path.join(model_dir, "model_metadata.pkl")
-    with open(metadata_path, 'wb') as f:
+
+    with open(METADATA_PATH, "wb") as f:
         pickle.dump(metadata, f)
-    
+    logger.info(f"   ✅ Model metadata saved to {METADATA_PATH}")
+
     logger.info("\n" + "=" * 70)
     logger.info("✅ MODEL TRAINING PIPELINE COMPLETE!")
     logger.info("=" * 70)
-    logger.info(f"\nModel Path: {model_path}")
-    logger.info(f"Performance: {r2*100:.1f}% R² Score (Good for production)")
-    logger.info("\nThe model predicts consultation duration based on:")
-    logger.info("  • Number of reported symptoms")
-    logger.info("  • Department (affects complexity)")
-    logger.info("  • Emergency status (emergency = higher priority)")
-    logger.info("  • Patient's queue position")
-    logger.info("  • Doctor's typical consultation time")
-    logger.info("  • Time of day (morning vs afternoon)")
-    logger.info("  • Day of week (weekday patterns)")
-    logger.info("  • Current queue workload")
-    logger.info("\nThis model is ready for production use in wait time predictions!\n")
-    
-    return model, metadata
+    logger.info(f"Model Path: {MODEL_PATH}")
+    logger.info(f"Performance: {r2*100:.1f}% R² Score")
+
+    return pipeline, metadata
 
 if __name__ == "__main__":
     train_model()

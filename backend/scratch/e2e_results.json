@@ -1,0 +1,2327 @@
+{
+  "results": {
+    "1. Login/register as patient": "PASS",
+    "2. Book consultation with doctor": "PASS",
+    "3. Confirm appointment is created": "PASS",
+    "4. Join the queue": "PASS",
+    "5. Verify fresh GPS is captured": "PASS",
+    "6. Verify queue token, position and predicted wait time": "PASS",
+    "7. Open Live Queue / QueueTracking": "PASS",
+    "8. Verify live GPS map, real ORS route, distance and ETA": "PASS",
+    "9. Open Arrival Desk": "PASS",
+    "10. Enter the patient's 6-digit arrival OTP": "PASS",
+    "11. Verify the patient becomes arrived/verified": "PASS",
+    "12. Verify the patient remains correctly positioned in the queue": "PASS",
+    "13. Login as doctor": "PASS",
+    "14. Verify the patient appears in the waiting line": "PASS",
+    "15. Open patient details": "PASS",
+    "16. Verify name, age, gender, symptoms, illness duration, height, weight and location information": "PASS",
+    "17. CALL the patient": "PASS",
+    "18. Verify status becomes In Consultation": "PASS",
+    "19. Complete the consultation": "PASS",
+    "20. Verify consultation record is created": "PASS",
+    "23. Verify the completed patient is no longer waiting": "PASS",
+    "21. Verify the next eligible patient automatically becomes current": "PASS",
+    "22. Verify remaining patients' positions and predicted waiting times are recalculated": "PASS",
+    "24. Test SKIP on another waiting patient": "PASS",
+    "25. Verify skipped patient becomes 'Missed Consultation' and moves to the end of the active queue": "PASS",
+    "26. Verify emergency priority still works": "PASS",
+    "27. Verify patient Medical History contains the completed consultation": "PASS",
+    "28. Verify admin can access the same patient history": "PASS"
+  },
+  "api_errors": [],
+  "final_queue_state": [
+    {
+      "approaching_notified": true,
+      "arrived_at_hospital": true,
+      "custom_symptoms": "Severe pain radiating to left arm",
+      "department": "Cardiology",
+      "doctor_id": "D001",
+      "doctor_name": "Dr. Ananya Sharma",
+      "joined_at": "2026-09-14T10:54:23.720573+00:00",
+      "patient_id": "P002",
+      "patient_name": "Priya Sharma",
+      "patient_phone": "9876543212",
+      "position": 1,
+      "predicted_duration": 11,
+      "predicted_wait_time": 5,
+      "priority": "emergency",
+      "queue_id": "Q002",
+      "room_number": "Room 204",
+      "status": "ready",
+      "symptoms": [
+        "Acute Chest Pain",
+        "Sweating"
+      ],
+      "travel_info": {
+        "departure_alert": "\ud83d\ude97 Start from Tumkur City around 10:44 AM to arrive at SIMSRH ~10 mins before your consultation at 11:00 AM.",
+        "distance_km": 5.0,
+        "emergency_care": "24/7 Emergency Care Available",
+        "expected_consultation_iso": "2026-09-14T11:00:29.958334+00:00",
+        "expected_consultation_time": "11:00 AM",
+        "expected_hospital_arrival": "10:50 AM",
+        "hospital_coordinates": [
+          77.096826,
+          13.376059
+        ],
+        "hospital_location": "Sira Road, NH4, Lingapura, Tumakuru, Karnataka \u2013 572106",
+        "hospital_name": "Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)",
+        "hospital_website": "https://shridevmedical.org/",
+        "is_approximate_location": true,
+        "location_source": "landmark_approximate",
+        "origin_coordinates": [
+          77.1,
+          13.34
+        ],
+        "origin_latitude": null,
+        "origin_longitude": null,
+        "patient_address": "Tumkur City",
+        "recommended_departure_iso": "2026-09-14T10:44:29.958334+00:00",
+        "recommended_departure_time": "10:44 AM",
+        "route_geometry": {
+          "coordinates": [
+            [
+              77.099872,
+              13.340027
+            ],
+            [
+              77.09982,
+              13.339793
+            ],
+            [
+              77.099786,
+              13.339405
+            ],
+            [
+              77.099765,
+              13.339313
+            ],
+            [
+              77.099707,
+              13.33879
+            ],
+            [
+              77.099707,
+              13.338453
+            ],
+            [
+              77.100287,
+              13.338409
+            ],
+            [
+              77.100877,
+              13.338292
+            ],
+            [
+              77.101248,
+              13.33824
+            ],
+            [
+              77.101297,
+              13.338235
+            ],
+            [
+              77.101326,
+              13.338522
+            ],
+            [
+              77.101499,
+              13.340268
+            ],
+            [
+              77.101544,
+              13.340718
+            ],
+            [
+              77.101555,
+              13.340786
+            ],
+            [
+              77.101668,
+              13.34182
+            ],
+            [
+              77.101682,
+              13.341905
+            ],
+            [
+              77.101703,
+              13.342229
+            ],
+            [
+              77.101761,
+              13.342765
+            ],
+            [
+              77.101782,
+              13.343
+            ],
+            [
+              77.101956,
+              13.344497
+            ],
+            [
+              77.10194,
+              13.344859
+            ],
+            [
+              77.101894,
+              13.344959
+            ],
+            [
+              77.101836,
+              13.345008
+            ],
+            [
+              77.101833,
+              13.345059
+            ],
+            [
+              77.10186,
+              13.345102
+            ],
+            [
+              77.10182,
+              13.345212
+            ],
+            [
+              77.101807,
+              13.345419
+            ],
+            [
+              77.102024,
+              13.34686
+            ],
+            [
+              77.102048,
+              13.347013
+            ],
+            [
+              77.102209,
+              13.347729
+            ],
+            [
+              77.102237,
+              13.347863
+            ],
+            [
+              77.102255,
+              13.347957
+            ],
+            [
+              77.102255,
+              13.348059
+            ],
+            [
+              77.102281,
+              13.348645
+            ],
+            [
+              77.102316,
+              13.34877
+            ],
+            [
+              77.102416,
+              13.348946
+            ],
+            [
+              77.102511,
+              13.349055
+            ],
+            [
+              77.102661,
+              13.349179
+            ],
+            [
+              77.102964,
+              13.349424
+            ],
+            [
+              77.103137,
+              13.349604
+            ],
+            [
+              77.103242,
+              13.349761
+            ],
+            [
+              77.103361,
+              13.350075
+            ],
+            [
+              77.103389,
+              13.350241
+            ],
+            [
+              77.103403,
+              13.350467
+            ],
+            [
+              77.103389,
+              13.350731
+            ],
+            [
+              77.103269,
+              13.351303
+            ],
+            [
+              77.103217,
+              13.351734
+            ],
+            [
+              77.10321,
+              13.351803
+            ],
+            [
+              77.103207,
+              13.352086
+            ],
+            [
+              77.103245,
+              13.352822
+            ],
+            [
+              77.103252,
+              13.353348
+            ],
+            [
+              77.10326,
+              13.35383
+            ],
+            [
+              77.103275,
+              13.355681
+            ],
+            [
+              77.10328,
+              13.355939
+            ],
+            [
+              77.103287,
+              13.356774
+            ],
+            [
+              77.103265,
+              13.357973
+            ],
+            [
+              77.103267,
+              13.358273
+            ],
+            [
+              77.103265,
+              13.3586
+            ],
+            [
+              77.103267,
+              13.359713
+            ],
+            [
+              77.103248,
+              13.360468
+            ],
+            [
+              77.103255,
+              13.361937
+            ],
+            [
+              77.103266,
+              13.362317
+            ],
+            [
+              77.103271,
+              13.362633
+            ],
+            [
+              77.103301,
+              13.363122
+            ],
+            [
+              77.103303,
+              13.363177
+            ],
+            [
+              77.103315,
+              13.363293
+            ],
+            [
+              77.103282,
+              13.363752
+            ],
+            [
+              77.103282,
+              13.363979
+            ],
+            [
+              77.103239,
+              13.365287
+            ],
+            [
+              77.103254,
+              13.365718
+            ],
+            [
+              77.103285,
+              13.365804
+            ],
+            [
+              77.10328,
+              13.365918
+            ],
+            [
+              77.103223,
+              13.366267
+            ],
+            [
+              77.103159,
+              13.366455
+            ],
+            [
+              77.103077,
+              13.366508
+            ],
+            [
+              77.103014,
+              13.366759
+            ],
+            [
+              77.102888,
+              13.367171
+            ],
+            [
+              77.102446,
+              13.368056
+            ],
+            [
+              77.102305,
+              13.3684
+            ],
+            [
+              77.101759,
+              13.369731
+            ],
+            [
+              77.10169,
+              13.369898
+            ],
+            [
+              77.101258,
+              13.370952
+            ],
+            [
+              77.100496,
+              13.372817
+            ],
+            [
+              77.100479,
+              13.372857
+            ],
+            [
+              77.100439,
+              13.372956
+            ],
+            [
+              77.100205,
+              13.373532
+            ],
+            [
+              77.100168,
+              13.373622
+            ],
+            [
+              77.099868,
+              13.37436
+            ],
+            [
+              77.09964,
+              13.374853
+            ],
+            [
+              77.09955,
+              13.37508
+            ],
+            [
+              77.099393,
+              13.375459
+            ],
+            [
+              77.099291,
+              13.375793
+            ],
+            [
+              77.09915,
+              13.376123
+            ],
+            [
+              77.097844,
+              13.375721
+            ],
+            [
+              77.09777,
+              13.375699
+            ],
+            [
+              77.097562,
+              13.375677
+            ],
+            [
+              77.096858,
+              13.375628
+            ]
+          ],
+          "type": "LineString"
+        },
+        "safety_buffer_min": 10,
+        "source": "openrouteservice",
+        "travel_time_min": 6
+      }
+    },
+    {
+      "age": 29,
+      "approaching_notified": true,
+      "arrival_otp": "869026",
+      "arrived_at_hospital": false,
+      "booking_id": "Q006",
+      "city": "Tumakuru",
+      "custom_symptoms": "",
+      "department": "Cardiology",
+      "doctor_id": "D001",
+      "duration_days": null,
+      "gender": "Female",
+      "height_cm": null,
+      "is_approximate_location": true,
+      "joined_at": "2026-09-14T10:55:25.048798+00:00",
+      "origin_latitude": null,
+      "origin_longitude": null,
+      "patient_address": "Tumakuru",
+      "patient_id": "P647",
+      "patient_name": "Emergency Patient Ramesh",
+      "patient_phone": "9876543277",
+      "pdo": "",
+      "position": 2,
+      "predicted_duration": 11,
+      "predicted_wait_time": 11,
+      "priority": "emergency",
+      "queue_id": "Q006",
+      "room_number": "Room 204",
+      "status": "waiting",
+      "symptoms": [
+        "Acute chest pain radiating to arm"
+      ],
+      "travel_info": {
+        "departure_alert": "\ud83d\ude97 Start from Tumakuru around 10:50 AM to arrive at SIMSRH ~10 mins before your consultation at 11:06 AM.",
+        "distance_km": 5.0,
+        "emergency_care": "24/7 Emergency Care Available",
+        "expected_consultation_iso": "2026-09-14T11:06:30.083516+00:00",
+        "expected_consultation_time": "11:06 AM",
+        "expected_hospital_arrival": "10:56 AM",
+        "hospital_coordinates": [
+          77.096826,
+          13.376059
+        ],
+        "hospital_location": "Sira Road, NH4, Lingapura, Tumakuru, Karnataka \u2013 572106",
+        "hospital_name": "Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)",
+        "hospital_website": "https://shridevmedical.org/",
+        "is_approximate_location": true,
+        "location_source": "landmark_approximate",
+        "origin_coordinates": [
+          77.1,
+          13.34
+        ],
+        "origin_latitude": null,
+        "origin_longitude": null,
+        "patient_address": "Tumakuru",
+        "recommended_departure_iso": "2026-09-14T10:50:30.083516+00:00",
+        "recommended_departure_time": "10:50 AM",
+        "route_geometry": {
+          "coordinates": [
+            [
+              77.099872,
+              13.340027
+            ],
+            [
+              77.09982,
+              13.339793
+            ],
+            [
+              77.099786,
+              13.339405
+            ],
+            [
+              77.099765,
+              13.339313
+            ],
+            [
+              77.099707,
+              13.33879
+            ],
+            [
+              77.099707,
+              13.338453
+            ],
+            [
+              77.100287,
+              13.338409
+            ],
+            [
+              77.100877,
+              13.338292
+            ],
+            [
+              77.101248,
+              13.33824
+            ],
+            [
+              77.101297,
+              13.338235
+            ],
+            [
+              77.101326,
+              13.338522
+            ],
+            [
+              77.101499,
+              13.340268
+            ],
+            [
+              77.101544,
+              13.340718
+            ],
+            [
+              77.101555,
+              13.340786
+            ],
+            [
+              77.101668,
+              13.34182
+            ],
+            [
+              77.101682,
+              13.341905
+            ],
+            [
+              77.101703,
+              13.342229
+            ],
+            [
+              77.101761,
+              13.342765
+            ],
+            [
+              77.101782,
+              13.343
+            ],
+            [
+              77.101956,
+              13.344497
+            ],
+            [
+              77.10194,
+              13.344859
+            ],
+            [
+              77.101894,
+              13.344959
+            ],
+            [
+              77.101836,
+              13.345008
+            ],
+            [
+              77.101833,
+              13.345059
+            ],
+            [
+              77.10186,
+              13.345102
+            ],
+            [
+              77.10182,
+              13.345212
+            ],
+            [
+              77.101807,
+              13.345419
+            ],
+            [
+              77.102024,
+              13.34686
+            ],
+            [
+              77.102048,
+              13.347013
+            ],
+            [
+              77.102209,
+              13.347729
+            ],
+            [
+              77.102237,
+              13.347863
+            ],
+            [
+              77.102255,
+              13.347957
+            ],
+            [
+              77.102255,
+              13.348059
+            ],
+            [
+              77.102281,
+              13.348645
+            ],
+            [
+              77.102316,
+              13.34877
+            ],
+            [
+              77.102416,
+              13.348946
+            ],
+            [
+              77.102511,
+              13.349055
+            ],
+            [
+              77.102661,
+              13.349179
+            ],
+            [
+              77.102964,
+              13.349424
+            ],
+            [
+              77.103137,
+              13.349604
+            ],
+            [
+              77.103242,
+              13.349761
+            ],
+            [
+              77.103361,
+              13.350075
+            ],
+            [
+              77.103389,
+              13.350241
+            ],
+            [
+              77.103403,
+              13.350467
+            ],
+            [
+              77.103389,
+              13.350731
+            ],
+            [
+              77.103269,
+              13.351303
+            ],
+            [
+              77.103217,
+              13.351734
+            ],
+            [
+              77.10321,
+              13.351803
+            ],
+            [
+              77.103207,
+              13.352086
+            ],
+            [
+              77.103245,
+              13.352822
+            ],
+            [
+              77.103252,
+              13.353348
+            ],
+            [
+              77.10326,
+              13.35383
+            ],
+            [
+              77.103275,
+              13.355681
+            ],
+            [
+              77.10328,
+              13.355939
+            ],
+            [
+              77.103287,
+              13.356774
+            ],
+            [
+              77.103265,
+              13.357973
+            ],
+            [
+              77.103267,
+              13.358273
+            ],
+            [
+              77.103265,
+              13.3586
+            ],
+            [
+              77.103267,
+              13.359713
+            ],
+            [
+              77.103248,
+              13.360468
+            ],
+            [
+              77.103255,
+              13.361937
+            ],
+            [
+              77.103266,
+              13.362317
+            ],
+            [
+              77.103271,
+              13.362633
+            ],
+            [
+              77.103301,
+              13.363122
+            ],
+            [
+              77.103303,
+              13.363177
+            ],
+            [
+              77.103315,
+              13.363293
+            ],
+            [
+              77.103282,
+              13.363752
+            ],
+            [
+              77.103282,
+              13.363979
+            ],
+            [
+              77.103239,
+              13.365287
+            ],
+            [
+              77.103254,
+              13.365718
+            ],
+            [
+              77.103285,
+              13.365804
+            ],
+            [
+              77.10328,
+              13.365918
+            ],
+            [
+              77.103223,
+              13.366267
+            ],
+            [
+              77.103159,
+              13.366455
+            ],
+            [
+              77.103077,
+              13.366508
+            ],
+            [
+              77.103014,
+              13.366759
+            ],
+            [
+              77.102888,
+              13.367171
+            ],
+            [
+              77.102446,
+              13.368056
+            ],
+            [
+              77.102305,
+              13.3684
+            ],
+            [
+              77.101759,
+              13.369731
+            ],
+            [
+              77.10169,
+              13.369898
+            ],
+            [
+              77.101258,
+              13.370952
+            ],
+            [
+              77.100496,
+              13.372817
+            ],
+            [
+              77.100479,
+              13.372857
+            ],
+            [
+              77.100439,
+              13.372956
+            ],
+            [
+              77.100205,
+              13.373532
+            ],
+            [
+              77.100168,
+              13.373622
+            ],
+            [
+              77.099868,
+              13.37436
+            ],
+            [
+              77.09964,
+              13.374853
+            ],
+            [
+              77.09955,
+              13.37508
+            ],
+            [
+              77.099393,
+              13.375459
+            ],
+            [
+              77.099291,
+              13.375793
+            ],
+            [
+              77.09915,
+              13.376123
+            ],
+            [
+              77.097844,
+              13.375721
+            ],
+            [
+              77.09777,
+              13.375699
+            ],
+            [
+              77.097562,
+              13.375677
+            ],
+            [
+              77.096858,
+              13.375628
+            ]
+          ],
+          "type": "LineString"
+        },
+        "safety_buffer_min": 10,
+        "source": "openrouteservice",
+        "travel_time_min": 6
+      },
+      "updated_at": "2026-09-14T10:55:29.631835+00:00",
+      "verified_by_admin": false,
+      "weight_kg": null
+    },
+    {
+      "arrived_at_hospital": true,
+      "custom_symptoms": "High fever since 2 days",
+      "department": "General Medicine",
+      "doctor_id": "D002",
+      "doctor_name": "Dr. Rajesh Kumar",
+      "joined_at": "2026-09-14T10:54:23.720585+00:00",
+      "patient_id": "P003",
+      "patient_name": "Rohit Verma",
+      "patient_phone": "9876543213",
+      "position": 1,
+      "predicted_wait_time": 5,
+      "priority": "normal",
+      "queue_id": "Q003",
+      "room_number": "Room 101",
+      "status": "in_consultation",
+      "symptoms": [
+        "Fever",
+        "Headache"
+      ]
+    },
+    {
+      "approaching_notified": true,
+      "arrived_at_hospital": true,
+      "custom_symptoms": "Mild palpitations",
+      "department": "Cardiology",
+      "doctor_id": "D001",
+      "doctor_name": "Dr. Ananya Sharma",
+      "joined_at": "2026-09-14T10:54:23.720567+00:00",
+      "patient_id": "P001",
+      "patient_name": "Anjan",
+      "patient_phone": "9876543211",
+      "position": 3,
+      "predicted_duration": 19,
+      "predicted_wait_time": 22,
+      "priority": "normal",
+      "queue_id": "Q001",
+      "room_number": "Room 204",
+      "status": "waiting",
+      "symptoms": [
+        "Chest discomfort",
+        "Shortness of breath"
+      ],
+      "travel_info": {
+        "departure_alert": "\ud83d\ude97 Start from Tumkur City around 11:01 AM to arrive at SIMSRH ~10 mins before your consultation at 11:17 AM.",
+        "distance_km": 5.0,
+        "emergency_care": "24/7 Emergency Care Available",
+        "expected_consultation_iso": "2026-09-14T11:17:30.519881+00:00",
+        "expected_consultation_time": "11:17 AM",
+        "expected_hospital_arrival": "11:07 AM",
+        "hospital_coordinates": [
+          77.096826,
+          13.376059
+        ],
+        "hospital_location": "Sira Road, NH4, Lingapura, Tumakuru, Karnataka \u2013 572106",
+        "hospital_name": "Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)",
+        "hospital_website": "https://shridevmedical.org/",
+        "is_approximate_location": true,
+        "location_source": "landmark_approximate",
+        "origin_coordinates": [
+          77.1,
+          13.34
+        ],
+        "origin_latitude": null,
+        "origin_longitude": null,
+        "patient_address": "Tumkur City",
+        "recommended_departure_iso": "2026-09-14T11:01:30.519881+00:00",
+        "recommended_departure_time": "11:01 AM",
+        "route_geometry": {
+          "coordinates": [
+            [
+              77.099872,
+              13.340027
+            ],
+            [
+              77.09982,
+              13.339793
+            ],
+            [
+              77.099786,
+              13.339405
+            ],
+            [
+              77.099765,
+              13.339313
+            ],
+            [
+              77.099707,
+              13.33879
+            ],
+            [
+              77.099707,
+              13.338453
+            ],
+            [
+              77.100287,
+              13.338409
+            ],
+            [
+              77.100877,
+              13.338292
+            ],
+            [
+              77.101248,
+              13.33824
+            ],
+            [
+              77.101297,
+              13.338235
+            ],
+            [
+              77.101326,
+              13.338522
+            ],
+            [
+              77.101499,
+              13.340268
+            ],
+            [
+              77.101544,
+              13.340718
+            ],
+            [
+              77.101555,
+              13.340786
+            ],
+            [
+              77.101668,
+              13.34182
+            ],
+            [
+              77.101682,
+              13.341905
+            ],
+            [
+              77.101703,
+              13.342229
+            ],
+            [
+              77.101761,
+              13.342765
+            ],
+            [
+              77.101782,
+              13.343
+            ],
+            [
+              77.101956,
+              13.344497
+            ],
+            [
+              77.10194,
+              13.344859
+            ],
+            [
+              77.101894,
+              13.344959
+            ],
+            [
+              77.101836,
+              13.345008
+            ],
+            [
+              77.101833,
+              13.345059
+            ],
+            [
+              77.10186,
+              13.345102
+            ],
+            [
+              77.10182,
+              13.345212
+            ],
+            [
+              77.101807,
+              13.345419
+            ],
+            [
+              77.102024,
+              13.34686
+            ],
+            [
+              77.102048,
+              13.347013
+            ],
+            [
+              77.102209,
+              13.347729
+            ],
+            [
+              77.102237,
+              13.347863
+            ],
+            [
+              77.102255,
+              13.347957
+            ],
+            [
+              77.102255,
+              13.348059
+            ],
+            [
+              77.102281,
+              13.348645
+            ],
+            [
+              77.102316,
+              13.34877
+            ],
+            [
+              77.102416,
+              13.348946
+            ],
+            [
+              77.102511,
+              13.349055
+            ],
+            [
+              77.102661,
+              13.349179
+            ],
+            [
+              77.102964,
+              13.349424
+            ],
+            [
+              77.103137,
+              13.349604
+            ],
+            [
+              77.103242,
+              13.349761
+            ],
+            [
+              77.103361,
+              13.350075
+            ],
+            [
+              77.103389,
+              13.350241
+            ],
+            [
+              77.103403,
+              13.350467
+            ],
+            [
+              77.103389,
+              13.350731
+            ],
+            [
+              77.103269,
+              13.351303
+            ],
+            [
+              77.103217,
+              13.351734
+            ],
+            [
+              77.10321,
+              13.351803
+            ],
+            [
+              77.103207,
+              13.352086
+            ],
+            [
+              77.103245,
+              13.352822
+            ],
+            [
+              77.103252,
+              13.353348
+            ],
+            [
+              77.10326,
+              13.35383
+            ],
+            [
+              77.103275,
+              13.355681
+            ],
+            [
+              77.10328,
+              13.355939
+            ],
+            [
+              77.103287,
+              13.356774
+            ],
+            [
+              77.103265,
+              13.357973
+            ],
+            [
+              77.103267,
+              13.358273
+            ],
+            [
+              77.103265,
+              13.3586
+            ],
+            [
+              77.103267,
+              13.359713
+            ],
+            [
+              77.103248,
+              13.360468
+            ],
+            [
+              77.103255,
+              13.361937
+            ],
+            [
+              77.103266,
+              13.362317
+            ],
+            [
+              77.103271,
+              13.362633
+            ],
+            [
+              77.103301,
+              13.363122
+            ],
+            [
+              77.103303,
+              13.363177
+            ],
+            [
+              77.103315,
+              13.363293
+            ],
+            [
+              77.103282,
+              13.363752
+            ],
+            [
+              77.103282,
+              13.363979
+            ],
+            [
+              77.103239,
+              13.365287
+            ],
+            [
+              77.103254,
+              13.365718
+            ],
+            [
+              77.103285,
+              13.365804
+            ],
+            [
+              77.10328,
+              13.365918
+            ],
+            [
+              77.103223,
+              13.366267
+            ],
+            [
+              77.103159,
+              13.366455
+            ],
+            [
+              77.103077,
+              13.366508
+            ],
+            [
+              77.103014,
+              13.366759
+            ],
+            [
+              77.102888,
+              13.367171
+            ],
+            [
+              77.102446,
+              13.368056
+            ],
+            [
+              77.102305,
+              13.3684
+            ],
+            [
+              77.101759,
+              13.369731
+            ],
+            [
+              77.10169,
+              13.369898
+            ],
+            [
+              77.101258,
+              13.370952
+            ],
+            [
+              77.100496,
+              13.372817
+            ],
+            [
+              77.100479,
+              13.372857
+            ],
+            [
+              77.100439,
+              13.372956
+            ],
+            [
+              77.100205,
+              13.373532
+            ],
+            [
+              77.100168,
+              13.373622
+            ],
+            [
+              77.099868,
+              13.37436
+            ],
+            [
+              77.09964,
+              13.374853
+            ],
+            [
+              77.09955,
+              13.37508
+            ],
+            [
+              77.099393,
+              13.375459
+            ],
+            [
+              77.099291,
+              13.375793
+            ],
+            [
+              77.09915,
+              13.376123
+            ],
+            [
+              77.097844,
+              13.375721
+            ],
+            [
+              77.09777,
+              13.375699
+            ],
+            [
+              77.097562,
+              13.375677
+            ],
+            [
+              77.096858,
+              13.375628
+            ]
+          ],
+          "type": "LineString"
+        },
+        "safety_buffer_min": 10,
+        "source": "openrouteservice",
+        "travel_time_min": 6
+      }
+    },
+    {
+      "actual_duration_mins": 14,
+      "advice": "Follow up in 2 weeks. Low sodium diet and 30 min daily walking.",
+      "age": 29,
+      "arrival_otp": "909566",
+      "arrived_at_hospital": true,
+      "booking_id": "B001",
+      "city": "Tumakuru",
+      "completed_at": "2026-09-14T10:55:06.307565+00:00",
+      "custom_symptoms": "Mild breathlessness when climbing stairs",
+      "department": "Cardiology",
+      "diagnosis": "Mild Angina Pectoris / Musculoskeletal strain",
+      "doctor_id": "D001",
+      "doctor_notes": "ECG within normal limits. Prescribed rest and sublingual nitrates if discomfort recurs.",
+      "duration_days": 3,
+      "gender": "Female",
+      "height_cm": 165.0,
+      "is_approximate_location": false,
+      "joined_at": "2026-09-14T10:54:36.190372+00:00",
+      "origin_latitude": 13.3409,
+      "origin_longitude": 77.101,
+      "patient_address": "Tumakuru KSRTC Circle",
+      "patient_id": "P647",
+      "patient_name": "Kavya Ramesh",
+      "patient_phone": "9876543299",
+      "pdo": "",
+      "position": 3,
+      "predicted_duration": 19,
+      "predicted_wait_time": 30,
+      "priority": "normal",
+      "queue_id": "Q004",
+      "room_number": "Room 204",
+      "status": "completed",
+      "symptoms": [
+        "Chest tightness",
+        "Fatigue"
+      ],
+      "travel_info": {
+        "departure_alert": "\ud83d\ude97 Start from Tumakuru around 11:09 AM to arrive at SIMSRH ~10 mins before your consultation at 11:25 AM.",
+        "distance_km": 4.4,
+        "emergency_care": "24/7 Emergency Care Available",
+        "expected_consultation_iso": "2026-09-14T11:25:00.230843+00:00",
+        "expected_consultation_time": "11:25 AM",
+        "expected_hospital_arrival": "11:15 AM",
+        "hospital_coordinates": [
+          77.096826,
+          13.376059
+        ],
+        "hospital_location": "Sira Road, NH4, Lingapura, Tumakuru, Karnataka \u2013 572106",
+        "hospital_name": "Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)",
+        "hospital_website": "https://shridevmedical.org/",
+        "is_approximate_location": false,
+        "location_source": "gps",
+        "origin_coordinates": [
+          77.101,
+          13.3409
+        ],
+        "origin_latitude": 13.3409,
+        "origin_longitude": 77.101,
+        "patient_address": "Tumakuru",
+        "recommended_departure_iso": "2026-09-14T11:09:00.230843+00:00",
+        "recommended_departure_time": "11:09 AM",
+        "route_geometry": {
+          "coordinates": [
+            [
+              77.100998,
+              13.340768
+            ],
+            [
+              77.101056,
+              13.340767
+            ],
+            [
+              77.101544,
+              13.340718
+            ],
+            [
+              77.101555,
+              13.340786
+            ],
+            [
+              77.101668,
+              13.34182
+            ],
+            [
+              77.101682,
+              13.341905
+            ],
+            [
+              77.101703,
+              13.342229
+            ],
+            [
+              77.101761,
+              13.342765
+            ],
+            [
+              77.101782,
+              13.343
+            ],
+            [
+              77.101956,
+              13.344497
+            ],
+            [
+              77.10194,
+              13.344859
+            ],
+            [
+              77.101894,
+              13.344959
+            ],
+            [
+              77.101836,
+              13.345008
+            ],
+            [
+              77.101833,
+              13.345059
+            ],
+            [
+              77.10186,
+              13.345102
+            ],
+            [
+              77.10182,
+              13.345212
+            ],
+            [
+              77.101807,
+              13.345419
+            ],
+            [
+              77.102024,
+              13.34686
+            ],
+            [
+              77.102048,
+              13.347013
+            ],
+            [
+              77.102209,
+              13.347729
+            ],
+            [
+              77.102237,
+              13.347863
+            ],
+            [
+              77.102255,
+              13.347957
+            ],
+            [
+              77.102255,
+              13.348059
+            ],
+            [
+              77.102281,
+              13.348645
+            ],
+            [
+              77.102316,
+              13.34877
+            ],
+            [
+              77.102416,
+              13.348946
+            ],
+            [
+              77.102511,
+              13.349055
+            ],
+            [
+              77.102661,
+              13.349179
+            ],
+            [
+              77.102964,
+              13.349424
+            ],
+            [
+              77.103137,
+              13.349604
+            ],
+            [
+              77.103242,
+              13.349761
+            ],
+            [
+              77.103361,
+              13.350075
+            ],
+            [
+              77.103389,
+              13.350241
+            ],
+            [
+              77.103403,
+              13.350467
+            ],
+            [
+              77.103389,
+              13.350731
+            ],
+            [
+              77.103269,
+              13.351303
+            ],
+            [
+              77.103217,
+              13.351734
+            ],
+            [
+              77.10321,
+              13.351803
+            ],
+            [
+              77.103207,
+              13.352086
+            ],
+            [
+              77.103245,
+              13.352822
+            ],
+            [
+              77.103252,
+              13.353348
+            ],
+            [
+              77.10326,
+              13.35383
+            ],
+            [
+              77.103275,
+              13.355681
+            ],
+            [
+              77.10328,
+              13.355939
+            ],
+            [
+              77.103287,
+              13.356774
+            ],
+            [
+              77.103265,
+              13.357973
+            ],
+            [
+              77.103267,
+              13.358273
+            ],
+            [
+              77.103265,
+              13.3586
+            ],
+            [
+              77.103267,
+              13.359713
+            ],
+            [
+              77.103248,
+              13.360468
+            ],
+            [
+              77.103255,
+              13.361937
+            ],
+            [
+              77.103266,
+              13.362317
+            ],
+            [
+              77.103271,
+              13.362633
+            ],
+            [
+              77.103301,
+              13.363122
+            ],
+            [
+              77.103303,
+              13.363177
+            ],
+            [
+              77.103315,
+              13.363293
+            ],
+            [
+              77.103282,
+              13.363752
+            ],
+            [
+              77.103282,
+              13.363979
+            ],
+            [
+              77.103239,
+              13.365287
+            ],
+            [
+              77.103254,
+              13.365718
+            ],
+            [
+              77.103285,
+              13.365804
+            ],
+            [
+              77.10328,
+              13.365918
+            ],
+            [
+              77.103223,
+              13.366267
+            ],
+            [
+              77.103159,
+              13.366455
+            ],
+            [
+              77.103077,
+              13.366508
+            ],
+            [
+              77.103014,
+              13.366759
+            ],
+            [
+              77.102888,
+              13.367171
+            ],
+            [
+              77.102446,
+              13.368056
+            ],
+            [
+              77.102305,
+              13.3684
+            ],
+            [
+              77.101759,
+              13.369731
+            ],
+            [
+              77.10169,
+              13.369898
+            ],
+            [
+              77.101258,
+              13.370952
+            ],
+            [
+              77.100496,
+              13.372817
+            ],
+            [
+              77.100479,
+              13.372857
+            ],
+            [
+              77.100439,
+              13.372956
+            ],
+            [
+              77.100205,
+              13.373532
+            ],
+            [
+              77.100168,
+              13.373622
+            ],
+            [
+              77.099868,
+              13.37436
+            ],
+            [
+              77.09964,
+              13.374853
+            ],
+            [
+              77.09955,
+              13.37508
+            ],
+            [
+              77.099393,
+              13.375459
+            ],
+            [
+              77.099291,
+              13.375793
+            ],
+            [
+              77.09915,
+              13.376123
+            ],
+            [
+              77.097844,
+              13.375721
+            ],
+            [
+              77.09777,
+              13.375699
+            ],
+            [
+              77.097562,
+              13.375677
+            ],
+            [
+              77.096858,
+              13.375628
+            ]
+          ],
+          "type": "LineString"
+        },
+        "safety_buffer_min": 10,
+        "source": "openrouteservice",
+        "travel_time_min": 6
+      },
+      "updated_at": "2026-09-14T10:55:05.485844+00:00",
+      "verified_at": "2026-09-14T10:54:48.697083+00:00",
+      "verified_by": "System Administrator",
+      "verified_by_admin": true,
+      "weight_kg": 58.0
+    },
+    {
+      "age": 29,
+      "arrival_otp": "367417",
+      "arrived_at_hospital": false,
+      "booking_id": "Q005",
+      "city": "Tumakuru",
+      "custom_symptoms": "",
+      "department": "Cardiology",
+      "doctor_id": "D001",
+      "duration_days": null,
+      "gender": "Female",
+      "height_cm": null,
+      "is_approximate_location": true,
+      "joined_at": "2026-09-14T10:55:19.058465+00:00",
+      "missed_at": "2026-09-14T10:55:19.058465+00:00",
+      "origin_latitude": null,
+      "origin_longitude": null,
+      "patient_address": "Tumakuru",
+      "patient_id": "P647",
+      "patient_name": "Siddharth Rao",
+      "patient_phone": "9876543288",
+      "pdo": "",
+      "position": 4,
+      "predicted_duration": 19,
+      "predicted_wait_time": 41,
+      "priority": "normal",
+      "queue_id": "Q005",
+      "room_number": "Room 204",
+      "skip_count": 1,
+      "status": "missed",
+      "symptoms": [
+        "General Checkup"
+      ],
+      "travel_info": {
+        "departure_alert": "\ud83d\ude97 Start from Tumakuru around 11:20 AM to arrive at SIMSRH ~10 mins before your consultation at 11:36 AM.",
+        "distance_km": 5.0,
+        "emergency_care": "24/7 Emergency Care Available",
+        "expected_consultation_iso": "2026-09-14T11:36:30.649056+00:00",
+        "expected_consultation_time": "11:36 AM",
+        "expected_hospital_arrival": "11:26 AM",
+        "hospital_coordinates": [
+          77.096826,
+          13.376059
+        ],
+        "hospital_location": "Sira Road, NH4, Lingapura, Tumakuru, Karnataka \u2013 572106",
+        "hospital_name": "Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)",
+        "hospital_website": "https://shridevmedical.org/",
+        "is_approximate_location": true,
+        "location_source": "landmark_approximate",
+        "origin_coordinates": [
+          77.1,
+          13.34
+        ],
+        "origin_latitude": null,
+        "origin_longitude": null,
+        "patient_address": "Tumakuru",
+        "recommended_departure_iso": "2026-09-14T11:20:30.649056+00:00",
+        "recommended_departure_time": "11:20 AM",
+        "route_geometry": {
+          "coordinates": [
+            [
+              77.099872,
+              13.340027
+            ],
+            [
+              77.09982,
+              13.339793
+            ],
+            [
+              77.099786,
+              13.339405
+            ],
+            [
+              77.099765,
+              13.339313
+            ],
+            [
+              77.099707,
+              13.33879
+            ],
+            [
+              77.099707,
+              13.338453
+            ],
+            [
+              77.100287,
+              13.338409
+            ],
+            [
+              77.100877,
+              13.338292
+            ],
+            [
+              77.101248,
+              13.33824
+            ],
+            [
+              77.101297,
+              13.338235
+            ],
+            [
+              77.101326,
+              13.338522
+            ],
+            [
+              77.101499,
+              13.340268
+            ],
+            [
+              77.101544,
+              13.340718
+            ],
+            [
+              77.101555,
+              13.340786
+            ],
+            [
+              77.101668,
+              13.34182
+            ],
+            [
+              77.101682,
+              13.341905
+            ],
+            [
+              77.101703,
+              13.342229
+            ],
+            [
+              77.101761,
+              13.342765
+            ],
+            [
+              77.101782,
+              13.343
+            ],
+            [
+              77.101956,
+              13.344497
+            ],
+            [
+              77.10194,
+              13.344859
+            ],
+            [
+              77.101894,
+              13.344959
+            ],
+            [
+              77.101836,
+              13.345008
+            ],
+            [
+              77.101833,
+              13.345059
+            ],
+            [
+              77.10186,
+              13.345102
+            ],
+            [
+              77.10182,
+              13.345212
+            ],
+            [
+              77.101807,
+              13.345419
+            ],
+            [
+              77.102024,
+              13.34686
+            ],
+            [
+              77.102048,
+              13.347013
+            ],
+            [
+              77.102209,
+              13.347729
+            ],
+            [
+              77.102237,
+              13.347863
+            ],
+            [
+              77.102255,
+              13.347957
+            ],
+            [
+              77.102255,
+              13.348059
+            ],
+            [
+              77.102281,
+              13.348645
+            ],
+            [
+              77.102316,
+              13.34877
+            ],
+            [
+              77.102416,
+              13.348946
+            ],
+            [
+              77.102511,
+              13.349055
+            ],
+            [
+              77.102661,
+              13.349179
+            ],
+            [
+              77.102964,
+              13.349424
+            ],
+            [
+              77.103137,
+              13.349604
+            ],
+            [
+              77.103242,
+              13.349761
+            ],
+            [
+              77.103361,
+              13.350075
+            ],
+            [
+              77.103389,
+              13.350241
+            ],
+            [
+              77.103403,
+              13.350467
+            ],
+            [
+              77.103389,
+              13.350731
+            ],
+            [
+              77.103269,
+              13.351303
+            ],
+            [
+              77.103217,
+              13.351734
+            ],
+            [
+              77.10321,
+              13.351803
+            ],
+            [
+              77.103207,
+              13.352086
+            ],
+            [
+              77.103245,
+              13.352822
+            ],
+            [
+              77.103252,
+              13.353348
+            ],
+            [
+              77.10326,
+              13.35383
+            ],
+            [
+              77.103275,
+              13.355681
+            ],
+            [
+              77.10328,
+              13.355939
+            ],
+            [
+              77.103287,
+              13.356774
+            ],
+            [
+              77.103265,
+              13.357973
+            ],
+            [
+              77.103267,
+              13.358273
+            ],
+            [
+              77.103265,
+              13.3586
+            ],
+            [
+              77.103267,
+              13.359713
+            ],
+            [
+              77.103248,
+              13.360468
+            ],
+            [
+              77.103255,
+              13.361937
+            ],
+            [
+              77.103266,
+              13.362317
+            ],
+            [
+              77.103271,
+              13.362633
+            ],
+            [
+              77.103301,
+              13.363122
+            ],
+            [
+              77.103303,
+              13.363177
+            ],
+            [
+              77.103315,
+              13.363293
+            ],
+            [
+              77.103282,
+              13.363752
+            ],
+            [
+              77.103282,
+              13.363979
+            ],
+            [
+              77.103239,
+              13.365287
+            ],
+            [
+              77.103254,
+              13.365718
+            ],
+            [
+              77.103285,
+              13.365804
+            ],
+            [
+              77.10328,
+              13.365918
+            ],
+            [
+              77.103223,
+              13.366267
+            ],
+            [
+              77.103159,
+              13.366455
+            ],
+            [
+              77.103077,
+              13.366508
+            ],
+            [
+              77.103014,
+              13.366759
+            ],
+            [
+              77.102888,
+              13.367171
+            ],
+            [
+              77.102446,
+              13.368056
+            ],
+            [
+              77.102305,
+              13.3684
+            ],
+            [
+              77.101759,
+              13.369731
+            ],
+            [
+              77.10169,
+              13.369898
+            ],
+            [
+              77.101258,
+              13.370952
+            ],
+            [
+              77.100496,
+              13.372817
+            ],
+            [
+              77.100479,
+              13.372857
+            ],
+            [
+              77.100439,
+              13.372956
+            ],
+            [
+              77.100205,
+              13.373532
+            ],
+            [
+              77.100168,
+              13.373622
+            ],
+            [
+              77.099868,
+              13.37436
+            ],
+            [
+              77.09964,
+              13.374853
+            ],
+            [
+              77.09955,
+              13.37508
+            ],
+            [
+              77.099393,
+              13.375459
+            ],
+            [
+              77.099291,
+              13.375793
+            ],
+            [
+              77.09915,
+              13.376123
+            ],
+            [
+              77.097844,
+              13.375721
+            ],
+            [
+              77.09777,
+              13.375699
+            ],
+            [
+              77.097562,
+              13.375677
+            ],
+            [
+              77.096858,
+              13.375628
+            ]
+          ],
+          "type": "LineString"
+        },
+        "safety_buffer_min": 10,
+        "source": "openrouteservice",
+        "travel_time_min": 6
+      },
+      "updated_at": "2026-09-14T10:55:19.058465+00:00",
+      "verified_by_admin": false,
+      "weight_kg": null
+    }
+  ],
+  "consultation_record": {
+    "actual_duration_mins": 14,
+    "booking_id": "B001",
+    "completed_at": "2026-09-14T10:55:06.307565+00:00",
+    "consultation_date": "2026-09-14",
+    "consultation_id": "CON_Q004",
+    "consultation_time": "10:55",
+    "department": "Cardiology",
+    "doctor_assessment": {
+      "advice": "Follow up in 2 weeks. Low sodium diet and 30 min daily walking.",
+      "diagnosis": "Mild Angina Pectoris / Musculoskeletal strain",
+      "notes": "ECG within normal limits. Prescribed rest and sublingual nitrates if discomfort recurs."
+    },
+    "doctor_id": "D001",
+    "doctor_name": "Dr. Ananya Sharma",
+    "patient_id": "P647",
+    "patient_name": "Kavya Ramesh",
+    "patient_reported": {
+      "custom_symptoms": "Mild breathlessness when climbing stairs",
+      "duration_days": 3,
+      "priority": "normal",
+      "symptoms": [
+        "Chest tightness",
+        "Fatigue"
+      ]
+    },
+    "queue_id": "Q004",
+    "room_number": "Room 204",
+    "status": "completed",
+    "updated_at": "2026-09-14T10:55:06.307565+00:00",
+    "vitals_at_consultation": {
+      "age": 29,
+      "bmi": 21.3,
+      "city": "Tumakuru",
+      "gender": "Female",
+      "height_cm": 165.0,
+      "weight_kg": 58.0
+    }
+  }
+}

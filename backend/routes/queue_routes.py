@@ -5,10 +5,13 @@ from services.queue_service import (
     get_all_queues,
     escalate_emergency,
     mark_patient_arrived,
-    update_queue_status
+    update_queue_status,
+    skip_patient_service
 )
 from services.rbac_middleware import require_auth
 from services.auth_service import decode_jwt_token
+from services.travel_service import calculate_travel_metrics, TUMKUR_LANDMARKS
+from database.mongodb import get_db, serialize_docs
 
 queue_bp = Blueprint("queue_bp", __name__)
 
@@ -68,16 +71,21 @@ def all_queues_route():
     return jsonify(res), 200
 
 @queue_bp.route("/queue/doctor/<doctor_id>", methods=["GET"])
-@require_auth(allowed_roles=["doctor", "admin"])
 def doctor_queue_route(doctor_id):
-    """Get queue for a specific doctor"""
-    res, error = get_all_queues()
-    if error:
-        return jsonify({"error": error}), 400
-    
-    # Filter for this doctor only
-    doctor_queue = [q for q in (res or []) if q.get("doctor_id") == doctor_id]
-    return jsonify(doctor_queue), 200
+    """Get queue for a specific doctor (accessible for OPD profile status)"""
+    try:
+        db = get_db()
+        queue_items = list(db.queue.find({
+            "doctor_id": doctor_id,
+            "status": {"$in": ["waiting", "arrived", "ready", "called", "in_consultation"]}
+        }).sort([("priority", -1), ("position", 1)]))
+        return jsonify(serialize_docs(queue_items)), 200
+    except Exception:
+        res, error = get_all_queues()
+        if error:
+            return jsonify([]), 200
+        doctor_queue = [q for q in (res or []) if q.get("doctor_id") == doctor_id]
+        return jsonify(doctor_queue), 200
 
 @queue_bp.route("/queue/my", methods=["GET"])
 @require_auth(allowed_roles=["patient"])
@@ -137,6 +145,36 @@ def mark_arrived_route(queue_id):
         return jsonify({"error": error}), 400
     return jsonify(res), 200
 
+@queue_bp.route("/queue/verify-arrival-otp", methods=["POST"])
+@require_auth(allowed_roles=["admin", "doctor"])
+def verify_arrival_otp_route():
+    """
+    Arrival Verification Desk:
+    Admin or reception staff verifies the patient's 6-digit arrival OTP when arriving at SIMSRH.
+    Upon verification, the patient is marked as arrived and verified, allowing the doctor to proceed.
+    """
+    data = request.get_json(silent=True) or {}
+    token_or_booking_id = data.get("token_or_booking_id") or data.get("queue_id") or data.get("booking_id")
+    otp_code = str(data.get("otp") or data.get("otp_code") or data.get("arrival_otp") or "").strip()
+
+    if not token_or_booking_id or not otp_code:
+        return jsonify({"error": "token_or_booking_id and 6-digit otp are required"}), 400
+
+    jwt_user = getattr(request, "current_user", {})
+    verified_by = jwt_user.get("name") or jwt_user.get("user_id") or "Reception Admin"
+
+    from services.otp_service import verify_arrival_otp
+    success, error, queue_entry = verify_arrival_otp(token_or_booking_id, otp_code, verified_by=verified_by)
+    if not success:
+        return jsonify({"verified": False, "error": error}), 400
+
+    return jsonify({
+        "success": True,
+        "verified": True,
+        "message": f"Patient arrival verified successfully for {token_or_booking_id}. Queue status updated to arrived.",
+        "queue_entry": queue_entry
+    }), 200
+
 @queue_bp.route("/queue/<queue_id>/call", methods=["POST"])
 @require_auth(allowed_roles=["doctor", "admin"])
 def call_patient_route(queue_id):
@@ -156,10 +194,23 @@ def start_consultation_route(queue_id):
 @queue_bp.route("/queue/<queue_id>/complete", methods=["POST"])
 @require_auth(allowed_roles=["doctor", "admin"])
 def complete_queue_route(queue_id):
-    res, error = update_queue_status(queue_id, "completed")
+    data = request.get_json(silent=True) or {}
+    res, error = update_queue_status(queue_id, "completed", metadata=data)
     if error:
         return jsonify({"error": error}), 400
     return jsonify(res), 200
+
+@queue_bp.route("/queue/<queue_id>/skip", methods=["POST"])
+@require_auth(allowed_roles=["doctor", "admin"])
+def skip_queue_route(queue_id):
+    res, error = skip_patient_service(queue_id)
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify({
+        "success": True,
+        "message": f"Token {queue_id} marked as Missed Consultation and moved to end of active queue.",
+        "data": res
+    }), 200
 
 @queue_bp.route("/queue/<queue_id>/cancel", methods=["POST"])
 @require_auth(allowed_roles=["patient", "doctor", "admin"])
@@ -176,3 +227,30 @@ def no_show_queue_route(queue_id):
     if error:
         return jsonify({"error": error}), 400
     return jsonify(res), 200
+
+@queue_bp.route("/travel/calculate", methods=["POST"])
+def travel_calculate_route():
+    data = request.get_json(silent=True) or {}
+    origin = data.get("origin") or data.get("patient_address") or "Tumkur City"
+    expected_iso = data.get("expected_consultation_iso")
+    buffer_min = data.get("safety_buffer_min", 10)
+
+    origin_coords = None
+    lat = data.get("origin_latitude") if data.get("origin_latitude") is not None else data.get("latitude")
+    lon = data.get("origin_longitude") if data.get("origin_longitude") is not None else data.get("longitude")
+    if lat is not None and lon is not None:
+        try:
+            origin_coords = [float(lon), float(lat)]
+        except (ValueError, TypeError):
+            origin_coords = None
+    elif data.get("origin_coords") and isinstance(data.get("origin_coords"), list):
+        origin_coords = data.get("origin_coords")
+
+    metrics = calculate_travel_metrics(
+        patient_address=origin,
+        expected_consultation_iso=expected_iso,
+        safety_buffer_min=int(buffer_min),
+        origin_coords=origin_coords
+    )
+    metrics["landmarks"] = list(TUMKUR_LANDMARKS.keys())
+    return jsonify(metrics), 200

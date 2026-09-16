@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
-from middleware.auth import jwt_required, roles_required
-from utils.validators import validate_department_payload
+from services.rbac_middleware import require_auth
 from services.department_service import (
     get_all_departments, get_department_by_id, create_department, update_department, soft_delete_department
 )
@@ -21,12 +20,12 @@ def get_department(department_id: str):
     return jsonify(dept), 200
 
 @department_bp.route("", methods=["POST"])
-@roles_required("admin")
+@require_auth(allowed_roles=["admin"])
 def add_department():
     data = request.get_json(silent=True) or {}
-    is_valid, err_msg = validate_department_payload(data)
-    if not is_valid:
-        return jsonify({"success": False, "error": err_msg}), 400
+    name = data.get("name", "").strip()
+    if not name:
+        return jsonify({"success": False, "error": "Department name is required"}), 400
 
     result, err = create_department(data)
     if err:
@@ -35,7 +34,7 @@ def add_department():
     return jsonify(result), 201
 
 @department_bp.route("/<department_id>", methods=["PUT"])
-@roles_required("admin")
+@require_auth(allowed_roles=["admin"])
 def edit_department(department_id: str):
     data = request.get_json(silent=True) or {}
     result, err = update_department(department_id, data)
@@ -45,10 +44,10 @@ def edit_department(department_id: str):
     return jsonify(result), 200
 
 @department_bp.route("/<department_id>", methods=["DELETE"])
-@roles_required("admin")
+@require_auth(allowed_roles=["admin"])
 def remove_department(department_id: str):
     success, err = soft_delete_department(department_id)
     if not success:
-        return jsonify({"success": False, "error": err}), 404
+        return jsonify({"success": False, "error": err or "Failed to deactivate department"}), 404
 
     return jsonify({"success": True, "message": f"Department {department_id} deactivated successfully"}), 200

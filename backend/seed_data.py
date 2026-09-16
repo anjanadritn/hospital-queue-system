@@ -8,129 +8,12 @@ import random
 from werkzeug.security import generate_password_hash
 from database.mongodb import get_db
 
-# Sample Doctors Data across 10 Departments
-DOCTORS_DATA = [
-    {
-        "doctor_id": "D001",
-        "name": "Dr. Ananya Sharma",
-        "specialization": "Interventional Cardiology",
-        "department": "Cardiology",
-        "experience": "12 years",
-        "consultation_room": "Room 204",
-        "available": True,
-        "avg_consultation_duration": 15,
-        "working_hours": "09:00 AM - 04:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D002",
-        "name": "Dr. Rajesh Kumar",
-        "specialization": "General Physician & Diabetology",
-        "department": "General Medicine",
-        "experience": "15 years",
-        "consultation_room": "Room 101",
-        "available": True,
-        "avg_consultation_duration": 12,
-        "working_hours": "08:30 AM - 05:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D003",
-        "name": "Dr. Sunita Patel",
-        "specialization": "Joint Replacement & Trauma",
-        "department": "Orthopedics",
-        "experience": "10 years",
-        "consultation_room": "Room 305",
-        "available": True,
-        "avg_consultation_duration": 15,
-        "working_hours": "10:00 AM - 03:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D004",
-        "name": "Dr. Vikram Sethi",
-        "specialization": "Pediatric Care & Immunization",
-        "department": "Pediatrics",
-        "experience": "8 years",
-        "consultation_room": "Room 108",
-        "available": True,
-        "avg_consultation_duration": 10,
-        "working_hours": "09:00 AM - 02:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D005",
-        "name": "Dr. Meera Deshmukh",
-        "specialization": "Clinical Dermatology & Allergy",
-        "department": "Dermatology",
-        "experience": "9 years",
-        "consultation_room": "Room 212",
-        "available": True,
-        "avg_consultation_duration": 12,
-        "working_hours": "11:00 AM - 05:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D006",
-        "name": "Dr. Arvind Rao",
-        "specialization": "Neurology & Epilepsy Specialist",
-        "department": "Neurology",
-        "experience": "14 years",
-        "consultation_room": "Room 402",
-        "available": True,
-        "avg_consultation_duration": 20,
-        "working_hours": "09:00 AM - 01:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D007",
-        "name": "Dr. Kavita Menon",
-        "specialization": "ENT & Sinus Surgery",
-        "department": "ENT",
-        "experience": "11 years",
-        "consultation_room": "Room 115",
-        "available": True,
-        "avg_consultation_duration": 10,
-        "working_hours": "10:00 AM - 04:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D008",
-        "name": "Dr. Manoj Joshi",
-        "specialization": "Gastroenterology & Hepatology",
-        "department": "Gastroenterology",
-        "experience": "13 years",
-        "consultation_room": "Room 310",
-        "available": True,
-        "avg_consultation_duration": 15,
-        "working_hours": "09:30 AM - 03:30 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D009",
-        "name": "Dr. Priya Iyer",
-        "specialization": "Pulmonology & Sleep Medicine",
-        "department": "Pulmonology",
-        "experience": "11 years",
-        "consultation_room": "Room 201",
-        "available": True,
-        "avg_consultation_duration": 14,
-        "working_hours": "08:00 AM - 04:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    },
-    {
-        "doctor_id": "D010",
-        "name": "Dr. Abhijit Gupta",
-        "specialization": "Ophthalmology & Laser",
-        "department": "Ophthalmology",
-        "experience": "10 years",
-        "consultation_room": "Room 250",
-        "available": True,
-        "avg_consultation_duration": 12,
-        "working_hours": "10:00 AM - 05:00 PM",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-]
+from services.doctor_service import DEFAULT_DOCTORS, DEFAULT_REVIEWS
+
+# Sample Doctors Data across 10 Departments (Enriched Practo-grade profiles)
+DOCTORS_DATA = DEFAULT_DOCTORS
+REVIEWS_DATA = DEFAULT_REVIEWS
+
 
 # Sample Patients Data
 PATIENTS_DATA = [
@@ -142,7 +25,12 @@ PATIENTS_DATA = [
         "email": "anjan@hospital.local",
         "age": 32,
         "gender": "Male",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "height_cm": 174,
+        "weight_kg": 72,
+        "city": "Tumakuru",
+        "address": "Sira Road, Tumakuru",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     },
     {
         "patient_id": "P002",
@@ -152,7 +40,12 @@ PATIENTS_DATA = [
         "email": "priya@hospital.local",
         "age": 28,
         "gender": "Female",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "height_cm": 162,
+        "weight_kg": 56,
+        "city": "Sira",
+        "address": "B.H. Road, Sira",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     },
     {
         "patient_id": "P003",
@@ -162,7 +55,12 @@ PATIENTS_DATA = [
         "email": "rohit@hospital.local",
         "age": 45,
         "gender": "Male",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "height_cm": 178,
+        "weight_kg": 82,
+        "city": "Gubbi",
+        "address": "Main Bazaar, Gubbi",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     },
     {
         "patient_id": "P004",
@@ -172,7 +70,12 @@ PATIENTS_DATA = [
         "email": "sneha@hospital.local",
         "age": 35,
         "gender": "Female",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "height_cm": 158,
+        "weight_kg": 54,
+        "city": "Tiptur",
+        "address": "Station Road, Tiptur",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     },
     {
         "patient_id": "P005",
@@ -182,7 +85,12 @@ PATIENTS_DATA = [
         "email": "arjun@hospital.local",
         "age": 52,
         "gender": "Male",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "height_cm": 170,
+        "weight_kg": 76,
+        "city": "Madhugiri",
+        "address": "Fort View, Madhugiri",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     }
 ]
 
@@ -440,6 +348,121 @@ QUEUE_DATA = [
     }
 ]
 
+# Sample Completed Clinical Consultations History (Archived Clinical EMR Records)
+CONSULTATIONS_DATA = [
+    {
+        "consultation_id": "CON_B001",
+        "queue_id": "Q_HIST_01",
+        "booking_id": "B_HIST_01",
+        "patient_id": "P001",
+        "patient_name": "Anjan",
+        "doctor_id": "D001",
+        "doctor_name": "Dr. Ananya Sharma",
+        "department": "Cardiology",
+        "room_number": "Room 204",
+        "consultation_date": (datetime.now(timezone.utc) - timedelta(days=14)).strftime("%Y-%m-%d"),
+        "consultation_time": "10:30",
+        "completed_at": (datetime.now(timezone.utc) - timedelta(days=14)).isoformat(),
+        "actual_duration_mins": 16,
+        "status": "completed",
+        "vitals_at_consultation": {
+            "age": 32,
+            "gender": "Male",
+            "height_cm": 174,
+            "weight_kg": 72,
+            "bmi": 23.8,
+            "city": "Tumakuru"
+        },
+        "patient_reported": {
+            "symptoms": ["Mild Chest Discomfort", "Fatigue"],
+            "custom_symptoms": "Experienced brief chest tightness after climbing stairs.",
+            "duration_days": 4,
+            "priority": "normal"
+        },
+        "doctor_assessment": {
+            "diagnosis": "Atypical Musculoskeletal Chest Strain",
+            "notes": "12-lead ECG normal rhythm. Blood pressure 122/78 mmHg. Normal heart sounds S1 S2. No signs of acute ischemic changes.",
+            "advice": "Rest from heavy lifting for 5 days. Paracetamol 500mg SOS for strain pain. Regular brisk walking recommended."
+        },
+        "created_at": (datetime.now(timezone.utc) - timedelta(days=14)).isoformat(),
+        "updated_at": (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    },
+    {
+        "consultation_id": "CON_B002",
+        "queue_id": "Q_HIST_02",
+        "booking_id": "B_HIST_02",
+        "patient_id": "P001",
+        "patient_name": "Anjan",
+        "doctor_id": "D002",
+        "doctor_name": "Dr. Rajesh Kumar",
+        "department": "General Medicine",
+        "room_number": "Room 101",
+        "consultation_date": (datetime.now(timezone.utc) - timedelta(days=45)).strftime("%Y-%m-%d"),
+        "consultation_time": "11:15",
+        "completed_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat(),
+        "actual_duration_mins": 12,
+        "status": "completed",
+        "vitals_at_consultation": {
+            "age": 32,
+            "gender": "Male",
+            "height_cm": 174,
+            "weight_kg": 73,
+            "bmi": 24.1,
+            "city": "Tumakuru"
+        },
+        "patient_reported": {
+            "symptoms": ["Fever", "Headache", "Body Ache"],
+            "custom_symptoms": "Moderate fever with chills in the evening.",
+            "duration_days": 2,
+            "priority": "normal"
+        },
+        "doctor_assessment": {
+            "diagnosis": "Acute Viral Upper Respiratory Infection",
+            "notes": "Throat shows mild erythema. Lungs clear to auscultation. Temperature 100.2 F.",
+            "advice": "Steam inhalation twice daily. Adequate oral hydration. Tab Paracetamol 650mg TDS for 3 days. Vitamin C supplementation."
+        },
+        "created_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat(),
+        "updated_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
+    },
+    {
+        "consultation_id": "CON_B003",
+        "queue_id": "Q_HIST_03",
+        "booking_id": "B_HIST_03",
+        "patient_id": "P002",
+        "patient_name": "Priya Sharma",
+        "doctor_id": "D003",
+        "doctor_name": "Dr. Sunita Patel",
+        "department": "Pediatrics",
+        "room_number": "Room 105",
+        "consultation_date": (datetime.now(timezone.utc) - timedelta(days=20)).strftime("%Y-%m-%d"),
+        "consultation_time": "14:00",
+        "completed_at": (datetime.now(timezone.utc) - timedelta(days=20)).isoformat(),
+        "actual_duration_mins": 14,
+        "status": "completed",
+        "vitals_at_consultation": {
+            "age": 28,
+            "gender": "Female",
+            "height_cm": 162,
+            "weight_kg": 56,
+            "bmi": 21.3,
+            "city": "Sira"
+        },
+        "patient_reported": {
+            "symptoms": ["Persistent Dry Cough", "Sore Throat"],
+            "custom_symptoms": "Irritation in throat and coughing mainly at night.",
+            "duration_days": 5,
+            "priority": "normal"
+        },
+        "doctor_assessment": {
+            "diagnosis": "Allergic Pharyngitis",
+            "notes": "Pharyngeal mucosa mildly hyperemic. No tonsillar exudates. Chest bilaterally clear.",
+            "advice": "Warm saline gargles thrice daily. Tab Levocetirizine 5mg at bedtime for 5 days. Avoid cold beverages and dusty environments."
+        },
+        "created_at": (datetime.now(timezone.utc) - timedelta(days=20)).isoformat(),
+        "updated_at": (datetime.now(timezone.utc) - timedelta(days=20)).isoformat()
+    }
+]
+
 def seed_database():
     """Seed the database with initial data"""
     try:
@@ -452,10 +475,16 @@ def seed_database():
         db.users.delete_many({})
         db.queue.delete_many({})
         db.appointments.delete_many({})
+        db.doctor_reviews.delete_many({})
+        db.consultations.delete_many({})
         
         # Seed doctors
         print(f"[INFO] Seeding {len(DOCTORS_DATA)} doctors...")
         db.doctors.insert_many(DOCTORS_DATA)
+
+        # Seed doctor reviews
+        print(f"[INFO] Seeding {len(REVIEWS_DATA)} doctor reviews...")
+        db.doctor_reviews.insert_many(REVIEWS_DATA)
         
         # Seed patients
         print(f"[INFO] Seeding {len(PATIENTS_DATA)} patients...")
@@ -468,15 +497,23 @@ def seed_database():
         # Seed queue entries
         print(f"[INFO] Seeding {len(QUEUE_DATA)} active queue entries...")
         db.queue.insert_many(QUEUE_DATA)
+
+        # Seed clinical consultations history
+        print(f"[INFO] Seeding {len(CONSULTATIONS_DATA)} historical consultation records...")
+        db.consultations.insert_many(CONSULTATIONS_DATA)
         
         # Create indexes
         print("[INFO] Creating indexes...")
         db.doctors.create_index("doctor_id", unique=True)
         db.patients.create_index("patient_id", unique=True)
+        db.patients.create_index("phone", sparse=True)
         db.users.create_index("user_id", unique=True)
         db.users.create_index("phone", unique=True)
         db.queue.create_index("queue_id", unique=True)
         db.appointments.create_index("booking_id", unique=True)
+        db.consultations.create_index("consultation_id", unique=True)
+        db.consultations.create_index("patient_id")
+        db.consultations.create_index([("patient_id", 1), ("consultation_date", -1)])
         
         print("\n[SUCCESS] Database seeding complete!")
         print("\nSample Credentials for Testing:")

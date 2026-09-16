@@ -15,7 +15,7 @@ auth_bp = Blueprint("auth_bp", __name__)
 # SECURITY: Rate limiting on sensitive endpoints
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["10000 per day", "2000 per hour"]
 )
 
 @auth_bp.route("/auth/send-otp", methods=["POST"])
@@ -81,6 +81,13 @@ def get_current_user_profile():
     decoded = decode_jwt_token(auth_header)
     if not decoded:
         return jsonify({"error": "Invalid or expired token"}), 401
+
+    from services.auth_service import get_user_by_phone
+    user = get_user_by_phone(decoded.get("phone", ""))
+    if user:
+        user_clean = dict(user)
+        user_clean.pop("password_hash", None)
+        return jsonify(user_clean), 200
 
     return jsonify(decoded), 200
 

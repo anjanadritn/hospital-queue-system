@@ -121,3 +121,60 @@ def test_forgot_password_flow(client):
 
     login_res = client.post("/auth/login", json={"phone": "9876543211", "password": "NewResetPassword123!"})
     assert login_res.status_code == 200
+
+def test_auth_otp_sms_disabled(client):
+    """When MSG91_SMS_ENABLED=False, OTP generation succeeds and no SMS is sent."""
+    from unittest.mock import patch
+    with patch("config.config.MSG91_SMS_ENABLED", False):
+        with patch("services.sms_service.sms_service.send_otp") as mock_send_otp:
+            res = client.post("/auth/send-otp", json={"phone": "9876500001", "purpose": "ACCOUNT_VERIFICATION"})
+            assert res.status_code == 200
+            data = res.get_json()
+            assert "development_otp" in data
+            assert len(data["development_otp"]) == 6
+            assert data.get("sms_sent") is False
+            mock_send_otp.assert_not_called()
+
+def test_auth_otp_sms_enabled_success(client):
+    """When MSG91_SMS_ENABLED=True, sms_service.send_otp is called and OTP verification works."""
+    from unittest.mock import patch
+    mock_otp_return = (True, {"type": "success", "message": "OTP sent successfully"}, None)
+
+    with patch("config.config.MSG91_SMS_ENABLED", True), \
+         patch("services.sms_service.sms_service.send_otp", return_value=mock_otp_return) as mock_send_otp:
+        
+        res = client.post("/auth/send-otp", json={"phone": "9876500002", "purpose": "ACCOUNT_VERIFICATION"})
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data.get("sms_sent") is True
+        otp = data["development_otp"]
+        
+        # Verify sms_service.send_otp was called with normalized phone and OTP
+        mock_send_otp.assert_called_once_with("9876500002", otp)
+
+        # Confirm verification still works seamlessly
+        verify_res = client.post("/auth/verify-otp", json={"phone": "9876500002", "otp": otp, "purpose": "ACCOUNT_VERIFICATION"})
+        assert verify_res.status_code == 200
+        assert verify_res.get_json()["verified"] is True
+
+def test_auth_otp_sms_enabled_failure_resilience(client):
+    """When SMS gateway fails/times out, OTP generation and verification must NOT fail."""
+    from unittest.mock import patch
+    mock_failure_return = (False, {"status": "timeout"}, "Gateway request timed out")
+
+    with patch("config.config.MSG91_SMS_ENABLED", True), \
+         patch("services.sms_service.sms_service.send_otp", return_value=mock_failure_return) as mock_send_otp:
+        
+        # OTP generation must succeed even though SMS failed
+        res = client.post("/auth/send-otp", json={"phone": "9876500003", "purpose": "ACCOUNT_VERIFICATION"})
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data.get("sms_sent") is False
+        otp = data["development_otp"]
+        assert len(otp) == 6
+        mock_send_otp.assert_called_once_with("9876500003", otp)
+
+        # Verification must still succeed
+        verify_res = client.post("/auth/verify-otp", json={"phone": "9876500003", "otp": otp, "purpose": "ACCOUNT_VERIFICATION"})
+        assert verify_res.status_code == 200
+        assert verify_res.get_json()["verified"] is True

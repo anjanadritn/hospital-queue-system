@@ -157,24 +157,70 @@ const Register = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">Gender</label>
-              <select name="gender" className="form-select" value={formData.gender} onChange={handleChange}>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="other">Other</option>
+              <label className="form-label">Gender *</label>
+              <select name="gender" className="form-select" value={formData.gender} onChange={handleChange} required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Address</label>
+              <label className="form-label">Age (Years) *</label>
               <input 
-                type="text" 
-                name="address" 
+                type="number" 
+                name="age" 
                 className="form-input" 
-                placeholder="123 Main St" 
-                value={formData.address} 
+                placeholder="e.g. 32" 
+                value={formData.age || ''} 
                 onChange={handleChange} 
+                min="1"
+                max="120"
+                required 
               />
             </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Height (cm) *</label>
+              <input 
+                type="number" 
+                name="height_cm" 
+                className="form-input" 
+                placeholder="e.g. 170" 
+                value={formData.height_cm || ''} 
+                onChange={handleChange} 
+                min="40"
+                max="250"
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Weight (kg, optional)</label>
+              <input 
+                type="number" 
+                name="weight_kg" 
+                className="form-input" 
+                placeholder="e.g. 68" 
+                value={formData.weight_kg || ''} 
+                onChange={handleChange} 
+                min="2"
+                max="300"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Village / City Origin *</label>
+            <input 
+              type="text" 
+              name="city" 
+              className="form-input" 
+              placeholder="e.g. Tumakuru, Sira, Gubbi, Kunigal" 
+              value={formData.city || ''} 
+              onChange={handleChange} 
+              required 
+            />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

@@ -1,156 +1,243 @@
 import logging
 import os
 import pickle
-from typing import List, Optional
+from typing import List, Optional, Any, Union
 from datetime import datetime
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-class RandomForestConsultationDurationPredictor:
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_MODEL_PATH = os.path.join(CURRENT_DIR, "models", "wait_time_model.pkl")
+
+DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+class RandomForestWaitTimePredictor:
     """
-    Random Forest Regression Engine for Predicting Consultation Duration.
-    
-    Loads a pre-trained Random Forest model for wait time prediction.
-    Features used: symptoms count, department code, emergency status, queue position,
-    doctor avg duration, time of day, day of week, active patients count.
-    
-    This model is trained on 1000+ realistic synthetic hospital scenarios.
-    It predicts consultation duration (5-45 minutes) with high accuracy (R² > 0.85).
-    
-    IMPORTANT SAFETY BOUNDARY:
-    This model predicts consultation duration for queue timing ONLY.
-    It is NOT a medical diagnosis model and does NOT output disease diagnoses.
+    Random Forest Regression Engine for Predicting Hospital Wait Times.
+    Loads a pre-trained scikit-learn Pipeline from backend/ml/models/wait_time_model.pkl.
+    Accepts the 7 features from dataset.csv:
+      - doctor_id (str)
+      - department (str)
+      - doctor_avg_consult_minutes (float/int)
+      - day_of_week (str)
+      - hour_of_day (int)
+      - queue_length_ahead (int)
+      - patient_type (str: 'normal' or 'emergency')
     """
-    def __init__(self):
+
+    def __init__(self, model_path: Optional[str] = None):
         self.model = None
-        self.model_path = "ml/models/wait_time_model.pkl"
+        self.model_path = model_path or DEFAULT_MODEL_PATH
         self._load_trained_model()
 
     def _load_trained_model(self):
-        """Load pre-trained Random Forest model from pickle file"""
+        """Load pre-trained Random Forest Pipeline from pickle file"""
         try:
-            # Try to load trained model
             if os.path.exists(self.model_path):
-                with open(self.model_path, 'rb') as f:
+                with open(self.model_path, "rb") as f:
                     self.model = pickle.load(f)
-                logger.info(f"✅ Loaded trained Random Forest model from {self.model_path}")
+                logger.info(f"✅ Loaded trained Random Forest pipeline from {self.model_path}")
             else:
                 logger.warning(f"⚠️  Trained model not found at {self.model_path}")
-                logger.info("   Please run: python ml/train_model.py")
-                self._create_fallback_model()
+                logger.info("   Please run: python backend/ml/train_model.py")
+                self.model = None
         except Exception as e:
-            logger.error(f"❌ Error loading trained model: {e}")
-            self._create_fallback_model()
-
-    def _create_fallback_model(self):
-        """Create a simple fallback model if trained model unavailable"""
-        try:
-            from sklearn.ensemble import RandomForestRegressor
-            import numpy as np
-            
-            logger.info("Creating fallback Random Forest model (limited training data)...")
-            X_train = np.array([
-                [1, 1, 0, 1, 12, 9, 2, 5],
-                [3, 1, 0, 3, 12, 10, 3, 8],
-                [4, 2, 1, 1, 15, 9, 2, 3],
-                [2, 3, 0, 2, 15, 11, 4, 6],
-                [5, 4, 1, 2, 20, 14, 5, 12],
-                [2, 0, 0, 4, 12, 15, 1, 15],
-                [3, 5, 0, 2, 12, 10, 2, 7],
-                [1, 6, 0, 1, 10, 9, 3, 4],
-                [4, 7, 1, 3, 14, 13, 4, 10],
-                [2, 8, 0, 2, 15, 10, 5, 6]
-            ])
-            y_train = np.array([10, 15, 25, 15, 30, 12, 14, 10, 22, 16])
-            
-            self.model = RandomForestRegressor(n_estimators=50, max_depth=10, random_state=42)
-            self.model.fit(X_train, y_train)
-            logger.info("✅ Fallback model created (accuracy will be lower)")
-        except Exception as e:
-            logger.error(f"❌ Failed to create fallback model: {e}")
+            logger.error(f"❌ Error loading trained model pipeline: {e}")
             self.model = None
+
+    def predict_wait_time(
+        self,
+        doctor_id: str,
+        department: str,
+        doctor_avg_consult_minutes: Union[int, float],
+        day_of_week: str,
+        hour_of_day: int,
+        queue_length_ahead: int,
+        patient_type: str = "normal",
+    ) -> float:
+        """
+        Predict total wait time in minutes using the 7 dataset features.
+
+        Args:
+            doctor_id: Doctor identifier (e.g. 'DOC1'..'DOC6')
+            department: Hospital department name (e.g. 'Cardiology')
+            doctor_avg_consult_minutes: Doctor's average consultation duration in minutes
+            day_of_week: Day of week ('Monday'..'Sunday')
+            hour_of_day: Hour of the day (e.g. 9..19)
+            queue_length_ahead: Number of patients waiting ahead (0..N)
+            patient_type: 'normal' or 'emergency'
+
+        Returns:
+            Predicted wait time in minutes (float >= 1.0)
+        """
+        norm_patient_type = "emergency" if str(patient_type).strip().lower() == "emergency" else "normal"
+        clean_day = str(day_of_week).strip().capitalize()
+        if clean_day not in DAYS_OF_WEEK:
+            clean_day = datetime.now().strftime("%A")
+
+        if self.model is not None:
+            try:
+                features_df = pd.DataFrame([
+                    {
+                        "doctor_id": str(doctor_id).strip(),
+                        "department": str(department).strip(),
+                        "doctor_avg_consult_minutes": float(doctor_avg_consult_minutes),
+                        "day_of_week": clean_day,
+                        "hour_of_day": int(hour_of_day),
+                        "queue_length_ahead": max(0, int(queue_length_ahead)),
+                        "patient_type": norm_patient_type,
+                    }
+                ])
+                pred = self.model.predict(features_df)
+                return max(1.0, round(float(pred[0]), 2))
+            except Exception as e:
+                logger.error(f"Error in model prediction: {e}")
+
+        # Safe fallback based on dataset simulation formulas
+        return self._fallback_wait_time(
+            doctor_avg_consult_minutes=doctor_avg_consult_minutes,
+            queue_length_ahead=queue_length_ahead,
+            hour_of_day=hour_of_day,
+            day_of_week=clean_day,
+            patient_type=norm_patient_type,
+        )
+
+    def predict(
+        self,
+        doctor_id: str,
+        department: str,
+        doctor_avg_consult_minutes: Union[int, float],
+        day_of_week: str,
+        hour_of_day: int,
+        queue_length_ahead: int,
+        patient_type: str = "normal",
+    ) -> float:
+        """Alias for predict_wait_time accepting the 7 dataset features."""
+        return self.predict_wait_time(
+            doctor_id=doctor_id,
+            department=department,
+            doctor_avg_consult_minutes=doctor_avg_consult_minutes,
+            day_of_week=day_of_week,
+            hour_of_day=hour_of_day,
+            queue_length_ahead=queue_length_ahead,
+            patient_type=patient_type,
+        )
+
+    def _fallback_wait_time(
+        self,
+        doctor_avg_consult_minutes: float,
+        queue_length_ahead: int,
+        hour_of_day: int,
+        day_of_week: str,
+        patient_type: str,
+    ) -> float:
+        """Deterministic rule-based fallback if ML pipeline is unavailable"""
+        if patient_type == "emergency":
+            return 5.0
+
+        if 9 <= hour_of_day <= 11:
+            h_mult = 1.4
+        elif 12 <= hour_of_day <= 14:
+            h_mult = 0.8
+        elif 15 <= hour_of_day <= 18:
+            h_mult = 1.3
+        else:
+            h_mult = 0.9
+
+        if day_of_week == "Monday":
+            d_mult = 1.3
+        elif day_of_week in ["Saturday", "Sunday"]:
+            d_mult = 0.7
+        else:
+            d_mult = 1.0
+
+        base = float(doctor_avg_consult_minutes) * (int(queue_length_ahead) + 1) * h_mult * d_mult
+        return max(1.0, round(base, 2))
 
     def predict_duration(
         self,
-        symptoms: List[str],
+        symptoms: Optional[List[str]] = None,
         department: str = "General Medicine",
-        doctor_id: str = "D001",
+        doctor_id: str = "DOC2",
         priority: str = "normal",
         queue_position: int = 1,
         doctor_avg_duration: int = 12,
         time_of_day: Optional[int] = None,
-        day_of_week: Optional[int] = None,
-        num_active_patients: int = 5
+        day_of_week: Optional[Any] = None,
+        num_active_patients: int = 5,
     ) -> int:
         """
-        Predict consultation duration using Random Forest model.
-        
-        Args:
-            symptoms: List of symptom strings
-            department: Medical department
-            doctor_id: Doctor identifier
-            priority: "normal" or "emergency"
-            queue_position: Patient's current queue position
-            doctor_avg_duration: Doctor's average consultation time
-            time_of_day: Hour (0-23), defaults to current hour
-            day_of_week: Day of week (0-6), defaults to current day
-            num_active_patients: Current queue size
-            
-        Returns:
-            Predicted consultation duration in minutes (5-45)
+        Backward-compatible consultation duration prediction for existing services.
+        Maps inputs into the 7-feature model and bounds output to [5, 45] minutes.
         """
-        symptom_count = max(1, len(symptoms) if symptoms else 1)
-        is_emergency = 1 if priority.lower() == "emergency" else 0
-        dept_code = hash(department) % 10  # 0-9 for 10 departments
-        
-        if time_of_day is None:
-            time_of_day = datetime.now().hour
+        hour = time_of_day if time_of_day is not None else datetime.now().hour
         if day_of_week is None:
-            day_of_week = datetime.now().weekday()
-        
-        if self.model is not None:
-            try:
-                import numpy as np
-                # Features: [symptoms, dept, emergency, queue_pos, doc_avg, time, day, active]
-                features = np.array([[
-                    symptom_count,
-                    dept_code,
-                    is_emergency,
-                    queue_position,
-                    doctor_avg_duration,
-                    time_of_day,
-                    day_of_week,
-                    num_active_patients
-                ]])
-                pred = self.model.predict(features)
-                result = max(5, int(round(float(pred[0]))))
-                return min(45, result)
-            except Exception as e:
-                logger.error(f"Error in model prediction: {e}")
+            day_str = datetime.now().strftime("%A")
+        elif isinstance(day_of_week, int) and 0 <= day_of_week < len(DAYS_OF_WEEK):
+            day_str = DAYS_OF_WEEK[day_of_week]
+        else:
+            day_str = str(day_of_week)
 
-        # Fallback: rule-based estimation
-        base = max(5, doctor_avg_duration)
-        base += (symptom_count * 0.8)
-        base += (is_emergency * 5)
-        base += (queue_position * 0.1)
-        base -= (num_active_patients * 0.15) if num_active_patients > 8 else 0
-        
-        return min(45, max(5, int(base)))
+        # Map doctor ID if legacy format like D001
+        doc_id = "DOC2" if doctor_id in ["D001", "DOC2"] else doctor_id
 
-_rf_predictor = RandomForestConsultationDurationPredictor()
+        # Estimate single-patient consultation duration (queue_length_ahead=0)
+        est_wait = self.predict_wait_time(
+            doctor_id=doc_id,
+            department=department,
+            doctor_avg_consult_minutes=doctor_avg_duration,
+            day_of_week=day_str,
+            hour_of_day=hour,
+            queue_length_ahead=0,
+            patient_type=priority,
+        )
+
+        # Add symptom complexity adjustment if symptoms provided
+        symptom_adj = max(0, len(symptoms) - 1) * 0.5 if symptoms else 0
+        final_duration = int(round(est_wait + symptom_adj))
+        return min(45, max(5, final_duration))
+
+
+# Global singleton instance
+_rf_predictor = RandomForestWaitTimePredictor()
+RandomForestConsultationDurationPredictor = RandomForestWaitTimePredictor
+
+
+def predict_wait_time(
+    doctor_id: str,
+    department: str,
+    doctor_avg_consult_minutes: Union[int, float],
+    day_of_week: str,
+    hour_of_day: int,
+    queue_length_ahead: int,
+    patient_type: str = "normal",
+) -> float:
+    """Predict total wait time in minutes using the 7 dataset features."""
+    return _rf_predictor.predict_wait_time(
+        doctor_id=doctor_id,
+        department=department,
+        doctor_avg_consult_minutes=doctor_avg_consult_minutes,
+        day_of_week=day_of_week,
+        hour_of_day=hour_of_day,
+        queue_length_ahead=queue_length_ahead,
+        patient_type=patient_type,
+    )
+
 
 def predict_consultation_duration(
     symptoms: List[str],
     department: str,
     doctor_id: str,
     priority: str,
-    queue_position: int = 1
+    queue_position: int = 1,
 ) -> int:
-    """Wrapper for model prediction"""
+    """Wrapper for legacy model duration prediction"""
     return _rf_predictor.predict_duration(
         symptoms=symptoms,
         department=department,
         doctor_id=doctor_id,
         priority=priority,
-        queue_position=queue_position
+        queue_position=queue_position,
     )
+

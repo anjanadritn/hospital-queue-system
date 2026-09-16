@@ -50,6 +50,31 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     booking_id = generate_booking_id()
     now_str = datetime.now(timezone.utc).isoformat()
 
+    # Extract clinical data for doctor consultation
+    patient_name = data.get("patient_name") or data.get("name") or "Patient"
+    patient_phone = data.get("patient_phone") or data.get("phone", "")
+    age = int(data["age"]) if "age" in data and data["age"] not in [None, ""] else None
+    gender = str(data.get("gender", "Not Specified")).strip()
+    duration_days = int(data["duration_days"]) if "duration_days" in data and data["duration_days"] not in [None, ""] else 1
+    height_cm = float(data["height_cm"]) if "height_cm" in data and data["height_cm"] not in [None, ""] else None
+    weight_kg = float(data["weight_kg"]) if "weight_kg" in data and data["weight_kg"] not in [None, ""] else None
+    email = str(data.get("email") or data.get("patient_email") or "").strip()
+    city = str(data.get("city") or data.get("address") or data.get("location") or "Tumakuru").strip()
+    pdo = str(data.get("pdo", "")).strip()
+
+    # Identify returning patient profile by phone or patient_id
+    if patient_phone:
+        import re
+        clean_p = re.sub(r"\D", "", str(patient_phone).strip())
+        if len(clean_p) >= 10:
+            try:
+                db_lookup = get_db()
+                existing_p = db_lookup.patients.find_one({"phone": clean_p[-10:]}) or db_lookup.users.find_one({"phone": clean_p[-10:]})
+                if existing_p and existing_p.get("patient_id"):
+                    patient_id = existing_p.get("patient_id")
+            except Exception:
+                pass
+
     # 2. RANDOM FOREST ML PREDICTION FOR CONSULTATION DURATION
     predicted_duration = predict_consultation_duration(
         symptoms=symptoms,
@@ -58,14 +83,74 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         priority=priority
     )
 
-    # 3. CALCULATE TRAVEL & DEPARTURE METRICS
-    travel_info = calculate_travel_metrics(
-        patient_address=data.get("address", "Patient Location")
-    )
+    # 3. AUTO-ASSIGN QUEUE TOKEN & HOSPITAL ARRIVAL OTP
+    from services.queue_service import join_queue
+    origin_latitude = None
+    origin_longitude = None
+    raw_lat = data.get("origin_latitude") if data.get("origin_latitude") is not None else data.get("latitude")
+    raw_lon = data.get("origin_longitude") if data.get("origin_longitude") is not None else data.get("longitude")
+    if raw_lat is not None and raw_lon is not None:
+        try:
+            origin_latitude = float(raw_lat)
+            origin_longitude = float(raw_lon)
+        except (ValueError, TypeError):
+            origin_latitude = None
+            origin_longitude = None
+
+    is_approximate_location = (origin_latitude is None or origin_longitude is None) or bool(data.get("is_approximate_location", False))
+    origin_coords = [origin_longitude, origin_latitude] if (origin_latitude is not None and origin_longitude is not None) else None
+    patient_address = str(data.get("patient_address") or city).strip()
+
+    queue_payload = {
+        "patient_id": patient_id,
+        "patient_name": patient_name,
+        "phone": patient_phone,
+        "email": email,
+        "doctor_id": doctor_id,
+        "department": department,
+        "priority": priority,
+        "symptoms": symptoms,
+        "custom_symptoms": custom_symptoms,
+        "age": age,
+        "gender": gender,
+        "duration_days": duration_days,
+        "height_cm": height_cm,
+        "weight_kg": weight_kg,
+        "city": city,
+        "patient_address": patient_address,
+        "origin_latitude": origin_latitude,
+        "origin_longitude": origin_longitude,
+        "is_approximate_location": is_approximate_location,
+        "pdo": pdo,
+        "booking_id": booking_id
+    }
+    queue_res, queue_err = join_queue(queue_payload)
+
+    queue_id = queue_res.get("queue_id") if queue_res else None
+    arrival_otp = queue_res.get("arrival_otp") if queue_res else "123456"
+    queue_position = queue_res.get("position", 1) if queue_res else 1
+    wait_time = queue_res.get("predicted_wait_time", predicted_duration) if queue_res else predicted_duration
+    travel_info = queue_res.get("travel_info") if queue_res and queue_res.get("travel_info") else calculate_travel_metrics(patient_address=city, wait_time_min=predicted_duration, origin_coords=origin_coords)
 
     booking_doc = {
         "booking_id": booking_id,
+        "queue_id": queue_id,
         "patient_id": patient_id,
+        "patient_name": patient_name,
+        "patient_phone": patient_phone,
+        "email": email,
+        "patient_email": email,
+        "age": age,
+        "gender": gender,
+        "duration_days": duration_days,
+        "height_cm": height_cm,
+        "weight_kg": weight_kg,
+        "city": city,
+        "patient_address": patient_address,
+        "origin_latitude": origin_latitude,
+        "origin_longitude": origin_longitude,
+        "is_approximate_location": is_approximate_location,
+        "pdo": pdo,
         "doctor_id": doctor_id,
         "department": department,
         "consultation_date": consultation_date_str,
@@ -73,6 +158,9 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "symptoms": symptoms,
         "custom_symptoms": custom_symptoms,
         "predicted_consultation_duration": predicted_duration,
+        "predicted_wait_time": wait_time,
+        "queue_position": queue_position,
+        "arrival_otp": arrival_otp,
         "room_number": "Room 204",
         "status": "booked",
         "travel_info": travel_info,
@@ -82,6 +170,31 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
         db.appointments.insert_one(booking_doc)
+
+        # Update returning patient profile with latest vitals while preserving past records
+        if patient_id or patient_phone:
+            try:
+                from services.patient_service import sync_or_update_patient_profile
+                sync_profile_data = {
+                    "name": patient_name,
+                    "phone": patient_phone,
+                    "age": age,
+                    "gender": gender,
+                    "height_cm": height_cm,
+                    "weight_kg": weight_kg,
+                    "city": city,
+                    "address": city
+                }
+                if email:
+                    sync_profile_data["email"] = email
+                sync_or_update_patient_profile(
+                    patient_id=patient_id,
+                    phone=patient_phone,
+                    data=sync_profile_data
+                )
+            except Exception as sync_ex:
+                pass
+
         updated = db.appointments.find_one({"booking_id": booking_id})
         res = serialize_doc(updated)
     except Exception:
@@ -93,7 +206,7 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         patient_id=patient_id,
         notification_type="BOOKING_CONFIRMED",
         title="Consultation Booked Successfully",
-        message=f"Confirmed for {consultation_date_str} with {doctor_id} ({department}). Room 204.",
+        message=f"Confirmed for {consultation_date_str} with {doctor_id} ({department}). Queue Token: {queue_id} (Position #{queue_position}). Room 204.",
         booking_id=booking_id
     )
 
@@ -101,9 +214,18 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         patient_id=patient_id,
         notification_type="DEPARTURE_REMINDER",
         title="Departure Reminder",
-        message=travel_info["departure_alert"],
+        message=f"Estimated wait time is {wait_time} mins. {travel_info.get('departure_alert', '')}",
         booking_id=booking_id
     )
+
+    if doctor_id:
+        create_notification(
+            patient_id=doctor_id,
+            notification_type="APPOINTMENT_SCHEDULED",
+            title="New Advance Appointment",
+            message=f"Patient {patient_name} booked consultation for {consultation_date_str} in {department}. Token: {queue_id}.",
+            booking_id=booking_id
+        )
 
     return res, None
 

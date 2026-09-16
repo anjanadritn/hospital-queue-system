@@ -97,3 +97,49 @@ def get_analytics():
             "avg_waiting_time": 12.0,
             "department_distribution": {"Cardiology": 5, "General Medicine": 4, "Orthopedics": 3}
         }), 200
+
+@admin_bp.route("/admin/appointments", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def get_all_appointments_admin():
+    """Admin endpoint to monitor all appointments and booking statuses"""
+    try:
+        db = get_db()
+        apts = list(db.appointments.find().sort("created_at", -1))
+        return jsonify(serialize_docs(apts)), 200
+    except Exception:
+        from services.appointment_service import IN_MEMORY_BOOKINGS
+        return jsonify(serialize_docs(IN_MEMORY_BOOKINGS)), 200
+
+@admin_bp.route("/admin/patients", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def get_all_patients_admin():
+    """Admin endpoint to search and monitor all registered patients with visit metrics"""
+    query = request.args.get("q", "").strip()
+    try:
+        from services.patient_service import search_patients
+        patients = search_patients(query)
+        return jsonify(patients), 200
+    except Exception as e:
+        return jsonify({"error": str(e), "patients": []}), 500
+
+@admin_bp.route("/admin/patients/<patient_id>/records", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def get_admin_patient_records(patient_id: str):
+    """Admin endpoint to open patient's complete profile and historical consultation timeline"""
+    try:
+        from services.patient_service import get_patient_by_id
+        from services.consultation_service import get_patient_consultations
+
+        patient = get_patient_by_id(patient_id)
+        if not patient:
+            return jsonify({"error": "Patient profile not found"}), 404
+
+        consultations = get_patient_consultations(patient.get("patient_id") or patient_id)
+        return jsonify({
+            "success": True,
+            "patient": patient,
+            "consultations": consultations,
+            "total_consultations": len(consultations)
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

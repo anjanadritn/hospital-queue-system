@@ -17,6 +17,8 @@ from routes.notification_routes import notification_bp
 from routes.consultation_routes import consultation_bp
 from routes.auth_routes import auth_bp, limiter
 from routes.admin_routes import admin_bp
+from routes.department_routes import department_bp
+from routes.patient_routes import patient_bp
 
 # ============================================================
 # LOGGING CONFIGURATION
@@ -85,6 +87,8 @@ def create_app() -> Flask:
     app.register_blueprint(consultation_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(department_bp)
+    app.register_blueprint(patient_bp)
 
     # ========================================================
     # DATABASE INITIALIZATION

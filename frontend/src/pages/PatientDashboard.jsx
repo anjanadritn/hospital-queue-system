@@ -1,283 +1,1551 @@
 import React, { useState, useEffect } from 'react';
-
-import { Link, useNavigate } from 'react-router-dom';
-
-import { Activity, Stethoscope, Calendar, Clock, Navigation, DoorOpen, Plus, ArrowRight, ShieldCheck } from 'lucide-react';
-
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Activity,
+  Stethoscope,
+  Calendar,
+  Clock,
+  Navigation,
+  DoorOpen,
+  Plus,
+  ArrowRight,
+  ShieldCheck,
+  Cpu,
+  User,
+  AlertTriangle,
+  CheckCircle2,
+  Ticket,
+  ChevronRight,
+  Sparkles,
+  MapPin,
+  RefreshCw,
+  PhoneCall,
+  Bell,
+  FileText,
+  Save,
+  Check
+} from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
-
 import { useAuth } from '../context/AuthContext';
-
+import { useLanguage } from '../context/LanguageContext';
 import DepartureCard from '../components/DepartureCard';
+import StatusBadge from '../components/StatusBadge';
+import LoadingState from '../components/LoadingState';
+import ConsultationRecordModal from '../components/ConsultationRecordModal';
+import { getBrowserLocation } from '../services/locationService';
 
 export default function PatientDashboard() {
-
   const { user } = useAuth();
-
+  const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [appointments, setAppointments] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-
-  const [joining, setJoining] = useState(false);
-
-  useEffect(() => {
-
-    if (!user?.patient_id) return;
-
-    hospitalApi.getPatientAppointments(user.patient_id)
-
-      .then((apts) => setAppointments(apts || []))
-
-      .catch(console.error)
-
-      .finally(() => setLoading(false));
-
-  }, [user]);
-
-  const latestAppointment = appointments.length > 0 ? appointments[0] : null;
-
-  const handleJoinQueue = async (appointment) => {
-
-    setJoining(true);
-
-    try {
-
-      const res = await hospitalApi.joinQueue({
-
-        patient_id: user.patient_id,
-
-        doctor_id: appointment.doctor_id,
-
-        department: appointment.department,
-
-        priority: appointment.priority || 'normal',
-
-        symptoms: appointment.symptoms || [],
-
-        custom_symptoms: appointment.custom_symptoms || ''
-
-      });
-
-      const queueId = res.queue_id || res.data?.queue_id;
-
-      if (queueId) {
-
-        navigate(`/tracking?queue_id=${queueId}`);
-
-      } else {
-
-        console.error('No queue_id returned from join queue response', res);
-
-      }
-
-    } catch (err) {
-
-      console.error('Failed to join queue', err);
-
-    } finally {
-
-      setJoining(false);
-
-    }
-
+  const urlTab = searchParams.get('tab');
+  const getInitialTab = () => {
+    if (urlTab === 'history' || urlTab === 'medical-history') return 'medical-history';
+    if (urlTab && ['overview', 'appointments', 'notifications', 'profile'].includes(urlTab)) return urlTab;
+    return 'overview';
   };
 
+  const [appointments, setAppointments] = useState([]);
+  const [activeQueue, setActiveQueue] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [patientProfile, setPatientProfile] = useState(null);
+  const [medicalHistory, setMedicalHistory] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  const handleTabChange = (tab) => {
+    const canonicalTab = (tab === 'history' ? 'medical-history' : tab);
+    setActiveTab(canonicalTab);
+    if (canonicalTab === 'overview') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: canonicalTab });
+    }
+  };
+
+  useEffect(() => {
+    if (urlTab === 'history' || urlTab === 'medical-history') {
+      setActiveTab('medical-history');
+    } else if (urlTab && ['overview', 'appointments', 'notifications', 'profile'].includes(urlTab)) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    age: '',
+    gender: 'Male',
+    city: 'Tumakuru',
+    height_cm: '',
+    weight_kg: '',
+    pdo: ''
+  });
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState(false);
+
+  const loadDashboardData = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const patientId = user.patient_id || user.user_id;
+      const [aptsData, queueData, notifsData, profileData, historyData] = await Promise.allSettled([
+        patientId ? hospitalApi.getPatientAppointments(patientId) : Promise.resolve([]),
+        hospitalApi.getMyActiveQueue(),
+        patientId ? hospitalApi.getNotifications(patientId) : Promise.resolve([]),
+        patientId ? hospitalApi.getPatientProfile(patientId).catch(() => null) : Promise.resolve(null),
+        hospitalApi.getMyMedicalHistory().catch(() => ({ success: true, consultations: [] }))
+      ]);
+
+      if (aptsData.status === 'fulfilled' && aptsData.value) {
+        setAppointments(Array.isArray(aptsData.value) ? aptsData.value : []);
+      }
+      if (queueData.status === 'fulfilled' && queueData.value && queueData.value.queue_id) {
+        setActiveQueue(queueData.value);
+      } else {
+        setActiveQueue(null);
+      }
+      if (notifsData.status === 'fulfilled' && notifsData.value) {
+        const notifList = Array.isArray(notifsData.value) 
+          ? notifsData.value 
+          : Array.isArray(notifsData.value?.notifications)
+            ? notifsData.value.notifications
+            : [];
+        setNotifications(notifList);
+      }
+      if (historyData.status === 'fulfilled' && historyData.value) {
+        const historyRecords = historyData.value.consultations || 
+          (Array.isArray(historyData.value) ? historyData.value : []);
+        setMedicalHistory(historyRecords);
+      }
+      if (profileData.status === 'fulfilled' && profileData.value) {
+        const p = profileData.value;
+        setPatientProfile(p);
+        setProfileForm({
+          name: p.name || user.name || '',
+          phone: p.phone || user.phone || '',
+          email: p.email || user.email || '',
+          age: p.age || user.age || '',
+          gender: p.gender || user.gender || 'Male',
+          city: p.city || user.city || user.address || 'Tumakuru',
+          height_cm: p.height_cm || user.height_cm || '',
+          weight_kg: p.weight_kg || user.weight_kg || '',
+          pdo: p.pdo || ''
+        });
+      } else {
+        setProfileForm({
+          name: user.name || '',
+          phone: user.phone || '',
+          email: user.email || '',
+          age: user.age || '',
+          gender: user.gender || 'Male',
+          city: user.city || user.address || 'Tumakuru',
+          height_cm: user.height_cm || '',
+          weight_kg: user.weight_kg || '',
+          pdo: ''
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching patient dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+
+    // Real-time dynamic queue & notifications polling every 4 seconds
+    const interval = setInterval(() => {
+      if (user) {
+        const patientId = user.patient_id || user.user_id;
+        Promise.allSettled([
+          patientId ? hospitalApi.getPatientAppointments(patientId) : Promise.resolve([]),
+          hospitalApi.getMyActiveQueue(),
+          patientId ? hospitalApi.getNotifications(patientId) : Promise.resolve([])
+        ]).then(([aptsData, queueData, notifsData]) => {
+          if (aptsData.status === 'fulfilled' && aptsData.value) {
+            setAppointments(Array.isArray(aptsData.value) ? aptsData.value : []);
+          }
+          if (queueData.status === 'fulfilled' && queueData.value && queueData.value.queue_id) {
+            setActiveQueue(queueData.value);
+          } else {
+            setActiveQueue(null);
+          }
+          if (notifsData.status === 'fulfilled' && notifsData.value) {
+            const notifList = Array.isArray(notifsData.value)
+              ? notifsData.value
+              : Array.isArray(notifsData.value?.notifications)
+                ? notifsData.value.notifications
+                : [];
+            setNotifications(notifList);
+          }
+        }).catch(console.error);
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleMarkAllNotifsRead = async () => {
+    const patientId = user?.patient_id || user?.user_id;
+    if (!patientId) return;
+    try {
+      await hospitalApi.markAllNotificationsRead(patientId);
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    const patientId = user?.patient_id || user?.user_id;
+    if (!patientId) return;
+    setProfileSaving(true);
+    setProfileSuccess(false);
+    try {
+      await hospitalApi.updateMyProfile({
+        name: profileForm.name,
+        phone: profileForm.phone,
+        email: profileForm.email,
+        age: profileForm.age ? Number(profileForm.age) : null,
+        gender: profileForm.gender,
+        city: profileForm.city,
+        height_cm: profileForm.height_cm ? Number(profileForm.height_cm) : null,
+        weight_kg: profileForm.weight_kg ? Number(profileForm.weight_kg) : null,
+        pdo: profileForm.pdo
+      });
+      setProfileSuccess(true);
+      setTimeout(() => setProfileSuccess(false), 3000);
+      await loadDashboardData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update profile');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleJoinQueue = async (appointment) => {
+    setJoining(true);
+    try {
+      // 1. Request fresh browser GPS position
+      let originLat = null;
+      let originLon = null;
+      let isApprox = true;
+      let patientAddress = appointment.patient_address || appointment.city || user.city || user.address || 'Tumakuru';
+      let city = appointment.city || appointment.patient_address || user.city || user.address || 'Tumakuru';
+
+      const freshGps = await getBrowserLocation({ timeout: 8000, maximumAge: 0 });
+
+      if (freshGps.success && freshGps.latitude != null && freshGps.longitude != null) {
+        originLat = freshGps.latitude;
+        originLon = freshGps.longitude;
+        isApprox = false;
+        patientAddress = appointment.patient_address || appointment.city || 'Current GPS Location';
+      } else {
+        // GPS denied or unavailable: preserve existing stored GPS if available
+        if (appointment.origin_latitude != null && appointment.origin_longitude != null) {
+          originLat = appointment.origin_latitude;
+          originLon = appointment.origin_longitude;
+          isApprox = appointment.is_approximate_location ?? false;
+        } else {
+          // Preserve landmark fallback
+          originLat = null;
+          originLon = null;
+          isApprox = true;
+        }
+      }
+
+      const res = await hospitalApi.joinQueue({
+        patient_id: user.patient_id || user.user_id,
+        doctor_id: appointment.doctor_id,
+        department: appointment.department,
+        priority: appointment.priority || 'normal',
+        symptoms: appointment.symptoms || [],
+        custom_symptoms: appointment.custom_symptoms || '',
+        city: city,
+        patient_address: patientAddress,
+        origin_latitude: originLat,
+        origin_longitude: originLon,
+        is_approximate_location: isApprox
+      });
+      const queueId = res.queue_id || res.data?.queue_id;
+      if (queueId) {
+        navigate(`/tracking?queue_id=${queueId}`);
+      }
+    } catch (err) {
+      console.error('Failed to join queue', err);
+      alert(err.response?.data?.error || 'Unable to join live queue. Please retry.');
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const handleArrived = async (queueId) => {
+    setActionLoading(true);
+    try {
+      await hospitalApi.arriveAtHospital(queueId);
+      await loadDashboardData();
+    } catch (err) {
+      console.error(err);
+      alert('Could not mark arrival. Please retry.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEscalateEmergency = async (queueId) => {
+    if (!window.confirm('Are you experiencing an acute medical emergency? This will immediately escalate your queue priority to #1.')) return;
+    setActionLoading(true);
+    try {
+      await hospitalApi.escalateEmergency(queueId);
+      await loadDashboardData();
+    } catch (err) {
+      console.error(err);
+      alert('Could not escalate emergency. Please notify hospital staff directly.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+
+  // Filter upcoming vs past appointments
+  const nowStr = new Date().toISOString().split('T')[0];
+  const upcomingAppointments = appointments.filter(
+    (a) => a.consultation_date >= nowStr && a.status !== 'completed' && a.status !== 'cancelled'
+  );
+  const pastAppointments = appointments.filter(
+    (a) => a.consultation_date < nowStr || a.status === 'completed' || a.status === 'cancelled'
+  );
+
+  const nextAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : (appointments[0] || null);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <LoadingState message="Loading your patient portal records & queue status..." />
+      </div>
+    );
+  }
+
   return (
+    <div className="min-h-screen bg-slate-50/70 py-8 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        {/* TOP WELCOME BANNER (Blue/Teal Primary) */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-sky-900 via-slate-900 to-teal-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl">
+          <div className="absolute right-0 top-0 -mt-8 -mr-8 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-sky-500/20 text-sky-300 rounded-full text-xs font-bold border border-sky-400/30">
+                <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+                <span>Patient ID: {user?.patient_id || 'SHP-2026-PT'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-emerald-300 text-[11px]">Portal Active</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                Welcome, {user?.name || 'Valued Patient'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Track your upcoming consultations, monitor live OPD waiting tokens, and view smart departure calculations in real time.
+              </p>
+            </div>
 
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={loadDashboardData}
+                className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl text-xs transition flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
+                title="Refresh Records"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
+              <Link
+                to="/book"
+                className="flex-1 md:flex-none px-6 py-3 bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Book Consultation</span>
+              </Link>
+            </div>
+          </div>
+        </div>
 
-      {/* WELCOME BANNER */}
+        {/* 4 SUMMARY STATS TILES (Strict Color System) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Active / Next Appointment (Blue/Teal) */}
+          <div className="bg-white rounded-2xl p-5 border border-sky-100 shadow-xs hover:border-sky-300 transition">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Upcoming Visits</span>
+              <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <Calendar className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-slate-900">{upcomingAppointments.length}</div>
+            <p className="text-[11px] text-sky-600 font-semibold mt-0.5">
+              {upcomingAppointments.length > 0 ? 'Confirmed in system' : 'No upcoming visits'}
+            </p>
+          </div>
 
-      <div className="bg-gradient-to-r from-sky-900 via-slate-900 to-slate-950 rounded-3xl p-8 sm:p-10 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          {/* Active Queue Token (Orange/Amber) */}
+          <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-xs hover:border-amber-300 transition">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Live OPD Token</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <Ticket className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-amber-900">
+              {activeQueue ? `#${activeQueue.position}` : 'None'}
+            </div>
+            <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+              {activeQueue ? `${activeQueue.queue_id} in progress` : 'Not in queue line'}
+            </p>
+          </div>
 
-        <div>
+          {/* AI Wait Estimate (Purple) */}
+          <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:border-purple-300 transition">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">AI Estimated Wait</span>
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <Cpu className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-purple-900">
+              {activeQueue?.predicted_wait_time ? `~${activeQueue.predicted_wait_time}m` : '~12m'}
+            </div>
+            <p className="text-[11px] text-purple-700 font-semibold mt-0.5 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-purple-500" />
+              <span>ML Random Forest</span>
+            </p>
+          </div>
 
-          <span className="text-xs font-extrabold uppercase tracking-widest text-sky-400 block mb-2">
-
-            Patient Portal & Smart Departure System
-
-          </span>
-
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">
-
-            Welcome, {user?.name || 'Patient'}
-
-          </h1>
-
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-
-            Track your upcoming consultation, monitor live queue movement, and view recommended departure times.
-
-          </p>
+          {/* Completed Consultations (Green) */}
+          <div 
+            onClick={() => handleTabChange('medical-history')}
+            className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-xs hover:border-emerald-300 hover:shadow-sm transition cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Completed Visits</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-800">{medicalHistory.length}</div>
+            <p className="text-[11px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+              <span>View medical records</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </p>
+          </div>
 
         </div>
 
-        <Link
+        {/* TAB NAVIGATION: OVERVIEW | MEDICAL HISTORY | APPOINTMENTS | NOTIFICATIONS | PROFILE */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 text-xs font-bold scrollbar-thin">
+          <button
+            onClick={() => handleTabChange('overview')}
+            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 ${
+              activeTab === 'overview'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            Overview & Live Token
+          </button>
 
-          to="/book"
+          <button
+            onClick={() => handleTabChange('medical-history')}
+            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              (activeTab === 'medical-history' || activeTab === 'history')
+                ? 'bg-teal-700 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-teal-300" />
+            <span>{t('my_medical_history')}</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+              (activeTab === 'medical-history' || activeTab === 'history') ? 'bg-white text-teal-800' : 'bg-teal-100 text-teal-800'
+            }`}>
+              {medicalHistory.length}
+            </span>
+          </button>
 
-          className="w-full md:w-auto px-6 py-3.5 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2"
+          <button
+            onClick={() => handleTabChange('appointments')}
+            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'appointments'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Appointment Bookings ({appointments.length})</span>
+          </button>
 
-        >
+          <button
+            onClick={() => handleTabChange('notifications')}
+            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'notifications'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5" />
+            <span>Notifications ({notifications.length})</span>
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
+          </button>
 
-          <Plus className="w-4 h-4" /> Book New Consultation
+          <button
+            onClick={() => handleTabChange('profile')}
+            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'profile'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>{t('my_profile')}</span>
+          </button>
+        </div>
 
-        </Link>
+        {/* TAB 1: OVERVIEW & QUEUE TOKEN */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            {/* URGENT REAL-TIME CALLOUT: DOCTOR IS CALLING PATIENT NOW */}
+            {activeQueue && activeQueue.status === 'called' && (
+              <div className="bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 rounded-3xl p-6 sm:p-7 text-white shadow-xl animate-pulse flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-white/40">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                    <PhoneCall className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-100 block">
+                      Urgent Live OPD Notification
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold">
+                      Doctor is Calling Your Token (#{activeQueue.queue_id}) Now!
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/90 mt-0.5">
+                      Please proceed immediately to <span className="font-bold underline">{activeQueue.room_number || 'Room 204'}</span> for your consultation.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to={`/tracking?queue_id=${activeQueue.queue_id}`}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-white text-slate-900 hover:bg-slate-100 font-extrabold rounded-2xl text-xs transition shadow-lg shrink-0 text-center cursor-pointer"
+                >
+                  Open Live Pass & Directions
+                </Link>
+              </div>
+            )}
+
+            {/* MISSED CONSULTATION CALLOUT: Patient was unavailable when called */}
+            {activeQueue && (activeQueue.status === 'missed' || activeQueue.status === 'missed_consultation') && (
+              <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 rounded-3xl p-6 sm:p-7 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-white/40">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                    <Clock className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-100 block">
+                      {t('missed_alert_title')}
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold">
+                      Token #{activeQueue.queue_id} • {t('missed')}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/90 mt-0.5">
+                      {t('missed_alert_desc')}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to={`/tracking?queue_id=${activeQueue.queue_id}`}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-white text-amber-950 hover:bg-amber-50 font-extrabold rounded-2xl text-xs transition shadow-lg shrink-0 text-center cursor-pointer"
+                >
+                  {t('live_token')}
+                </Link>
+              </div>
+            )}
+
+            {/* ACTIVE LIVE QUEUE SPOTLIGHT (If currently in queue) */}
+            {activeQueue && (
+              <div className="bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-teal-500/10 rounded-3xl p-6 sm:p-8 border border-amber-200/80 shadow-md space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-amber-200/60">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-md animate-pulse">
+                      <Activity className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="inline-flex items-center gap-2">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900">
+                          {t('live_token')}
+                        </span>
+                        <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 rounded-full text-xs font-mono font-black">
+                          TOKEN #{activeQueue.queue_id}
+                        </span>
+                      </div>
+                      <h2 className="text-xl font-extrabold text-slate-900">
+                        {t('position')} #{activeQueue.position} • {activeQueue.doctor_name || activeQueue.doctor_id || 'Assigned Specialist'}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <Link
+                    to={`/tracking?queue_id=${activeQueue.queue_id}`}
+                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
+                  >
+                    <span>{t('live_token')}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                {/* 4 QUEUE STATUS TILES */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white/90 p-4 rounded-2xl border border-amber-100 shadow-xs">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Patients Ahead</span>
+                    <div className="text-xl font-black text-amber-900 mt-0.5">
+                      {Math.max(0, activeQueue.position - 1)} {Math.max(0, activeQueue.position - 1) === 1 ? 'Patient' : 'Patients'}
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      Ahead in OPD line
+                    </div>
+                  </div>
+
+                  <div className="bg-white/90 p-4 rounded-2xl border border-purple-100 shadow-xs">
+                    <span className="text-[11px] font-bold text-purple-600 uppercase block flex items-center gap-1">
+                      <Cpu className="w-3.5 h-3.5" /> {t('estimated_wait_time')}
+                    </span>
+                    <div className="text-xl font-black text-purple-900 mt-0.5">
+                      ~{activeQueue.predicted_wait_time || 15} mins
+                    </div>
+                    <div className="text-[10px] text-purple-700 font-semibold mt-0.5">
+                      Random Forest Model
+                    </div>
+                  </div>
+
+                  <div className="bg-white/90 p-4 rounded-2xl border border-sky-100 shadow-xs">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Doctor Status</span>
+                    <div className="text-sm font-extrabold text-sky-900 mt-1 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{activeQueue.status === 'in_consultation' ? t('in_consultation') : t('waiting')}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      {activeQueue.room_number || 'Room 204'} • {activeQueue.department}
+                    </div>
+                  </div>
+
+                  <div className="bg-white/90 p-4 rounded-2xl border border-teal-100 shadow-xs">
+                    <span className="text-[11px] font-bold text-teal-700 uppercase block flex items-center gap-1">
+                      <Navigation className="w-3.5 h-3.5" /> {t('recommended_departure')}
+                    </span>
+                    <div className="text-xl font-black text-teal-900 mt-0.5">
+                      {activeQueue.travel_info?.recommended_departure_time || 'Leave Soon'}
+                    </div>
+                    <div className="text-[10px] text-teal-700 mt-0.5">
+                      From {activeQueue.city || 'Tumakuru'} (~{activeQueue.travel_info?.travel_time_minutes || 15}m transit)
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6-DIGIT HOSPITAL ARRIVAL VERIFICATION CODE CARD */}
+                <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-6 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400 block">
+                      {t('arrival_otp')}
+                    </span>
+                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-widest text-emerald-400 mt-1">
+                      {activeQueue.arrival_otp || '123456'}
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1 max-w-lg">
+                      {t('arrival_otp_instruction')}
+                    </p>
+                  </div>
+
+                  <div>
+                    {activeQueue.verified_by_admin || activeQueue.arrived_at_hospital ? (
+                      <span className="px-4 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold inline-flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Arrival Verified at Reception Desk</span>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleArrived(activeQueue.queue_id)}
+                        disabled={actionLoading}
+                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>I Have Arrived at Reception</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MAIN SECTION: UPCOMING CONSULTATION CARD */}
+            {nextAppointment ? (
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm hover:shadow-md transition">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-5 mb-6 gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center">
+                        <Calendar className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block">
+                          Confirmed Upcoming Consultation
+                        </span>
+                        <h3 className="text-lg font-extrabold text-slate-900">
+                          Booking Reference: <span className="font-mono text-sky-700">{nextAppointment.booking_id}</span>
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={nextAppointment.priority || 'normal'} type="priority" />
+                      <StatusBadge status={nextAppointment.status} type="status" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Specialist & Specialty</span>
+                      <div className="text-base font-bold text-slate-900">{nextAppointment.doctor_id || 'Specialist Doctor'}</div>
+                      <div className="text-xs font-bold text-sky-700 mt-0.5">{nextAppointment.department || 'Clinical OPD'}</div>
+                    </div>
+
+                    <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Clinic & Room</span>
+                      <div className="text-base font-bold text-emerald-700 flex items-center gap-1.5 mt-0.5">
+                        <DoorOpen className="w-4 h-4" />
+                        <span>{nextAppointment.room_number || 'Room 204'}</span>
+                      </div>
+                      <div className="text-xs text-slate-500">SIMSRH Campus, Sira Road, Tumakuru</div>
+                    </div>
+
+                    <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Scheduled Date & Token</span>
+                      <div className="text-base font-bold text-slate-900 mt-0.5">{nextAppointment.consultation_date}</div>
+                      <div className="text-xs font-mono font-bold text-sky-700">
+                        {nextAppointment.queue_id ? `Token: ${nextAppointment.queue_id}` : 'Token Assigned on Entry'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Symptoms summary */}
+                  {nextAppointment.symptoms && nextAppointment.symptoms.length > 0 && (
+                    <div className="bg-slate-50 p-4 rounded-2xl mb-6 text-xs text-slate-700 border border-slate-100">
+                      <span className="font-bold text-slate-900 block mb-1.5">Reported Symptoms:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {nextAppointment.symptoms.map((s, i) => (
+                          <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-semibold rounded-lg border border-slate-200">
+                            {s}
+                          </span>
+                        ))}
+                        {nextAppointment.custom_symptoms && (
+                          <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-lg border border-amber-200">
+                            {nextAppointment.custom_symptoms}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-t border-slate-100 pt-5 gap-3">
+                    <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Your consultation is registered in the hospital database.</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {nextAppointment.queue_id ? (
+                        <Link
+                          to={`/tracking?queue_id=${nextAppointment.queue_id}`}
+                          className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-2"
+                        >
+                          <span>Track Live Queue & Pass</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => handleJoinQueue(nextAppointment)}
+                          disabled={joining}
+                          className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                        >
+                          <span>{joining ? 'Assigning Token...' : 'Enter Live Queue'}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* INTEGRATED TUMKUR SMART DEPARTURE CARD */}
+                <DepartureCard travelInfo={nextAppointment.travel_info} />
+              </div>
+            ) : (
+              /* EMPTY STATE */
+              <div className="bg-white rounded-3xl p-10 sm:p-14 text-center border border-slate-200/90 shadow-sm max-w-lg mx-auto space-y-4">
+                <div className="w-16 h-16 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                  <Stethoscope className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold text-slate-900 mb-1">No Active Consultations Found</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
+                    Schedule an appointment with an OPD specialist at SIMSRH Tumakuru to receive a queue token and transit departure guidance.
+                  </p>
+                </div>
+                <Link
+                  to="/book"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer"
+                >
+                  <span>Schedule Consultation</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
+            {/* RECENT MEDICAL CONSULTATION SPOTLIGHT */}
+            {medicalHistory.length > 0 && (
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-teal-200/80 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-700 block">
+                        Recent Clinical Consultation
+                      </span>
+                      <h4 className="text-base font-extrabold text-slate-900">
+                        {medicalHistory[0].doctor_name || medicalHistory[0].doctor_id || 'Attending Physician'}
+                        <span className="text-xs font-semibold text-slate-500 ml-2">
+                          ({medicalHistory[0].department || 'General Medicine'})
+                        </span>
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-teal-600" />
+                      {medicalHistory[0].consultation_date || (medicalHistory[0].created_at ? medicalHistory[0].created_at.split('T')[0] : 'Recent')}
+                    </span>
+                    <button
+                      onClick={() => handleTabChange('medical-history')}
+                      className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>View All ({medicalHistory.length})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-sky-50/50 rounded-xl border border-sky-100">
+                    <span className="text-[10px] font-bold text-sky-800 uppercase tracking-wider block mb-1">
+                      Reported Symptoms
+                    </span>
+                    <p className="text-slate-700 font-medium">
+                      {(medicalHistory[0].patient_reported?.symptoms || medicalHistory[0].symptoms || []).join(', ') || 'Routine consultation'}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block mb-1">
+                      Clinical Assessment / Diagnosis
+                    </span>
+                    <p className="text-slate-800 font-semibold">
+                      {medicalHistory[0].doctor_assessment?.diagnosis || medicalHistory[0].diagnosis || (
+                        <span className="italic text-slate-400">Diagnosis pending physician entry</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-400">
+                    Ref: <strong className="font-mono text-slate-600">{medicalHistory[0].queue_id || medicalHistory[0].consultation_id || 'OPD-REC'}</strong>
+                  </span>
+                  <button
+                    onClick={() => setSelectedRecord(medicalHistory[0])}
+                    className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>{t('view_full_record')}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: NOTIFICATIONS & LIVE TRANSIT ALERTS */}
+        {activeTab === 'notifications' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">Hospital Transit & Queue Alerts</h3>
+                <p className="text-xs text-slate-500">Live departure notices, queue predictions, and hospital arrival updates</p>
+              </div>
+              {notifications.length > 0 && (
+                <button
+                  onClick={handleMarkAllNotifsRead}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  Mark All as Read
+                </button>
+              )}
+            </div>
+
+            {notifications.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-xs">
+                <Bell className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                <p className="font-bold text-slate-700">No active notifications.</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">You will receive departure alerts and wait time estimates when you book a consultation.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {notifications.map((n) => (
+                  <div key={n.notification_id || Math.random()} className={`py-4 flex items-start gap-4 ${!n.read ? 'bg-sky-50/40 p-3 rounded-2xl' : ''}`}>
+                    <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                      <Bell className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-extrabold text-xs text-slate-900">{n.title}</span>
+                        <span className="px-2 py-0.5 bg-sky-100 text-sky-800 text-[10px] font-bold rounded-md">
+                          {n.type || 'Alert'}
+                        </span>
+                        {!n.read && (
+                          <span className="w-2 h-2 rounded-full bg-sky-600" />
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-700 font-medium leading-relaxed">{n.message}</p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        {n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: MY MEDICAL HISTORY (Chronological Consultation Timeline) */}
+        {(activeTab === 'medical-history' || activeTab === 'history') && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200">
+                    SIMSRH Patient EMR
+                  </span>
+                </div>
+                <h3 className="text-xl font-extrabold text-slate-900">{t('my_medical_history')}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t('medical_history_subtitle')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  <span>{medicalHistory.length} {t('total_visits')}</span>
+                </span>
+              </div>
+            </div>
+
+            {medicalHistory.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-sm space-y-3">
+                <FileText className="w-12 h-12 text-slate-300 mx-auto" />
+                <h4 className="text-base font-bold text-slate-800">{t('no_history_yet')}</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Completed consultations and physician clinical assessments will automatically appear here chronologically once your consultation is concluded by your doctor.
+                </p>
+                <Link
+                  to="/book"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition mt-2"
+                >
+                  <Plus className="w-4 h-4" /> Book a Consultation
+                </Link>
+              </div>
+            ) : (
+              <div className="relative pl-4 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-teal-200">
+                {medicalHistory.map((item, idx) => {
+                  const date = item.consultation_date || (item.created_at ? item.created_at.split('T')[0] : 'N/A');
+                  const time = item.consultation_time || (item.created_at && item.created_at.includes('T') ? item.created_at.split('T')[1].substring(0, 5) : 'OPD Hours');
+                  const vitals = item.vitals_at_consultation || {};
+                  const pReported = item.patient_reported || {};
+                  const dAssess = item.doctor_assessment || {};
+                  const symptoms = pReported.symptoms || item.symptoms || [];
+                  const symptomsList = Array.isArray(symptoms) ? symptoms : [symptoms];
+                  const diagnosis = dAssess.diagnosis || item.diagnosis;
+                  const notes = dAssess.notes || item.doctor_notes;
+                  const advice = dAssess.advice || item.doctor_advice;
+                  const itemHeight = vitals.height_cm ?? item.height_cm;
+                  const itemWeight = vitals.weight_kg ?? item.weight_kg;
+                  const itemBmi = vitals.bmi ?? (itemHeight && itemWeight ? (itemWeight / Math.pow(itemHeight / 100, 2)).toFixed(1) : null);
+
+                  return (
+                    <div key={item.consultation_id || item.queue_id || idx} className="relative group">
+                      {/* Timeline Dot */}
+                      <div className="absolute -left-4 sm:-left-8 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-teal-600 border-4 border-white shadow-sm group-hover:scale-125 transition-transform" />
+
+                      {/* Consultation Card */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-300 transition space-y-5">
+                        {/* Top Section: Patient Full Name & Clinical Reference Identifiers */}
+                        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
+                                Consultation Record
+                              </span>
+                              <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+                                Patient ID: {item.patient_id || user?.patient_id || 'N/A'}
+                              </span>
+                              <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                                ID: {item.consultation_id || item.queue_id || 'OPD-REC'}
+                              </span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                <CheckCircle2 className="w-3 h-3" /> {t('visit_completed')}
+                              </span>
+                            </div>
+
+                            {/* Patient's FULL NAME prominently displayed */}
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 pt-0.5">
+                              <User className="w-5 h-5 text-teal-600 shrink-0" />
+                              <span>{item.patient_name || user?.name || 'Patient'}</span>
+                            </h3>
+
+                            {/* Doctor, Department, Date & Time */}
+                            <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-600 pt-0.5">
+                              <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                                <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                                <span>{item.doctor_name || item.doctor_id || 'Attending Specialist'}</span>
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                                {item.department || 'General Medicine'}
+                              </span>
+                              <span className="text-slate-300">•</span>
+                              <span className="font-bold text-teal-700 flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" /> {date}
+                              </span>
+                              <span className="text-slate-300">•</span>
+                              <span className="text-slate-500 flex items-center gap-1 font-medium">
+                                <Clock className="w-3.5 h-3.5" /> {time}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => setSelectedRecord(item)}
+                            className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
+                          >
+                            <FileText className="w-4 h-4" />
+                            <span>{t('view_full_record')}</span>
+                          </button>
+                        </div>
+
+                        {/* Vitals Summary Bar (Age, Gender, Height, Weight, BMI, Illness Duration, Origin) */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70">
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">{t('age_years')}</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block">{vitals.age ?? item.age ?? '—'} yrs</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">{t('gender')}</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block">{vitals.gender ?? item.gender ?? '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">{t('height')}</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block">{itemHeight ? `${itemHeight} cm` : '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">{t('weight')}</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block">{itemWeight ? `${itemWeight} kg` : '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">{t('calculated_bmi')}</span>
+                            <span className="font-extrabold text-teal-700 mt-0.5 block">{itemBmi ? `${itemBmi} kg/m²` : '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">Duration</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block">{pReported.duration_days ?? item.duration_days ?? 1} day(s)</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] font-bold uppercase">Origin</span>
+                            <span className="font-bold text-slate-800 mt-0.5 block truncate" title={vitals.city || item.city || 'Tumakuru'}>
+                              📍 {vitals.city || item.city || 'Tumakuru'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Two Column Clinical Comparison */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Left Column: Patient-Reported Complaints */}
+                          <div className="p-4 rounded-xl border border-sky-100 bg-sky-50/40 space-y-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-sky-800 flex items-center gap-1">
+                              <User className="w-3 h-3" /> {t('patient_reported_complaints')}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {symptomsList.length > 0 ? (
+                                symptomsList.map((s, sIdx) => (
+                                  <span key={sIdx} className="px-2 py-0.5 rounded text-xs font-semibold bg-white text-sky-900 border border-sky-200 shadow-xs">
+                                    • {s}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs italic text-slate-400">No symptoms reported</span>
+                              )}
+                            </div>
+                            {pReported.duration_days && (
+                              <p className="text-xs text-slate-600 font-medium pt-1">
+                                Duration of Illness: <strong>{pReported.duration_days} day(s)</strong>
+                              </p>
+                            )}
+                            {pReported.custom_symptoms && (
+                              <p className="text-xs text-slate-600 italic bg-white p-2 rounded border border-sky-100">
+                                "{pReported.custom_symptoms}"
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Right Column: Doctor-Recorded Assessment */}
+                          <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 space-y-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1">
+                              <Stethoscope className="w-3 h-3" /> {t('doctor_assessment')}
+                            </span>
+                            <div>
+                              <span className="text-[11px] text-slate-400 font-semibold block">{t('diagnosis')}:</span>
+                              {diagnosis ? (
+                                <span className="text-xs font-bold text-emerald-900 bg-white px-2 py-1 rounded inline-block border border-emerald-200 mt-0.5">
+                                  {diagnosis}
+                                </span>
+                              ) : (
+                                <span className="text-xs italic text-slate-500">
+                                  {t('no_diagnosis_recorded')}
+                                </span>
+                              )}
+                            </div>
+                            {notes && (
+                              <p className="text-xs text-slate-700 pt-1 line-clamp-2">
+                                <strong className="text-slate-900">Notes: </strong>{notes}
+                              </p>
+                            )}
+                            {advice && (
+                              <p className="text-xs text-slate-700 line-clamp-2">
+                                <strong className="text-slate-900">Advice: </strong>{advice}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: APPOINTMENT BOOKINGS */}
+        {activeTab === 'appointments' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">Consultation & Appointment Bookings</h3>
+                <p className="text-xs text-slate-500">Log of your scheduled clinic visits and active queue bookings</p>
+              </div>
+              <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold">
+                {appointments.length} Bookings
+              </span>
+            </div>
+
+            {appointments.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-xs">
+                <Calendar className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                <p>No appointment records found.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
+                      <th className="pb-3 px-3">Booking ID</th>
+                      <th className="pb-3 px-3">Token #</th>
+                      <th className="pb-3 px-3">Doctor & Dept</th>
+                      <th className="pb-3 px-3">Date</th>
+                      <th className="pb-3 px-3">Symptoms</th>
+                      <th className="pb-3 px-3">Priority</th>
+                      <th className="pb-3 px-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    {appointments.map((apt) => (
+                      <tr key={apt.booking_id} className="hover:bg-slate-50 transition">
+                        <td className="py-3 px-3 font-mono font-bold text-sky-700">{apt.booking_id}</td>
+                        <td className="py-3 px-3 font-mono font-black text-slate-900">{apt.queue_id || '—'}</td>
+                        <td className="py-3 px-3 text-[11px]">
+                          <div className="font-bold text-slate-900">{apt.doctor_id}</div>
+                          <div className="text-sky-700 font-semibold">{apt.department}</div>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-slate-800">{apt.consultation_date}</td>
+                        <td className="py-3 px-3 text-[11px] text-slate-600 max-w-[140px] truncate">
+                          {Array.isArray(apt.symptoms) ? apt.symptoms.join(', ') : 'General OPD'}
+                        </td>
+                        <td className="py-3 px-3">
+                          <StatusBadge status={apt.priority || 'normal'} type="priority" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <StatusBadge status={apt.status} type="status" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: MY PATIENT PROFILE (Dedicated persistent profile viewing and editing) */}
+        {activeTab === 'profile' && (
+          <div className="space-y-6 max-w-6xl mx-auto">
+            {/* Page Header */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                    Patient ID: {user?.patient_id || patientProfile?.patient_id || 'N/A'}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span>Verified Profile</span>
+                  </span>
+                </div>
+                <h3 className="text-xl font-extrabold text-slate-900">{t('patient_profile', 'Patient Profile & Master Record')}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Manage your persistent hospital registration details, physical vitals, and contact information.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleTabChange('medical-history')}
+                  className="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-teal-200 cursor-pointer"
+                >
+                  <Activity className="w-3.5 h-3.5 text-teal-600" />
+                  <span>View Medical History ({medicalHistory.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {profileSuccess && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center gap-2 shadow-xs">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-bold">{t('profile_updated_success', 'Patient profile details updated successfully!')}</span>
+              </div>
+            )}
+
+            {/* 2-Column Responsive Layout: Left = Master Profile Card, Right = Edit Form */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* LEFT: MASTER PATIENT PROFILE CARD (5 cols) */}
+              <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-6">
+                <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-600 to-teal-600 text-white flex items-center justify-center text-2xl font-black shadow-md shadow-sky-600/20 shrink-0">
+                    {(profileForm.name || user?.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-slate-900 leading-tight">
+                      {profileForm.name || user?.name || 'Valued Patient'}
+                    </h4>
+                    <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded mt-1 inline-block border border-sky-200">
+                      ID: {user?.patient_id || patientProfile?.patient_id || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Contact & Origin Summary */}
+                <div className="space-y-3 text-xs">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                    Contact & Geographic Origin
+                  </span>
+                  
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <span className="text-slate-500 flex items-center gap-1.5">
+                      <PhoneCall className="w-3.5 h-3.5 text-slate-400" /> Phone
+                    </span>
+                    <span className="font-mono font-bold text-slate-900">{profileForm.phone || user?.phone || '—'}</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <span className="text-slate-500 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> Email
+                    </span>
+                    <span className="font-semibold text-slate-900 truncate max-w-[180px]">{profileForm.email || user?.email || 'Not Provided'}</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <span className="text-slate-500 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> Village / City
+                    </span>
+                    <span className="font-bold text-slate-900">{profileForm.city || 'Tumakuru'}</span>
+                  </div>
+                </div>
+
+                {/* Demographics & Physical Vitals */}
+                <div className="space-y-3 text-xs pt-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                    Demographics & Physical Vitals
+                  </span>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-slate-400 text-[11px] block">{t('age_years')}</span>
+                      <span className="font-black text-slate-900 text-sm mt-0.5 block">{profileForm.age || '—'} yrs</span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-slate-400 text-[11px] block">{t('gender')}</span>
+                      <span className="font-black text-slate-900 text-sm mt-0.5 block">{profileForm.gender || '—'}</span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-slate-400 text-[11px] block">{t('height')}</span>
+                      <span className="font-black text-slate-900 text-sm mt-0.5 block">{profileForm.height_cm ? `${profileForm.height_cm} cm` : '—'}</span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-slate-400 text-[11px] block">{t('weight')}</span>
+                      <span className="font-black text-slate-900 text-sm mt-0.5 block">{profileForm.weight_kg ? `${profileForm.weight_kg} kg` : '—'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* BMI Health Status Spotlight */}
+                {(() => {
+                  const h = Number(profileForm.height_cm);
+                  const w = Number(profileForm.weight_kg);
+                  const bmiVal = (h && w) ? (w / Math.pow(h / 100, 2)).toFixed(1) : null;
+                  let bmiCategory = 'Awaiting Height & Weight';
+                  let bmiColor = 'bg-slate-100 text-slate-600 border-slate-200';
+                  if (bmiVal) {
+                    const num = Number(bmiVal);
+                    if (num < 18.5) {
+                      bmiCategory = 'Underweight (<18.5)';
+                      bmiColor = 'bg-amber-100 text-amber-900 border-amber-300';
+                    } else if (num < 25) {
+                      bmiCategory = 'Normal / Healthy Weight (18.5–24.9)';
+                      bmiColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                    } else if (num < 30) {
+                      bmiCategory = 'Overweight (25–29.9)';
+                      bmiColor = 'bg-purple-100 text-purple-900 border-purple-300';
+                    } else {
+                      bmiCategory = 'Obese (≥30)';
+                      bmiColor = 'bg-rose-100 text-rose-900 border-rose-300';
+                    }
+                  }
+
+                  return (
+                    <div className="p-4 rounded-2xl border border-teal-200 bg-teal-50/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-teal-600" /> Body Mass Index (BMI)
+                        </span>
+                        <span className="font-mono font-black text-sm text-teal-900">
+                          {bmiVal ? `${bmiVal} kg/m²` : '—'}
+                        </span>
+                      </div>
+                      <div className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border text-center ${bmiColor}`}>
+                        {bmiCategory}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* RIGHT: UPDATE PATIENT PROFILE FORM (7 cols) */}
+              <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5">
+                <div className="border-b border-slate-100 pb-3">
+                  <h4 className="text-base font-extrabold text-slate-900">Update Profile Information</h4>
+                  <p className="text-xs text-slate-500">Edit demographic and physical details to keep your medical records current</p>
+                </div>
+
+                <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('full_name')} *</label>
+                      <input
+                        type="text"
+                        required
+                        value={profileForm.name}
+                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                        placeholder="e.g. Ramesh Kumar"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('phone_number')} *</label>
+                      <input
+                        type="tel"
+                        required
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                        placeholder="e.g. 9876543210"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        value={profileForm.email}
+                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                        placeholder="patient@example.com"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('village_city')} *</label>
+                      <input
+                        type="text"
+                        required
+                        value={profileForm.city}
+                        onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                        placeholder="e.g. Tumakuru, Sira, Gubbi"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('age_years')}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={profileForm.age}
+                        onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
+                        placeholder="e.g. 38"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('gender')}</label>
+                      <select
+                        value={profileForm.gender}
+                        onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('height')} (cm)</label>
+                      <input
+                        type="number"
+                        min="40"
+                        max="250"
+                        value={profileForm.height_cm}
+                        onChange={(e) => setProfileForm({ ...profileForm, height_cm: e.target.value })}
+                        placeholder="e.g. 172"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('weight')} (kg)</label>
+                      <input
+                        type="number"
+                        min="2"
+                        max="300"
+                        value={profileForm.weight_kg}
+                        onChange={(e) => setProfileForm({ ...profileForm, weight_kg: e.target.value })}
+                        placeholder="e.g. 68"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">{t('calculated_bmi')}</label>
+                      <div className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-teal-800">
+                        {profileForm.height_cm && profileForm.weight_kg 
+                          ? `${(Number(profileForm.weight_kg) / Math.pow(Number(profileForm.height_cm) / 100, 2)).toFixed(1)} kg/m²` 
+                          : 'Enter Ht & Wt'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">PDO Reference / Health Card ID (Optional)</label>
+                    <input
+                      type="text"
+                      value={profileForm.pdo || ''}
+                      onChange={(e) => setProfileForm({ ...profileForm, pdo: e.target.value })}
+                      placeholder="Optional local health card or reference number"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={profileSaving}
+                      className="w-full py-3.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>{profileSaving ? 'Saving Profile...' : t('update_profile', 'Update Profile Details')}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
 
-      {/* MAIN HERO CARD: YOUR NEXT CONSULTATION */}
-
-      {latestAppointment ? (
-
-        <div className="space-y-6">
-
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-200/80 shadow-md">
-
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
-
-              <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 flex items-center gap-1.5">
-
-                <Calendar className="w-4 h-4" /> Your Next Consultation
-
-              </span>
-
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">
-
-                {latestAppointment.status.toUpperCase()}
-
-              </span>
-
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-
-              <div>
-
-                <span className="text-[11px] font-semibold text-slate-400 block">Doctor & Department</span>
-
-                <div className="text-lg font-bold text-slate-900">{latestAppointment.doctor_id || 'Dr. Ananya Sharma'}</div>
-
-                <div className="text-xs font-semibold text-sky-700">{latestAppointment.department || 'Cardiology'}</div>
-
-              </div>
-
-              <div>
-
-                <span className="text-[11px] font-semibold text-slate-400 block">Location</span>
-
-                <div className="text-lg font-bold text-emerald-700 flex items-center gap-1">
-
-                  <DoorOpen className="w-5 h-5" />
-
-                  <span>{latestAppointment.room_number || 'Room 204'}</span>
-
-                </div>
-
-              </div>
-
-              <div>
-
-                <span className="text-[11px] font-semibold text-slate-400 block">Consultation Date</span>
-
-                <div className="text-lg font-bold text-slate-900">{latestAppointment.consultation_date}</div>
-
-              </div>
-
-            </div>
-
-            {/* Symptoms summary */}
-
-            {latestAppointment.symptoms && latestAppointment.symptoms.length > 0 && (
-
-              <div className="bg-slate-50 p-3 rounded-xl mb-6 text-xs text-slate-600">
-
-                <span className="font-bold text-slate-800">Presenting Symptoms: </span>
-
-                {latestAppointment.symptoms.join(', ')}
-
-              </div>
-
-            )}
-
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-
-              {latestAppointment.queue_id ? (
-
-                <Link
-
-                  to={`/tracking?queue_id=${latestAppointment.queue_id}`}
-
-                  className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2"
-
-                >
-
-                  <span>Track Live Queue & Hospital Mode</span>
-
-                  <ArrowRight className="w-4 h-4" />
-
-                </Link>
-
-              ) : (
-
-                <button
-
-                  onClick={() => handleJoinQueue(latestAppointment)}
-
-                  disabled={joining}
-
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2 disabled:opacity-60"
-
-                >
-
-                  <span>{joining ? 'Joining Queue...' : 'Join Live Queue'}</span>
-
-                  <ArrowRight className="w-4 h-4" />
-
-                </button>
-
-              )}
-
-            </div>
-
-          </div>
-
-          <DepartureCard travelInfo={latestAppointment.travel_info} />
-
-        </div>
-
-      ) : (
-
-        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 max-w-md mx-auto">
-
-          <Stethoscope className="w-12 h-12 text-sky-500 mx-auto mb-3" />
-
-          <h3 className="text-lg font-bold text-slate-900 mb-1">No Active Consultations</h3>
-
-          <p className="text-xs text-slate-500 mb-6">Book an advance consultation up to 2 days ahead to receive queue departure alerts.</p>
-
-          <Link
-
-            to="/book"
-
-            className="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
-
-          >
-
-            <span>Book Consultation Now</span>
-
-            <ArrowRight className="w-4 h-4" />
-
-          </Link>
-
-        </div>
-
+      {/* Full Consultation Record Modal */}
+      {selectedRecord && (
+        <ConsultationRecordModal 
+          record={selectedRecord} 
+          onClose={() => setSelectedRecord(null)} 
+        />
       )}
-
     </div>
-
   );
-
 }

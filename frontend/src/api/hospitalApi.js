@@ -7,7 +7,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000,
 });
 
 // Add JWT Token Interceptor using access_token key
@@ -79,6 +79,14 @@ export const hospitalApi = {
     const response = await apiClient.get(`/doctors/${doctorId}`);
     return response.data;
   },
+  getDoctorReviews: async (doctorId) => {
+    const response = await apiClient.get(`/doctors/${doctorId}/reviews`);
+    return response.data;
+  },
+  submitDoctorReview: async (doctorId, reviewData) => {
+    const response = await apiClient.post(`/doctors/${doctorId}/reviews`, reviewData);
+    return response.data;
+  },
 
   // 4. Symptoms
   getSymptoms: async () => {
@@ -101,6 +109,34 @@ export const hospitalApi = {
   },
   getPatientAppointments: async (patientId) => {
     const response = await apiClient.get(`/appointments/patient/${patientId}`);
+    return response.data;
+  },
+  getMyMedicalHistory: async () => {
+    const response = await apiClient.get('/patients/me/history');
+    return response.data;
+  },
+  updateMyProfile: async (payload) => {
+    const response = await apiClient.put('/patients/me', payload);
+    return response.data;
+  },
+  getConsultationRecord: async (consultationId) => {
+    const response = await apiClient.get(`/patients/records/${consultationId}`);
+    return response.data;
+  },
+  getPatientHistory: async (patientId) => {
+    const response = await apiClient.get(`/patients/${patientId}/history`);
+    return response.data;
+  },
+  getMyPatientProfile: async () => {
+    const response = await apiClient.get('/patients/me');
+    return response.data;
+  },
+  getPatientProfile: async (patientId) => {
+    const response = await apiClient.get(`/patients/${patientId}`);
+    return response.data;
+  },
+  updatePatientProfile: async (patientId, payload) => {
+    const response = await apiClient.put(`/patients/${patientId}`, payload);
     return response.data;
   },
   arriveAtHospital: async (queueOrBookingId) => {
@@ -162,8 +198,12 @@ export const hospitalApi = {
     const response = await apiClient.post(`/queue/${queueId}/start`);
     return response.data;
   },
-  completeQueueToken: async (queueId) => {
-    const response = await apiClient.post(`/queue/${queueId}/complete`);
+  completeQueueToken: async (queueId, payload = {}) => {
+    const response = await apiClient.post(`/queue/${queueId}/complete`, payload);
+    return response.data;
+  },
+  skipQueueToken: async (queueId) => {
+    const response = await apiClient.post(`/queue/${queueId}/skip`);
     return response.data;
   },
   cancelQueueToken: async (queueId) => {
@@ -197,5 +237,63 @@ export const hospitalApi = {
   markAllNotificationsRead: async (patientId) => {
     const response = await apiClient.post(`/notifications/patient/${patientId}/read-all`);
     return response.data;
+  },
+
+  // 10. Departments
+  getDepartments: async () => {
+    const response = await apiClient.get('/departments');
+    return response.data;
+  },
+  getDepartment: async (deptId) => {
+    const response = await apiClient.get(`/departments/${deptId}`);
+    return response.data;
+  },
+  createDepartment: async (payload) => {
+    const response = await apiClient.post('/departments', payload);
+    return response.data;
+  },
+
+  // 11. Smart Travel & Departure Calculation
+  calculateTravelDeparture: async (payload) => {
+    const response = await apiClient.post('/travel/calculate', payload);
+    return response.data;
+  },
+
+  // 12. Admin & System Management
+  getAdminStats: async () => {
+    const response = await apiClient.get('/admin/stats');
+    return response.data;
+  },
+  getAdminUsers: async () => {
+    const response = await apiClient.get('/admin/users');
+    return response.data;
+  },
+  adminCreateDoctor: async (payload) => {
+    const response = await apiClient.post('/admin/doctors', payload);
+    return response.data;
+  },
+  verifyArrivalOtp: async (tokenOrBookingId, otp) => {
+    const response = await apiClient.post('/queue/verify-arrival-otp', {
+      token_or_booking_id: tokenOrBookingId,
+      otp,
+    });
+    return response.data;
+  },
+  getAdminAppointments: async () => {
+    const response = await apiClient.get('/admin/appointments');
+    return response.data;
+  },
+  getAdminPatients: async (query = '') => {
+    const response = await apiClient.get(`/admin/patients${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+    return response.data;
+  },
+  adminSearchPatients: async (query = '') => {
+    const response = await apiClient.get(`/admin/patients${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+    return response.data;
+  },
+  adminGetPatientRecords: async (patientId) => {
+    const response = await apiClient.get(`/admin/patients/${patientId}/records`);
+    return response.data;
   }
 };
+

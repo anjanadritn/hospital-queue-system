@@ -54,6 +54,21 @@ def create_indexes(db):
         db.notifications.create_index("queue_id")
         db.notifications.create_index("status")
 
-        logger.info("Successfully ensured all MongoDB collection indexes.")
+        # 9. consultations (Permanent clinical medical history)
+        db.consultations.create_index("consultation_id", unique=True, sparse=True)
+        db.consultations.create_index("booking_id", sparse=True)
+        db.consultations.create_index("queue_id", sparse=True)
+        db.consultations.create_index("patient_id")
+        db.consultations.create_index([("patient_id", ASCENDING), ("consultation_date", DESCENDING)])
+
+        # 10. queue and appointments active references
+        db.queue.create_index("queue_id", unique=True, sparse=True)
+        db.queue.create_index("booking_id", sparse=True)
+        db.queue.create_index("patient_id")
+        db.appointments.create_index("booking_id", unique=True, sparse=True)
+        db.appointments.create_index("patient_id")
+        db.patients.create_index("phone", sparse=True)
+
+        logger.info("Successfully ensured all MongoDB collection indexes including consultations.")
     except Exception as e:
         logger.warning(f"Note on creating indexes: {e}")

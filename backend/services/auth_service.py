@@ -170,11 +170,28 @@ def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Op
 
     IN_MEMORY_AUTH_OTPS[f"{clean_phone}_{purpose}"] = otp_doc
 
+    # Dispatch via MSG91 if enabled (fail-safe: SMS failure does NOT break auth flow)
+    sms_sent = False
+    try:
+        from services.sms_service import sms_service, mask_phone
+        if getattr(config, "MSG91_SMS_ENABLED", False):
+            success, res, err = sms_service.send_otp(clean_phone, otp_code)
+            sms_sent = success
+            if not success:
+                logger.warning(
+                    "MSG91 SMS OTP dispatch failed for %s: %s (continuing with auth flow)",
+                    mask_phone(clean_phone),
+                    err
+                )
+    except Exception as sms_ex:
+        logger.warning("Unexpected error during SMS OTP dispatch: %s", type(sms_ex).__name__)
+
     response = {
         "message": f"OTP sent to {clean_phone} for {purpose}",
         "phone": clean_phone,
         "purpose": purpose,
-        "development_otp": otp_code
+        "development_otp": otp_code,
+        "sms_sent": sms_sent
     }
 
     return response, None
@@ -260,6 +277,13 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     user_id = f"U_PAT_{random.randint(1000, 9999)}"
     patient_id = f"P{random.randint(100, 999)}"
 
+    age = int(data["age"]) if "age" in data and data["age"] not in [None, ""] else None
+    gender = str(data.get("gender", "")).strip() or None
+    height_cm = float(data["height_cm"]) if "height_cm" in data and data["height_cm"] not in [None, ""] else None
+    weight_kg = float(data["weight_kg"]) if "weight_kg" in data and data["weight_kg"] not in [None, ""] else None
+    city = str(data.get("city") or data.get("address") or "Tumakuru").strip()
+    address = str(data.get("address") or data.get("city") or "").strip()
+
     user_doc = {
         "user_id": user_id,
         "patient_id": patient_id,
@@ -268,6 +292,12 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "email": email,
         "password_hash": generate_password_hash(password),
         "role": "patient",
+        "age": age,
+        "gender": gender,
+        "height_cm": height_cm,
+        "weight_kg": weight_kg,
+        "city": city,
+        "address": address,
         "phone_verified": True,
         "status": "VERIFIED",
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -276,6 +306,25 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
         db.users.insert_one(user_doc)
+        # Also create or update patient record in patients collection
+        db.patients.update_one(
+            {"patient_id": patient_id},
+            {"$set": {
+                "patient_id": patient_id,
+                "user_id": user_id,
+                "name": name,
+                "phone": phone,
+                "email": email,
+                "age": age,
+                "gender": gender,
+                "height_cm": height_cm,
+                "weight_kg": weight_kg,
+                "city": city,
+                "address": address,
+                "created_at": user_doc["created_at"]
+            }},
+            upsert=True
+        )
         token = generate_jwt_token(user_doc)
         user_clean = serialize_doc(user_doc)
         user_clean.pop("password_hash", None)
