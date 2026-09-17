@@ -191,3 +191,50 @@ def test_consultation_otp_flow(client, patient_token):
     comp_res = client.post(f"/doctor/consultation/{booking_id}/complete", json={"actual_duration_mins": 14})
     assert comp_res.status_code == 200
     assert comp_res.get_json()["status"] == "completed"
+
+
+def test_api_prefix_routes(client):
+    """Verify all existing API routes work correctly with /api prefix (Vercel production routing)"""
+    # 1. Health check via /api/health
+    res_health = client.get("/api/health")
+    assert res_health.status_code == 200
+    data_health = res_health.get_json()
+    assert data_health["status"] == "ok"
+    assert data_health["service"] == "hospital-queue-backend"
+
+    # 2. Doctors list via /api/doctors
+    res_docs = client.get("/api/doctors")
+    assert res_docs.status_code == 200
+    assert isinstance(res_docs.get_json(), list)
+    assert len(res_docs.get_json()) > 0
+
+    # 3. Root and API index via /api and /api/
+    res_root1 = client.get("/api")
+    assert res_root1.status_code == 200
+    res_root2 = client.get("/api/")
+    assert res_root2.status_code == 200
+
+    # 4. Symptoms via /api/symptoms/search
+    res_symp = client.get("/api/symptoms/search?q=fever")
+    assert res_symp.status_code == 200
+
+    # 5. Prediction via /api/predict and /api/predictions
+    payload = {
+        "symptoms": ["fever", "cough"],
+        "department": "General Medicine",
+        "priority": "normal",
+        "queue_position": 2
+    }
+    res_pred1 = client.post("/api/predict", json=payload)
+    assert res_pred1.status_code == 200
+    assert "predicted_consultation_duration_min" in res_pred1.get_json()
+
+    res_pred2 = client.post("/api/predictions", json=payload)
+    assert res_pred2.status_code == 200
+    assert "predicted_consultation_duration_min" in res_pred2.get_json()
+
+    # 6. Queue all via /api/queue/all (requires doctor/admin role)
+    doc_token = generate_jwt_token({"user_id": "U_DOC_D001", "doctor_id": "D001", "name": "Dr. Sharma", "role": "doctor"})
+    res_q = client.get("/api/queue/all", headers={"Authorization": f"Bearer {doc_token}"})
+    assert res_q.status_code == 200
+    assert isinstance(res_q.get_json(), list)

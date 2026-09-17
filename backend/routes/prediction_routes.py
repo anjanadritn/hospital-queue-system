@@ -4,6 +4,8 @@ from services.prediction_service import predict_consultation_duration_service
 prediction_bp = Blueprint("prediction", __name__)
 
 @prediction_bp.route("/predict", methods=["POST"])
+@prediction_bp.route("/predictions", methods=["POST"])
+@prediction_bp.route("/predictions/predict", methods=["POST"])
 def request_prediction():
     data = request.get_json(silent=True) or {}
 

@@ -33,6 +33,38 @@ logger = logging.getLogger("smart-hospital-backend")
 
 
 # ============================================================
+# VERCEL / LOCAL API PREFIX WSGI MIDDLEWARE
+# ============================================================
+
+class ApiPrefixMiddleware:
+    """
+    WSGI middleware that normalizes '/api' prefixed requests forwarded by Vercel
+    production rewrites to the Flask application's native routes, while keeping
+    direct routes fully operational for local development.
+
+    Examples:
+      /api/health -> /health
+      /api/doctors -> /doctors
+      /api/queue/all -> /queue/all
+      /api/auth/login -> /auth/login
+      /api -> /
+    """
+
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get("PATH_INFO", "")
+        if path == "/api" or path == "/api/":
+            environ["PATH_INFO"] = "/"
+            environ["SCRIPT_NAME"] = environ.get("SCRIPT_NAME", "") + "/api"
+        elif path.startswith("/api/"):
+            environ["PATH_INFO"] = path[4:]
+            environ["SCRIPT_NAME"] = environ.get("SCRIPT_NAME", "") + "/api"
+        return self.wsgi_app(environ, start_response)
+
+
+# ============================================================
 # CREATE FLASK APPLICATION
 # ============================================================
 
@@ -105,6 +137,7 @@ def create_app() -> Flask:
     # ========================================================
 
     @app.route("/health", methods=["GET"])
+    @app.route("/api/health", methods=["GET"])
     def health():
         db_ok = is_db_connected()
         return jsonify({
@@ -122,6 +155,8 @@ def create_app() -> Flask:
     # ========================================================
 
     @app.route("/", methods=["GET"])
+    @app.route("/api", methods=["GET"])
+    @app.route("/api/", methods=["GET"])
     def root():
         return jsonify({
             "message": "Smart Hospital Queue System API",
@@ -129,6 +164,9 @@ def create_app() -> Flask:
             "service": "hospital-queue-backend",
             "health": "/health"
         }), 200
+
+    # Apply Vercel /api prefix normalization middleware
+    app.wsgi_app = ApiPrefixMiddleware(app.wsgi_app)
 
     logger.info("Smart Hospital Flask application created successfully")
     return app
