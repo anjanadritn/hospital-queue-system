@@ -284,7 +284,7 @@ export default function StaffDashboard() {
                 {doctorName}
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                Doctor OPD Console • SIMSRH Campus, Tumakuru
+                {t('doctor_opd_console', 'Doctor OPD Console')} • {t('simsrh_campus_title', 'SIMSRH Campus, Tumakuru')}
               </p>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function StaffDashboard() {
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${doctorOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <span>{doctorOnline ? '● On Active Duty' : '○ In Procedure / Break'}</span>
+              <span>{doctorOnline ? `● ${t('active_now', 'On Active Duty')}` : `○ ${t('in_procedure', 'In Procedure / Break')}`}</span>
             </button>
 
             <button
@@ -587,7 +587,7 @@ export default function StaffDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                 <input
                   type="text"
-                  placeholder="Doctor Diagnosis (e.g. Acute Viral Bronchitis)"
+                  placeholder={t('doctor_diagnosis_placeholder', 'Doctor Diagnosis (e.g. Acute Viral Bronchitis)')}
                   value={doctorDiagnosis}
                   onChange={(e) => setDoctorDiagnosis(e.target.value)}
                   className="px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none transition"
@@ -601,7 +601,7 @@ export default function StaffDashboard() {
                 />
                 <input
                   type="text"
-                  placeholder="Prescription & Medical Advice..."
+                  placeholder={t('prescription_advice_placeholder', 'Prescription & Medical Advice...')}
                   value={doctorAdvice}
                   onChange={(e) => setDoctorAdvice(e.target.value)}
                   className="px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none transition"
@@ -753,7 +753,7 @@ export default function StaffDashboard() {
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
-                placeholder="Search token, name..."
+                placeholder={t('search', 'Search token, name...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -781,7 +781,7 @@ export default function StaffDashboard() {
                   return (
                     <div className="p-12 sm:p-16 text-center text-slate-400 text-xs font-medium space-y-2">
                       <Users className="w-10 h-10 text-slate-200 mx-auto" />
-                      <p>No patients in this category currently.</p>
+                      <p>{t('no_waiting_patients', 'No patients in this category currently.')}</p>
                     </div>
                   );
                 }
@@ -832,12 +832,12 @@ export default function StaffDashboard() {
                                       ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                                       : 'bg-amber-50 text-amber-700 border-amber-200'
                                   }`}>
-                                    {item.slot_id === 'evening' ? 'Evening' : 'Morning'}
+                                    {item.slot_id === 'evening' ? t('evening_slot_title', 'Evening') : t('morning_slot_title', 'Morning')}
                                   </span>
                                 )}
                                 {isEmergency && (
                                   <span className="px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[10px] font-black uppercase">
-                                    EMERGENCY
+                                    {t('emergency_priority', 'EMERGENCY')}
                                   </span>
                                 )}
                                 <StatusBadge status={item.status} type="status" />

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Compass, Navigation, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const OPENFREEMAP_STYLE = {
   version: 8,
@@ -424,12 +425,14 @@ export default function LiveRouteMap({
     }
   };
 
+  const { t } = useLanguage();
+
   if (mapError) {
     return (
       <div className="w-full h-48 bg-slate-900/80 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center p-4">
         <AlertTriangle className="w-6 h-6 text-amber-400 mb-2" />
-        <p className="text-xs text-slate-300 font-semibold">Live Route Navigation Offline</p>
-        <p className="text-[11px] text-slate-400 mt-0.5">Please follow the departure countdown schedule.</p>
+        <p className="text-xs text-slate-300 font-semibold">{t('service_comm_notice', 'Live Route Navigation Offline')}</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">{t('safe_on_time', 'Please follow the departure countdown schedule.')}</p>
       </div>
     );
   }
@@ -457,9 +460,9 @@ export default function LiveRouteMap({
           {originName} → SIMSRH
         </span>
         <div className="flex items-center gap-1.5 border-l border-white/20 pl-2 text-[11px]">
-          <span className="text-sky-300 font-bold">{remainingDist} km</span>
+          <span className="text-sky-300 font-bold">{remainingDist} {t('km_short', 'km')}</span>
           <span className="text-slate-400">•</span>
-          <span className="text-teal-300 font-bold">~{remainingTime}m</span>
+          <span className="text-teal-300 font-bold">~{remainingTime}{t('mins_short', 'm')}</span>
         </div>
       </div>
 
@@ -468,16 +471,16 @@ export default function LiveRouteMap({
         {hasLiveGps ? (
           <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>✓ Exact GPS Active</span>
+            <span>✓ {t('live_gps_active', 'Exact GPS Active')}</span>
           </span>
         ) : (gpsStatus === 'denied' || gpsStatus === 'unavailable') ? (
           <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
             <AlertTriangle className="w-3 h-3 text-rose-400" />
-            <span>GPS unavailable — Using approximate location</span>
+            <span>{t('gps_unavailable', 'GPS unavailable — Using approximate location')}</span>
           </span>
         ) : (
           <span className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
-            <span>Landmark Transit</span>
+            <span>{t('approx_landmark', 'Landmark Transit')}</span>
           </span>
         )}
       </div>
@@ -486,11 +489,11 @@ export default function LiveRouteMap({
       <button
         type="button"
         onClick={handleRecenter}
-        title="Recenter Map & Route"
+        title={t('refresh', 'Recenter Map & Route')}
         className="absolute bottom-3 left-3 z-10 bg-slate-900/90 hover:bg-slate-800 active:bg-slate-700 text-white px-2.5 py-1.5 rounded-xl border border-white/15 shadow-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
       >
         <Compass className="w-3.5 h-3.5 text-sky-400" />
-        <span className="text-[10px] font-bold">Recenter Map</span>
+        <span className="text-[10px] font-bold">{t('refresh', 'Recenter Map')}</span>
       </button>
     </div>
   );

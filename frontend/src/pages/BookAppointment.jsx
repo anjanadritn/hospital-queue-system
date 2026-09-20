@@ -182,7 +182,7 @@ export default function BookAppointment() {
     const d = new Date(today);
     d.setDate(d.getDate() + offset);
     const iso = d.toISOString().split('T')[0];
-    let label = offset === 0 ? t('today', 'Today') : offset === 1 ? t('tomorrow', 'Tomorrow') : '+2 Days';
+    let label = offset === 0 ? t('today', 'Today') : offset === 1 ? t('tomorrow', 'Tomorrow') : t('plus_2_days', '+2 Days');
     return {
       iso,
       label,
@@ -363,9 +363,9 @@ export default function BookAppointment() {
               <div className="flex items-center justify-between mb-3">
                 <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">1</span>
-                  <span>{t('select_date', 'Select Consultation Date (Max 2 Days Ahead)')}</span>
+                  <span>{t('select_consultation_date', 'Select Consultation Date (Max 2 Days Ahead)')}</span>
                 </label>
-                <span className="text-[11px] text-slate-400 font-semibold">Active OPD Window</span>
+                <span className="text-[11px] text-slate-400 font-semibold">{t('active_opd_window', 'Active OPD Window')}</span>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -432,7 +432,7 @@ export default function BookAppointment() {
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-slate-200 text-slate-600'
                             }`}>
-                              {doc.available ? '● Available' : '○ Off-Duty'}
+                              {doc.available ? `● ${t('available', 'Available')}` : `○ ${t('off_duty', 'Off-Duty')}`}
                             </span>
                           </div>
                           <div className="text-xs text-sky-700 font-bold">{doc.department}</div>
@@ -446,7 +446,7 @@ export default function BookAppointment() {
                           </span>
                           <span className="text-purple-700 font-bold flex items-center gap-1">
                             <Cpu className="w-3 h-3" />
-                            <span>~{doc.avg_consultation_duration || 12}m avg</span>
+                            <span>~{doc.avg_consultation_duration || 12}m {t('avg', 'avg')}</span>
                           </span>
                         </div>
                       </button>
@@ -464,7 +464,7 @@ export default function BookAppointment() {
                   <span>{t('choose_slot', 'Select Consultation Slot')}</span>
                 </label>
                 <span className="text-[11px] text-slate-500 font-semibold">
-                  {loadingSlots ? 'Updating capacity...' : `${slotData?.total_active_queue || 0} currently in queue`}
+                  {loadingSlots ? t('loading', 'Updating capacity...') : `${slotData?.total_active_queue || 0} ${t('in_queue', 'currently in queue')}`}
                 </span>
               </div>
 
@@ -493,25 +493,25 @@ export default function BookAppointment() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Sun className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-amber-600'}`} />
-                            <span className="font-extrabold text-xs text-slate-900">Morning Slot</span>
+                            <span className="font-extrabold text-xs text-slate-900">{t('morning_slot_title', 'Morning Slot')}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
                             isFull
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}>
-                            {isFull ? '● Full' : `● ${remaining} spots left`}
+                            {isFull ? `● ${t('slot_full', 'Full')}` : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
                           </span>
                         </div>
                         <div className="text-xs font-bold text-sky-700 mt-1">09:00 AM – 01:00 PM</div>
                         <p className="text-[11px] text-slate-500 mt-1">
-                          Ideal for morning outpatient checkups, early diagnostic blood work, and standard consultations.
+                          {t('morning_slot_desc', 'Ideal for morning outpatient checkups, early diagnostic blood work, and standard consultations.')}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">
                         <span className="text-slate-500 font-medium">
-                          Booked: <strong className="text-slate-800">{mSlot ? mSlot.booked_count : 0}</strong> / {mSlot ? mSlot.max_capacity : 40}
+                          {t('booked_ratio', { booked: mSlot ? mSlot.booked_count : 0, max: mSlot ? mSlot.max_capacity : 40 }, `Booked: ${mSlot ? mSlot.booked_count : 0} / ${mSlot ? mSlot.max_capacity : 40}`)}
                         </span>
                         <span className="text-sky-700 font-bold flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -546,25 +546,25 @@ export default function BookAppointment() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Moon className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-indigo-500'}`} />
-                            <span className="font-extrabold text-xs text-slate-900">Afternoon / Evening Slot</span>
+                            <span className="font-extrabold text-xs text-slate-900">{t('evening_slot_title', 'Afternoon / Evening Slot')}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
                             isFull
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}>
-                            {isFull ? '● Full' : `● ${remaining} spots left`}
+                            {isFull ? `● ${t('slot_full', 'Full')}` : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
                           </span>
                         </div>
                         <div className="text-xs font-bold text-indigo-700 mt-1">02:00 PM – 09:00 PM</div>
                         <p className="text-[11px] text-slate-500 mt-1">
-                          Extended hours for after-work visits, follow-up evaluations, and post-workday clinical appointments.
+                          {t('evening_slot_desc', 'Extended hours for after-work visits, follow-up evaluations, and post-workday clinical appointments.')}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">
                         <span className="text-slate-500 font-medium">
-                          Booked: <strong className="text-slate-800">{eSlot ? eSlot.booked_count : 0}</strong> / {eSlot ? eSlot.max_capacity : 50}
+                          {t('booked_ratio', { booked: eSlot ? eSlot.booked_count : 0, max: eSlot ? eSlot.max_capacity : 50 }, `Booked: ${eSlot ? eSlot.booked_count : 0} / ${eSlot ? eSlot.max_capacity : 50}`)}
                         </span>
                         <span className="text-indigo-700 font-bold flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -602,7 +602,7 @@ export default function BookAppointment() {
                     {t('clinical_details', 'Clinical Consultation Details')}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400 font-medium">Provided to Doctor at Consultation</span>
+                <span className="text-[11px] text-slate-400 font-medium">{t('provided_to_doctor', 'Provided to Doctor at Consultation')}</span>
               </div>
 
               {isReturningPatient && (
@@ -763,7 +763,7 @@ export default function BookAppointment() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Email Address</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('email_address_label', 'Email Address')}</label>
                   <div className="relative">
                     <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
                     <input
@@ -790,12 +790,12 @@ export default function BookAppointment() {
                       {gpsStatus === 'requesting' ? (
                         <>
                           <Loader2 className="w-3 h-3 animate-spin text-sky-600" />
-                          <span>Detecting GPS...</span>
+                          <span>{t('detecting_gps', 'Detecting GPS...')}</span>
                         </>
                       ) : (
                         <>
                           <Navigation className="w-3 h-3 text-sky-600" />
-                          <span>Use Current Location (GPS)</span>
+                          <span>{t('use_gps_location', 'Use Current Location (GPS)')}</span>
                         </>
                       )}
                     </button>
@@ -867,11 +867,11 @@ export default function BookAppointment() {
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-teal-700 text-white flex items-center justify-center text-xs font-bold">5</span>
                     <h3 className="text-base font-extrabold text-slate-900">
-                      Review Details Before Confirmation
+                      {t('review_details_title', 'Review Details Before Confirmation')}
                     </h3>
                   </div>
                   <span className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-bold">
-                    Ready to Confirm
+                    {t('ready_to_confirm', 'Ready to Confirm')}
                   </span>
                 </div>
 
@@ -879,7 +879,7 @@ export default function BookAppointment() {
                   {/* Summary 1: Patient Information */}
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-sky-600" /> Patient Information
+                      <User className="w-3.5 h-3.5 text-sky-600" /> {t('patient_info', 'Patient Information')}
                     </span>
                     <div className="text-sm font-black text-slate-900">{patientName}</div>
                     <div className="space-y-1 text-slate-600 text-[11px]">
@@ -909,7 +909,7 @@ export default function BookAppointment() {
                   {/* Summary 2: Clinical Details */}
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
-                      <HeartPulse className="w-3.5 h-3.5 text-teal-600" /> Clinical Complaints
+                      <HeartPulse className="w-3.5 h-3.5 text-teal-600" /> {t('clinical_complaints', 'Clinical Complaints')}
                     </span>
                     <div>
                       <span className="text-slate-400 block text-[10px]">Symptoms Reported:</span>
@@ -938,7 +938,7 @@ export default function BookAppointment() {
                   {/* Summary 3: Appointment & Allocation */}
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-800 flex items-center gap-1.5">
-                      <Stethoscope className="w-3.5 h-3.5 text-purple-600" /> Specialist & OPD
+                      <Stethoscope className="w-3.5 h-3.5 text-purple-600" /> {t('specialist_and_opd', 'Specialist & OPD')}
                     </span>
                     <div className="text-sm font-black text-slate-900">
                       {selectedDoctor?.name || 'Selected Specialist'}
@@ -963,7 +963,7 @@ export default function BookAppointment() {
                     className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    <span>Edit Details</span>
+                    <span>{t('edit_details', 'Edit Details')}</span>
                   </button>
 
                   <button
@@ -975,12 +975,12 @@ export default function BookAppointment() {
                     {bookingLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Confirming OPD Consultation Slot & Allocating Token...</span>
+                        <span>{t('confirming_slot', 'Confirming OPD Consultation Slot & Allocating Token...')}</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Confirm Booking & Receive Token + Arrival Code</span>
+                        <span>{t('confirm_booking_btn', 'Confirm Booking & Receive Token + Arrival Code')}</span>
                       </>
                     )}
                   </button>
@@ -992,7 +992,7 @@ export default function BookAppointment() {
                 type="submit"
                 className="w-full py-4 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 cursor-pointer"
               >
-                <span>Proceed to Review Details</span>
+                <span>{t('proceed_to_review', 'Proceed to Review Details')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
@@ -1044,10 +1044,10 @@ export default function BookAppointment() {
                     {bookingResult.arrival_otp || '123456'}
                   </div>
                   <div className="text-xs font-bold text-amber-800 mt-1">
-                    Verify at Reception Desk
+                    {t('verify_at_reception', 'Verify at Reception Desk')}
                   </div>
                   <p className="text-[11px] text-slate-600 mt-1">
-                    🔒 Present this code to reception upon arriving at SIMSRH to verify arrival.
+                    🔒 {t('present_code_reception', 'Present this code to reception upon arriving at SIMSRH to verify arrival.')}
                   </p>
                 </div>
               </div>
@@ -1055,7 +1055,7 @@ export default function BookAppointment() {
               {/* CLINICAL SUMMARY BADGES */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-left bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 text-xs">
                 <div>
-                  <span className="text-slate-400 block font-bold text-[10px] uppercase">Specialist Doctor</span>
+                  <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('doctor', 'Specialist Doctor')}</span>
                   <span className="font-extrabold text-slate-900 text-sm">
                     {selectedDoctor ? selectedDoctor.name : 'Assigned Specialist'}
                   </span>
@@ -1074,10 +1074,10 @@ export default function BookAppointment() {
                 <div>
                   <span className="text-sky-700 block font-bold text-[10px] uppercase flex items-center gap-1">
                     <Clock className="w-3 h-3 text-sky-600" />
-                    <span>Slot Allocated</span>
+                    <span>{t('consultation_slot', 'Slot Allocated')}</span>
                   </span>
                   <span className="font-extrabold text-sky-900 text-sm mt-0.5 block">
-                    {bookingResult.consultation_slot?.slot_name || (selectedSlot === 'morning' ? 'Morning Slot' : 'Afternoon/Evening')}
+                    {bookingResult.consultation_slot?.slot_name || (selectedSlot === 'morning' ? t('morning_slot_title', 'Morning Slot') : t('evening_slot_title', 'Afternoon/Evening'))}
                   </span>
                   <div className="text-sky-600 text-[11px]">
                     {bookingResult.consultation_slot?.display_time || (selectedSlot === 'morning' ? '09:00 AM – 01:00 PM' : '02:00 PM – 09:00 PM')}

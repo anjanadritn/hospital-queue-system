@@ -19,6 +19,7 @@ import {
   Activity
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 
@@ -49,6 +50,7 @@ const DEFAULT_DEPTS = [
 ];
 
 export default function Departments() {
+  const { t } = useLanguage();
   const [departments, setDepartments] = useState(DEFAULT_DEPTS);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,13 +89,13 @@ export default function Departments() {
         <div className="mb-10 text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-100 mb-3">
             <Building2 className="w-3.5 h-3.5" />
-            <span>Hospital Clinical Wings</span>
+            <span>{t('clinical_wings', 'Hospital Clinical Wings')}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
-            Medical Departments & Specialties
+            {t('departments', 'Medical Departments & Specialties')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-            Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH), Tumakuru offers multidisciplinary outpatient clinical wings supported by 24/7 Emergency Care.
+            {t('footer_desc', 'Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH), Tumakuru offers multidisciplinary outpatient clinical wings supported by 24/7 Emergency Care.')}
           </p>
 
           {/* Search bar */}
@@ -101,7 +103,7 @@ export default function Departments() {
             <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
             <input
               type="text"
-              placeholder="Search departments or medical specialties..."
+              placeholder={t('search_departments_placeholder', 'Search departments or medical specialties...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 shadow-xs focus:border-sky-500 focus:outline-none transition"
@@ -113,19 +115,19 @@ export default function Departments() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10 text-center">
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="text-2xl font-extrabold text-sky-600">10</div>
-            <div className="text-[11px] text-slate-500 font-medium">Specialized Departments</div>
+            <div className="text-[11px] text-slate-500 font-medium">{t('specialized_departments', 'Specialized Departments')}</div>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="text-2xl font-extrabold text-teal-600">100%</div>
-            <div className="text-[11px] text-slate-500 font-medium">Digital Token Enabled</div>
+            <div className="text-[11px] text-slate-500 font-medium">{t('digital_token_enabled', 'Digital Token Enabled')}</div>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="text-2xl font-extrabold text-amber-600">OPD & Triage</div>
-            <div className="text-[11px] text-slate-500 font-medium">Daily Outpatient Clinics</div>
+            <div className="text-[11px] text-slate-500 font-medium">{t('daily_opd_clinics', 'Daily Outpatient Clinics')}</div>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="text-2xl font-extrabold text-rose-600">Instant</div>
-            <div className="text-[11px] text-slate-500 font-medium">Emergency Escalation</div>
+            <div className="text-[11px] text-slate-500 font-medium">{t('emergency_escalation', 'Emergency Escalation')}</div>
           </div>
         </div>
 
@@ -138,6 +140,8 @@ export default function Departments() {
               treated: ['Clinical Consultation', 'Diagnostic Evaluation']
             };
             const DeptIcon = config.icon;
+            const deptKey = 'dept_' + dept.name.toLowerCase().replace(/[^a-z]/g, '_');
+            const descKey = 'dept_desc_' + dept.name.toLowerCase().replace(/[^a-z]/g, '_');
 
             return (
               <div
@@ -158,7 +162,7 @@ export default function Departments() {
 
                   {/* Title & Head Doctor */}
                   <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-600 transition-colors mb-1">
-                    {dept.name}
+                    {t(deptKey, dept.name)}
                   </h3>
                   {dept.head_doctor && (
                     <p className="text-[11px] text-sky-700 font-semibold mb-3">
@@ -168,13 +172,13 @@ export default function Departments() {
 
                   {/* Description */}
                   <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                    {dept.description}
+                    {t(descKey, dept.description)}
                   </p>
 
                   {/* Common Treated Conditions Chips */}
                   <div className="mb-4">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
-                      Key Clinical Focus:
+                      {t('key_clinical_focus', 'Key Clinical Focus:')}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {config.treated.map((c, i) => (
@@ -182,7 +186,7 @@ export default function Departments() {
                           key={i}
                           className="text-[10px] font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/70"
                         >
-                          {c}
+                          {t('cond_' + c.toLowerCase().replace(/[^a-z]/g, '_'), c)}
                         </span>
                       ))}
                     </div>
@@ -194,16 +198,16 @@ export default function Departments() {
                 <div className="pt-4 border-t border-slate-100 flex items-center gap-2">
                   <Link
                     to={`/doctors?dept=${encodeURIComponent(dept.name)}`}
-                    className="flex-1 py-2.5 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 hover:text-sky-800 rounded-xl text-xs font-bold transition text-center flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 hover:text-sky-800 rounded-xl text-xs font-bold transition text-center flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <span>View Doctors</span>
+                    <span>{t('view_doctors', 'View Doctors')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link
                     to={`/book?dept=${encodeURIComponent(dept.name)}`}
-                    className="py-2.5 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+                    className="py-2.5 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
                   >
-                    Book Slot
+                    {t('book_slot', 'Book Slot')}
                   </Link>
                 </div>
 

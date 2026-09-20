@@ -99,7 +99,7 @@ export default function Navbar() {
                 SMART<span className="text-sky-600">HOSPITAL</span>
               </span>
               <span className="text-[10px] font-semibold text-slate-500 block -mt-0.5">
-                {isDoctor ? 'SIMSRH Doctor Console' : isAdmin ? 'SIMSRH Operations Portal' : isPatient ? 'SIMSRH Patient Portal' : 'SIMSRH Tumakuru • OPD Platform'}
+                {isDoctor ? t('doctor_opd_console', 'SIMSRH Doctor Console') : isAdmin ? t('admin_portal', 'SIMSRH Operations Portal') : isPatient ? t('patient_care_portal', 'SIMSRH Patient Portal') : 'SIMSRH Tumakuru • OPD Platform'}
               </span>
             </div>
           </Link>
@@ -306,7 +306,7 @@ export default function Navbar() {
                 }`}
               >
                 <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
-                <span>Queue Analytics</span>
+                <span>{t('queue_analytics', 'Queue Analytics')}</span>
               </Link>
             </>
           )}
@@ -592,7 +592,7 @@ export default function Navbar() {
           {isAuthenticated && isAdmin && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
-                Admin Management
+                {t('admin_management', 'Admin Management')}
               </div>
               <Link to="/admin" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><LayoutDashboard className="w-4 h-4 text-sky-600" /> {t('hospital_overview')}</span>
@@ -611,7 +611,7 @@ export default function Navbar() {
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
               <Link to="/analytics" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
-                <span className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-600" /> Queue Analytics</span>
+                <span className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-600" /> {t('queue_analytics', 'Queue Analytics')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
             </div>

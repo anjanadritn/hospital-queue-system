@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { KeyRound, X, CheckCircle2, AlertTriangle, Loader2, ShieldCheck, User } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess }) {
+  const { t } = useLanguage();
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +14,7 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
   const handleVerify = async (e) => {
     e.preventDefault();
     if (!otpCode.trim() || otpCode.trim().length !== 6) {
-      setError('Please enter the 6-digit verification OTP provided by patient');
+      setError(t('please_enter_6digit_otp', 'Please enter the 6-digit verification OTP provided by patient'));
       return;
     }
 
@@ -25,11 +27,11 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
         if (onSuccess) onSuccess(res);
         onClose();
       } else {
-        setError(res.error || 'Verification failed');
+        setError(res.error || t('verification_failed', 'Verification failed'));
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Invalid or expired consultation OTP');
+      setError(err.response?.data?.error || t('invalid_otp_code', 'Invalid or expired consultation OTP'));
     } finally {
       setLoading(false);
     }
@@ -50,20 +52,20 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
           <div className="w-14 h-14 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
             <ShieldCheck className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-extrabold text-slate-900">Patient Verification Required</h2>
+          <h2 className="text-xl font-extrabold text-slate-900">{t('patient_verification_req', 'Patient Verification Required')}</h2>
           <p className="text-xs text-slate-500 mt-1">
-            Verify patient presence before starting consultation
+            {t('verify_patient_presence', 'Verify patient presence before starting consultation')}
           </p>
         </div>
 
-        {/* Patient Summary */}
+        {/* Patient Summary (Preserve patient name dynamic value) */}
         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-6 text-xs grid grid-cols-2 gap-3 text-left">
           <div>
-            <span className="text-slate-400 block font-semibold">Patient Name</span>
-            <span className="font-bold text-slate-900">{patientData.name || patientData.patient_id || 'Anjan'}</span>
+            <span className="text-slate-400 block font-semibold">{t('patient_name', 'Patient Name')}</span>
+            <span className="font-bold text-slate-900">{patientData.name || patientData.patient_id || 'Patient'}</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-semibold">Token ID</span>
+            <span className="text-slate-400 block font-semibold">{t('token', 'Token ID')}</span>
             <span className="font-mono font-bold text-sky-700">{patientData.queue_id || patientData.booking_id}</span>
           </div>
         </div>
@@ -78,7 +80,7 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
         <form onSubmit={handleVerify} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 text-center">
-              Enter 6-Digit Consultation OTP
+              {t('enter_arrival_otp', 'Enter 6-Digit Consultation OTP')}
             </label>
             <input
               type="text"
@@ -95,9 +97,9 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
           <button
             type="submit"
             disabled={loading || otpCode.length !== 6}
-            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Start Consultation'}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('verify_and_call', 'Verify & Start Consultation')}
           </button>
         </form>
 

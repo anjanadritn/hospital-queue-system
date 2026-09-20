@@ -38,18 +38,42 @@ export const LanguageProvider = ({ children }) => {
     document.documentElement.lang = language;
   }, [language]);
 
-  // Translation function: returns localized string or English fallback or custom fallback
-  const t = (key, fallback) => {
+  // Translation function: returns localized string with support for variable interpolation
+  const t = (key, fallbackOrParams, params) => {
     if (!key) return '';
+    let fallback = undefined;
+    let interpolationParams = null;
+
+    if (fallbackOrParams && typeof fallbackOrParams === 'object') {
+      interpolationParams = fallbackOrParams;
+      if (typeof params === 'string') {
+        fallback = params;
+      }
+    } else {
+      fallback = fallbackOrParams;
+      if (params && typeof params === 'object') {
+        interpolationParams = params;
+      }
+    }
+
     const langDict = translations[language] || translations.en;
+    let text = undefined;
     if (langDict && langDict[key] !== undefined) {
-      return langDict[key];
+      text = langDict[key];
+    } else if (translations.en && translations.en[key] !== undefined) {
+      text = translations.en[key];
+    } else {
+      text = fallback !== undefined ? fallback : key;
     }
-    const enDict = translations.en;
-    if (enDict && enDict[key] !== undefined) {
-      return enDict[key];
+
+    if (interpolationParams && typeof text === 'string') {
+      Object.keys(interpolationParams).forEach((pKey) => {
+        const val = interpolationParams[pKey] != null ? interpolationParams[pKey] : '';
+        text = text.replace(new RegExp(`\\{${pKey}\\}`, 'g'), val);
+      });
     }
-    return fallback !== undefined ? fallback : key;
+
+    return text;
   };
 
   return (

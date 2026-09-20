@@ -386,13 +386,13 @@ export default function AboutHospital() {
                 to="/doctors"
                 className="px-6 py-3 bg-white text-slate-900 hover:bg-slate-50 rounded-xl text-xs font-black transition shadow-md"
               >
-                Find Specialists
+                {t('find_doctors', 'Find Specialists')}
               </Link>
               <Link
                 to="/tracking"
                 className="px-6 py-3 bg-slate-900/40 hover:bg-slate-900/60 text-white rounded-xl text-xs font-bold border border-white/30 transition shadow-md"
               >
-                Track Live Token
+                {t('live_token', 'Track Live Token')}
               </Link>
             </div>
           </div>

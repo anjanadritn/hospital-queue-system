@@ -1,11 +1,15 @@
 import React from 'react';
 import { HeartPulse, Loader2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function LoadingState({
-  message = 'Loading hospital clinical records...',
+  message,
   type = 'spinner', // 'spinner' | 'cards' | 'table'
   count = 3
 }) {
+  const { t } = useLanguage();
+  const displayMessage = message || t('loading_records', 'Loading hospital clinical records...');
+
   if (type === 'cards') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
@@ -52,9 +56,9 @@ export default function LoadingState({
         <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-teal-500 animate-ping opacity-75" />
       </div>
       <h4 className="text-sm font-bold text-slate-800 tracking-tight mb-1">
-        Synchronizing with SmartHospital Engine
+        {t('syncing_smarthospital', 'Synchronizing with SmartHospital Engine')}
       </h4>
-      <p className="text-xs text-slate-400 max-w-xs">{message}</p>
+      <p className="text-xs text-slate-400 max-w-xs">{displayMessage}</p>
     </div>
   );
 }

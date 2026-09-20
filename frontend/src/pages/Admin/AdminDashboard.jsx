@@ -340,7 +340,7 @@ export default function AdminDashboard() {
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{t('arrival_otp', 'Arrival Desk')} (Verify OTP)</span>
+            <span>{t('arrival_desk_tab', 'Arrival Desk (Verify OTP)')}</span>
             {unverifiedArrivals.length > 0 && (
               <span className="px-1.5 py-0.2 bg-emerald-200 text-emerald-900 rounded-full text-[10px] font-black">
                 {unverifiedArrivals.length}
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
-            <span>{t('all_active_queue', 'Live Queues')} ({waitingQueues.length})</span>
+            <span>{t('hospital_live_opd_queues', 'Live Queues')} ({waitingQueues.length})</span>
             {emergencyQueues.length > 0 && (
               <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black animate-pulse">
                 {emergencyQueues.length}
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>{t('book_consultation', 'Appointments')} ({appointments.length})</span>
+            <span>{t('appointments_bookings_monitor', 'Appointments')} ({appointments.length})</span>
           </button>
 
           <button
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            User Accounts ({users.length})
+            {t('registered_system_accounts', 'User Accounts')} ({users.length})
           </button>
           
           <button
@@ -435,7 +435,7 @@ export default function AdminDashboard() {
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            OPD Settings
+            {t('hospital_opd_params', 'OPD Settings')}
           </button>
         </div>
 
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="text-3xl font-extrabold text-slate-900 mb-1">{doctors.length}</div>
-                <p className="text-xs text-slate-500 font-medium">Across {departments.length} clinical wings</p>
+                <p className="text-xs text-slate-500 font-medium">{t('across_clinical_wings', { count: departments.length }, `Across ${departments.length} clinical wings`)}</p>
               </div>
 
               <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
@@ -464,7 +464,7 @@ export default function AdminDashboard() {
                 <div className="text-3xl font-extrabold text-teal-700 mb-1">
                   {analytics?.total_patients_waiting || 0}
                 </div>
-                <p className="text-xs text-teal-800 font-medium">Active queue tokens today</p>
+                <p className="text-xs text-teal-800 font-medium">{t('active_queue_tokens_today', 'Active queue tokens today')}</p>
               </div>
 
               <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
@@ -477,7 +477,7 @@ export default function AdminDashboard() {
                 <div className="text-3xl font-extrabold text-rose-600 mb-1">
                   {analytics?.emergency_patients || 0}
                 </div>
-                <p className="text-xs text-rose-700 font-medium">Priority clinical cases</p>
+                <p className="text-xs text-rose-700 font-medium">{t('priority_clinical_cases', 'Priority clinical cases')}</p>
               </div>
 
               <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
                 <div className="text-3xl font-extrabold text-emerald-700 mb-1">
                   {analytics?.completed_consultations || 0}
                 </div>
-                <p className="text-xs text-emerald-800 font-medium">Consultations finished</p>
+                <p className="text-xs text-emerald-800 font-medium">{t('consultations_finished', 'Consultations finished')}</p>
               </div>
             </div>
 
@@ -501,20 +501,20 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-sky-600" />
                     <h3 className="text-base font-extrabold text-slate-900">
-                      Consultation Slot Operational Demand & Capacity
+                      {t('slot_demand_capacity', 'Consultation Slot Operational Demand & Capacity')}
                     </h3>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Live database metrics separating slot demand from the active eligible queue
+                    {t('slot_demand_desc', 'Live database metrics separating slot demand from the active eligible queue')}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded-full text-xs font-bold">
-                    Total Capacity: {slotAnalytics?.summary?.total_capacity || 90}
+                    {t('total_capacity_label', { count: slotAnalytics?.summary?.total_capacity || 90 }, `Total Capacity: ${slotAnalytics?.summary?.total_capacity || 90}`)}
                   </span>
                   <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
-                    Total Booked: {slotAnalytics?.summary?.total_booked || 0}
+                    {t('total_booked_label', { count: slotAnalytics?.summary?.total_booked || 0 }, `Total Booked: ${slotAnalytics?.summary?.total_booked || 0}`)}
                   </span>
                 </div>
               </div>
@@ -539,20 +539,20 @@ export default function AdminDashboard() {
                             <Sun className="w-5 h-5 text-amber-600" />
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-sm text-slate-900">Morning Consultation Slot</h4>
+                            <h4 className="font-extrabold text-sm text-slate-900">{t('morning_slot_title', 'Morning Consultation Slot')}</h4>
                             <div className="text-xs font-bold text-sky-700">09:00 AM – 01:00 PM</div>
                           </div>
                         </div>
                         <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg text-xs font-extrabold">
-                          {util}% Booked
+                          {t('pct_booked', { pct: util }, `${util}% Booked`)}
                         </span>
                       </div>
 
                       {/* Progress Bar */}
                       <div>
                         <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
-                          <span>Capacity Utilization</span>
-                          <span>{booked} / {capacity} Bookings ({remaining} available)</span>
+                          <span>{t('capacity_utilization', 'Capacity Utilization')}</span>
+                          <span>{t('bookings_util_summary', { booked, capacity, remaining }, `${booked} / ${capacity} Bookings (${remaining} available)`)}</span>
                         </div>
                         <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
                           <div
@@ -565,15 +565,15 @@ export default function AdminDashboard() {
                       {/* 3 Metric Badges */}
                       <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Active In Line</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('active_in_line', 'Active In Line')}</span>
                           <span className="text-base font-black text-sky-900">{active}</span>
                         </div>
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Completed</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('completed', 'Completed')}</span>
                           <span className="text-base font-black text-emerald-700">{completed}</span>
                         </div>
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Avg Wait</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('avg_wait', 'Avg Wait')}</span>
                           <span className="text-base font-black text-purple-700">~{avgWait}m</span>
                         </div>
                       </div>
@@ -600,20 +600,20 @@ export default function AdminDashboard() {
                             <Moon className="w-5 h-5 text-indigo-600" />
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-sm text-slate-900">Afternoon / Evening Slot</h4>
+                            <h4 className="font-extrabold text-sm text-slate-900">{t('evening_slot_title', 'Afternoon / Evening Slot')}</h4>
                             <div className="text-xs font-bold text-indigo-700">02:00 PM – 09:00 PM</div>
                           </div>
                         </div>
                         <span className="px-2.5 py-1 bg-indigo-100 text-indigo-900 rounded-lg text-xs font-extrabold">
-                          {util}% Booked
+                          {t('pct_booked', { pct: util }, `${util}% Booked`)}
                         </span>
                       </div>
 
                       {/* Progress Bar */}
                       <div>
                         <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
-                          <span>Capacity Utilization</span>
-                          <span>{booked} / {capacity} Bookings ({remaining} available)</span>
+                          <span>{t('capacity_utilization', 'Capacity Utilization')}</span>
+                          <span>{t('bookings_util_summary', { booked, capacity, remaining }, `${booked} / ${capacity} Bookings (${remaining} available)`)}</span>
                         </div>
                         <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
                           <div
@@ -626,15 +626,15 @@ export default function AdminDashboard() {
                       {/* 3 Metric Badges */}
                       <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Active In Line</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('active_in_line', 'Active In Line')}</span>
                           <span className="text-base font-black text-indigo-900">{active}</span>
                         </div>
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Completed</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('completed', 'Completed')}</span>
                           <span className="text-base font-black text-emerald-700">{completed}</span>
                         </div>
                         <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Avg Wait</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">{t('avg_wait', 'Avg Wait')}</span>
                           <span className="text-base font-black text-purple-700">~{avgWait}m</span>
                         </div>
                       </div>
@@ -647,8 +647,8 @@ export default function AdminDashboard() {
             {/* Quick Actions Strip */}
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-wrap gap-4 items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Hospital Administration Quick Actions</h3>
-                <p className="text-xs text-slate-500">Deploy clinical updates or register doctors to MongoDB</p>
+                <h3 className="text-sm font-bold text-slate-900">{t('admin_quick_actions', 'Hospital Administration Quick Actions')}</h3>
+                <p className="text-xs text-slate-500">{t('deploy_clinical_updates', 'Deploy clinical updates or register doctors to MongoDB')}</p>
               </div>
               <div className="flex gap-3">
                 <button
@@ -656,14 +656,14 @@ export default function AdminDashboard() {
                   className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Register Doctor</span>
+                  <span>{t('register_doctor', 'Register Doctor')}</span>
                 </button>
                 <button
                   onClick={() => setIsDeptModalOpen(true)}
                   className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add Department</span>
+                  <span>{t('add_department', 'Add Department')}</span>
                 </button>
               </div>
             </div>
@@ -682,15 +682,15 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-400 block">
-                      SIMSRH Reception Check-In Desk
+                      {t('reception_checkin_desk', 'SIMSRH Reception Check-In Desk')}
                     </span>
                     <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                      Verify Patient Arrival OTP
+                      {t('verify_patient_arrival_otp', 'Verify Patient Arrival OTP')}
                     </h2>
                   </div>
                 </div>
                 <div className="text-xs text-slate-300 font-semibold bg-white/10 px-3.5 py-1.5 rounded-full border border-white/10">
-                  <span>Front Desk Clearance Level</span>
+                  <span>{t('front_desk_clearance', 'Front Desk Clearance Level')}</span>
                 </div>
               </div>
 
@@ -712,12 +712,12 @@ export default function AdminDashboard() {
               <form onSubmit={handleVerifyArrival} className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                    Queue Token or Booking ID *
+                    {t('queue_token_or_booking_id', 'Queue Token or Booking ID *')}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Q001 or B001"
+                    placeholder={t('enter_token_or_booking_placeholder', 'e.g. Q001 or B001')}
                     value={verifyTokenId}
                     onChange={(e) => setVerifyTokenId(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-sm font-mono text-white placeholder:text-slate-500 focus:bg-white/20 focus:border-emerald-400 focus:outline-none transition uppercase"
@@ -726,13 +726,13 @@ export default function AdminDashboard() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                    Patient's 6-Digit Arrival OTP *
+                    {t('patient_6digit_otp', "Patient's 6-Digit Arrival OTP *")}
                   </label>
                   <input
                     type="text"
                     required
                     maxLength={6}
-                    placeholder="e.g. 482910"
+                    placeholder={t('enter_otp_placeholder', 'e.g. 482910')}
                     value={verifyOtp}
                     onChange={(e) => setVerifyOtp(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-sm font-mono tracking-widest text-emerald-300 placeholder:text-slate-500 focus:bg-white/20 focus:border-emerald-400 focus:outline-none transition"
@@ -745,18 +745,18 @@ export default function AdminDashboard() {
                   className="w-full py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-2xl text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-60"
                 >
                   {verifyLoading ? (
-                    <span>Verifying OTP with Server...</span>
+                    <span>{t('verifying_otp_server', 'Verifying OTP with Server...')}</span>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Verify Arrival & Clear Patient</span>
+                      <span>{t('verify_arrival_clear_patient', 'Verify Arrival & Clear Patient')}</span>
                     </>
                   )}
                 </button>
               </form>
 
               <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
-                ℹ️ When a patient arrives at Shridevi Hospital reception, enter their Queue Token (or Booking ID) and the 6-digit code shown on their smartphone. Once verified, their status will update to <strong className="text-emerald-300">Arrived & Verified</strong>, allowing the doctor to call and start consultation.
+                ℹ️ {t('reception_otp_instruction', 'When a patient arrives at Shridevi Hospital reception, enter their Queue Token (or Booking ID) and the 6-digit code shown on their smartphone. Once verified, their status will update to Arrived & Verified, allowing the doctor to call and start consultation.')}
               </p>
             </div>
 
@@ -765,10 +765,10 @@ export default function AdminDashboard() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-slate-100">
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900">
-                    Patients In Queue — Awaiting Reception Arrival Check-In ({unverifiedArrivals.length})
+                    {t('patients_in_queue_awaiting', { count: unverifiedArrivals.length }, `Patients In Queue — Awaiting Reception Arrival Check-In (${unverifiedArrivals.length})`)}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Patients en route or recently arrived at SIMSRH Tumakuru campus
+                    {t('patients_en_route_campus', 'Patients en route or recently arrived at SIMSRH Tumakuru campus')}
                   </p>
                 </div>
               </div>
@@ -776,21 +776,21 @@ export default function AdminDashboard() {
               {unverifiedArrivals.length === 0 ? (
                 <div className="p-12 text-center text-slate-400 text-xs">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                  <p className="font-bold text-slate-700">All currently queued patients are checked-in and verified!</p>
-                  <p className="text-slate-400 text-[11px] mt-0.5">New booked patients will appear here for reception check-in.</p>
+                  <p className="font-bold text-slate-700">{t('all_queued_patients_verified', 'All currently queued patients are checked-in and verified!')}</p>
+                  <p className="text-slate-400 text-[11px] mt-0.5">{t('new_booked_patients_appear', 'New booked patients will appear here for reception check-in.')}</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                        <th className="pb-3 px-3">Token</th>
-                        <th className="pb-3 px-3">Patient Name</th>
-                        <th className="pb-3 px-3">Clinical Details</th>
-                        <th className="pb-3 px-3">Origin / City</th>
-                        <th className="pb-3 px-3">Doctor / Room</th>
-                        <th className="pb-3 px-3">Priority</th>
-                        <th className="pb-3 px-3 text-right">Quick Action</th>
+                        <th className="pb-3 px-3">{t('token_col', 'Token')}</th>
+                        <th className="pb-3 px-3">{t('patient_name_col', 'Patient Name')}</th>
+                        <th className="pb-3 px-3">{t('clinical_details_col', 'Clinical Details')}</th>
+                        <th className="pb-3 px-3">{t('origin_city', 'Origin / City')}</th>
+                        <th className="pb-3 px-3">{t('doctor_and_room', 'Doctor / Room')}</th>
+                        <th className="pb-3 px-3">{t('priority', 'Priority')}</th>
+                        <th className="pb-3 px-3 text-right">{t('quick_action', 'Quick Action')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -802,7 +802,7 @@ export default function AdminDashboard() {
                           <td className="py-3 px-3 font-bold text-slate-900">
                             {q.patient_name || q.patient_id}
                             <div className="text-[10px] text-slate-400 font-normal">
-                              {q.patient_phone ? `+91 ${q.patient_phone}` : 'Patient'}
+                              {q.patient_phone ? `+91 ${q.patient_phone}` : t('patient', 'Patient')}
                             </div>
                           </td>
                           <td className="py-3 px-3 text-[11px]">
@@ -824,7 +824,7 @@ export default function AdminDashboard() {
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
                               q.priority === 'emergency' ? 'bg-rose-100 text-rose-800 animate-pulse' : 'bg-slate-100 text-slate-700'
                             }`}>
-                              {q.priority === 'emergency' ? 'EMERGENCY' : 'Normal'}
+                              {q.priority === 'emergency' ? t('emergency_priority', 'EMERGENCY') : t('normal_priority', 'Normal')}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-right">
@@ -833,7 +833,7 @@ export default function AdminDashboard() {
                               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition shadow-xs cursor-pointer inline-flex items-center gap-1"
                             >
                               <CheckCircle2 className="w-3 h-3" />
-                              <span>Check-In</span>
+                              <span>{t('check_in', 'Check-In')}</span>
                             </button>
                           </td>
                         </tr>
@@ -854,19 +854,19 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200">
-                      Unified MongoDB Patient Records
+                      {t('unified_mongodb_records', 'Unified MongoDB Patient Records')}
                     </span>
                   </div>
-                  <h2 className="text-xl font-extrabold text-slate-900">Patient Records & Consultation History</h2>
+                  <h2 className="text-xl font-extrabold text-slate-900">{t('patient_records_history', 'Patient Records & Consultation History')}</h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Search registered patients by Patient ID, Name, or Phone. Open persistent profiles and complete clinical visit timelines.
+                    {t('patient_records_subtitle', 'Search registered patients by Patient ID, Name, or Phone. Open persistent profiles and complete clinical visit timelines.')}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span className="px-3.5 py-1.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-teal-600" />
-                    <span>{patientsList.length} Registered Patients</span>
+                    <span>{t('registered_patients_count', { count: patientsList.length }, `${patientsList.length} Registered Patients`)}</span>
                   </span>
                 </div>
               </div>
@@ -902,7 +902,7 @@ export default function AdminDashboard() {
                   className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 >
                   <Search className="w-3.5 h-3.5" />
-                  <span>Search</span>
+                  <span>{t('search_records_btn', 'Search')}</span>
                 </button>
               </div>
 
@@ -910,14 +910,14 @@ export default function AdminDashboard() {
               {patientSearchLoading ? (
                 <div className="py-12 text-center text-xs text-slate-400">
                   <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
-                  <p>Searching patient records database...</p>
+                  <p>{t('searching_patient_db', 'Searching patient records database...')}</p>
                 </div>
               ) : patientsList.length === 0 ? (
                 <div className="p-12 text-center text-slate-400 text-xs bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                   <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="font-bold text-slate-600">{t('no_records_found')}</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Try searching by another phone number, name, or patient ID.
+                    {t('try_searching_other_query', 'Try searching by another phone number, name, or patient ID.')}
                   </p>
                 </div>
               ) : (
@@ -925,13 +925,13 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                        <th className="pb-3 px-3">Patient ID</th>
-                        <th className="pb-3 px-3">Name & Demographics</th>
-                        <th className="pb-3 px-3">Phone</th>
-                        <th className="pb-3 px-3">Village / City</th>
-                        <th className="pb-3 px-3">Total Visits</th>
-                        <th className="pb-3 px-3">Last Visit</th>
-                        <th className="pb-3 px-3 text-right">Actions</th>
+                        <th className="pb-3 px-3">{t('patient_id_col', 'Patient ID')}</th>
+                        <th className="pb-3 px-3">{t('name_demographics_col', 'Name & Demographics')}</th>
+                        <th className="pb-3 px-3">{t('phone_col', 'Phone')}</th>
+                        <th className="pb-3 px-3">{t('village_city_col', 'Village / City')}</th>
+                        <th className="pb-3 px-3">{t('total_visits_col', 'Total Visits')}</th>
+                        <th className="pb-3 px-3">{t('last_visit_col', 'Last Visit')}</th>
+                        <th className="pb-3 px-3 text-right">{t('actions', 'Actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -959,7 +959,7 @@ export default function AdminDashboard() {
                           <td className="py-3 px-3">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              <span>{pt.total_visits || 0} visits</span>
+                              <span>{t('visits_count', { count: pt.total_visits || 0 }, `${pt.total_visits || 0} visits`)}</span>
                             </span>
                           </td>
                           <td className="py-3 px-3 text-slate-600 text-[11px]">
@@ -972,7 +972,7 @@ export default function AdminDashboard() {
                               className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer ml-auto"
                             >
                               <FileText className="w-3.5 h-3.5" />
-                              <span>Open Records</span>
+                              <span>{t('open_records', 'Open Records')}</span>
                             </button>
                           </td>
                         </tr>
@@ -995,10 +995,10 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-start">
                       <div>
                         <span className="text-[11px] uppercase tracking-widest text-teal-200 font-bold">
-                          Admin Patient Records View
+                          {t('admin_patient_view', 'Admin Patient Records View')}
                         </span>
                         <h3 className="text-xl font-bold mt-0.5">
-                          {selectedPatientRecord.patient?.name || 'Patient Details'}
+                          {selectedPatientRecord.patient?.name || t('patient_details', 'Patient Details')}
                         </h3>
                         <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-teal-100">
                           <span className="font-mono bg-white/10 px-2 py-0.5 rounded">
@@ -1025,30 +1025,30 @@ export default function AdminDashboard() {
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                       <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-teal-600" /> Patient Persistent Profile
+                          <User className="w-3.5 h-3.5 text-teal-600" /> {t('patient_persistent_profile', 'Patient Persistent Profile')}
                         </span>
                         <span className="text-xs font-bold text-teal-800 bg-teal-100 px-2.5 py-0.5 rounded-full">
-                          {selectedPatientRecord.consultations?.length || 0} Total Consultations
+                          {t('total_consultations_count', { count: selectedPatientRecord.consultations?.length || 0 }, `${selectedPatientRecord.consultations?.length || 0} Total Consultations`)}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Age:</span>
+                          <span className="text-slate-400 block text-[11px]">{t('age_label', 'Age:')}</span>
                           <span className="font-bold text-slate-800">{selectedPatientRecord.patient?.age || '—'} yrs</span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Gender:</span>
+                          <span className="text-slate-400 block text-[11px]">{t('gender_label', 'Gender:')}</span>
                           <span className="font-bold text-slate-800">{selectedPatientRecord.patient?.gender || '—'}</span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Height:</span>
+                          <span className="text-slate-400 block text-[11px]">{t('height_label', 'Height:')}</span>
                           <span className="font-bold text-slate-800">
                             {selectedPatientRecord.patient?.height_cm ? `${selectedPatientRecord.patient?.height_cm} cm` : '—'}
                           </span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Weight:</span>
+                          <span className="text-slate-400 block text-[11px]">{t('weight_label', 'Weight:')}</span>
                           <span className="font-bold text-slate-800">
                             {selectedPatientRecord.patient?.weight_kg ? `${selectedPatientRecord.patient?.weight_kg} kg` : '—'}
                           </span>
@@ -1060,13 +1060,13 @@ export default function AdminDashboard() {
                     <div>
                       <h4 className="text-sm font-extrabold text-slate-900 mb-4 flex items-center gap-2">
                         <Activity className="w-4 h-4 text-teal-600" />
-                        <span>Complete Consultation History (Chronological)</span>
+                        <span>{t('consultation_history_chronological', 'Complete Consultation History (Chronological)')}</span>
                       </h4>
 
                       {!selectedPatientRecord.consultations || selectedPatientRecord.consultations.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                           <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p>No completed consultation history on file for this patient.</p>
+                          <p>{t('no_completed_history', 'No completed consultation history on file for this patient.')}</p>
                         </div>
                       ) : (
                         <div className="space-y-4">
@@ -1122,20 +1122,20 @@ export default function AdminDashboard() {
                                     className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0"
                                   >
                                     <FileText className="w-3.5 h-3.5" />
-                                    <span>View Full Record</span>
+                                    <span>{t('view_full_record', 'View Full Record')}</span>
                                   </button>
                                 </div>
 
                                 {/* Vitals Summary Strip (Age, Gender, Height, Weight, BMI, Duration, Origin) */}
                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl text-slate-600 border border-slate-100">
-                                  <div>Age: <strong className="text-slate-900">{vitals.age ?? c.age ?? selectedPatientRecord.patient?.age ?? '—'} yrs</strong></div>
-                                  <div>Gender: <strong className="text-slate-900">{vitals.gender ?? c.gender ?? selectedPatientRecord.patient?.gender ?? '—'}</strong></div>
-                                  <div>Ht: <strong className="text-slate-900">{vitals.height_cm ?? c.height_cm ?? selectedPatientRecord.patient?.height_cm ? `${vitals.height_cm ?? c.height_cm ?? selectedPatientRecord.patient?.height_cm}cm` : '—'}</strong></div>
-                                  <div>Wt: <strong className="text-slate-900">{vitals.weight_kg ?? c.weight_kg ?? selectedPatientRecord.patient?.weight_kg ? `${vitals.weight_kg ?? c.weight_kg ?? selectedPatientRecord.patient?.weight_kg}kg` : '—'}</strong></div>
-                                  <div>BMI: <strong className="text-teal-700 font-bold">{vitals.bmi ? `${vitals.bmi}` : '—'}</strong></div>
-                                  <div>Duration: <strong className="text-slate-900">{pReported.duration_days ?? c.duration_days ?? 1} d</strong></div>
+                                  <div>{t('age_label', 'Age:')} <strong className="text-slate-900">{vitals.age ?? c.age ?? selectedPatientRecord.patient?.age ?? '—'} yrs</strong></div>
+                                  <div>{t('gender_label', 'Gender:')} <strong className="text-slate-900">{vitals.gender ?? c.gender ?? selectedPatientRecord.patient?.gender ?? '—'}</strong></div>
+                                  <div>{t('height_label', 'Ht:')} <strong className="text-slate-900">{vitals.height_cm ?? c.height_cm ?? selectedPatientRecord.patient?.height_cm ? `${vitals.height_cm ?? c.height_cm ?? selectedPatientRecord.patient?.height_cm}cm` : '—'}</strong></div>
+                                  <div>{t('weight_label', 'Wt:')} <strong className="text-slate-900">{vitals.weight_kg ?? c.weight_kg ?? selectedPatientRecord.patient?.weight_kg ? `${vitals.weight_kg ?? c.weight_kg ?? selectedPatientRecord.patient?.weight_kg}kg` : '—'}</strong></div>
+                                  <div>{t('bmi_label', 'BMI:')} <strong className="text-teal-700 font-bold">{vitals.bmi ? `${vitals.bmi}` : '—'}</strong></div>
+                                  <div>{t('duration_label', 'Duration:')} <strong className="text-slate-900">{pReported.duration_days ?? c.duration_days ?? 1} d</strong></div>
                                   <div className="truncate" title={vitals.city || c.city || selectedPatientRecord.patient?.city || 'Tumakuru'}>
-                                    Origin: <strong className="text-slate-900">📍 {vitals.city || c.city || selectedPatientRecord.patient?.city || 'Tumakuru'}</strong>
+                                    {t('origin_label', 'Origin:')} <strong className="text-slate-900">📍 {vitals.city || c.city || selectedPatientRecord.patient?.city || 'Tumakuru'}</strong>
                                   </div>
                                 </div>
 
@@ -1144,7 +1144,7 @@ export default function AdminDashboard() {
                                   {/* Patient complaints */}
                                   <div className="p-3 bg-sky-50/50 rounded-lg border border-sky-100 space-y-1">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 block">
-                                      Patient-Reported Complaints
+                                      {t('patient_reported_complaints', 'Patient-Reported Complaints')}
                                     </span>
                                     <div className="flex flex-wrap gap-1">
                                       {symptomsList.map((s, idx) => (
@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
                                     </div>
                                     {pReported.duration_days && (
                                       <p className="text-[11px] text-slate-600 pt-0.5">
-                                        Duration: {pReported.duration_days} day(s)
+                                        {t('duration_days_count', { count: pReported.duration_days }, `Duration: ${pReported.duration_days} day(s)`)}
                                       </p>
                                     )}
                                   </div>
@@ -1163,7 +1163,7 @@ export default function AdminDashboard() {
                                   {/* Doctor assessment */}
                                   <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100 space-y-1">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
-                                      Doctor-Recorded Assessment
+                                      {t('doctor_recorded_assessment', 'Doctor-Recorded Assessment')}
                                     </span>
                                     <div>
                                       {diagnosis ? (
@@ -1172,13 +1172,13 @@ export default function AdminDashboard() {
                                         </span>
                                       ) : (
                                         <span className="text-[11px] italic text-slate-400">
-                                          No diagnosis recorded by physician
+                                          {t('no_diagnosis_recorded', 'No diagnosis recorded by physician')}
                                         </span>
                                       )}
                                     </div>
                                     {advice && (
                                       <p className="text-[11px] text-slate-700 line-clamp-2 pt-0.5">
-                                        <strong>Advice:</strong> {advice}
+                                        <strong>{t('advice_label', 'Advice:')}</strong> {advice}
                                       </p>
                                     )}
                                   </div>
@@ -1197,7 +1197,7 @@ export default function AdminDashboard() {
                       onClick={() => setSelectedPatientRecord(null)}
                       className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition cursor-pointer"
                     >
-                      Close Records
+                      {t('close_records', 'Close Records')}
                     </button>
                   </div>
                 </div>
@@ -1211,25 +1211,30 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900">Hospital Live OPD Queues</h2>
-                <p className="text-xs text-slate-500">Real-time queue positions and waiting times across all OPD departments</p>
+                <h2 className="text-base font-extrabold text-slate-900">{t('hospital_live_opd_queues', 'Hospital Live OPD Queues')}</h2>
+                <p className="text-xs text-slate-500">{t('realtime_positions_wait', 'Real-time queue positions and waiting times across all OPD departments')}</p>
               </div>
 
               {/* Department Filter */}
               <div className="flex items-center gap-2 overflow-x-auto">
-                {['All', 'Cardiology', 'General Medicine', 'Orthopedics', 'Pediatrics', 'Neurology'].map((dept) => (
-                  <button
-                    key={dept}
-                    onClick={() => setSelectedDeptFilter(dept)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
-                      selectedDeptFilter === dept
-                        ? 'bg-sky-600 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {dept}
-                  </button>
-                ))}
+                {['All', 'Cardiology', 'General Medicine', 'Orthopedics', 'Pediatrics', 'Neurology'].map((dept) => {
+                  const deptLabel = dept === 'All'
+                    ? t('filter_all', 'All')
+                    : t('dept_' + dept.toLowerCase().replace(/[^a-z]/g, '_'), dept);
+                  return (
+                    <button
+                      key={dept}
+                      onClick={() => setSelectedDeptFilter(dept)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+                        selectedDeptFilter === dept
+                          ? 'bg-sky-600 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {deptLabel}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1240,15 +1245,15 @@ export default function AdminDashboard() {
                   <ShieldAlert className="w-6 h-6 text-rose-600 animate-pulse shrink-0" />
                   <div>
                     <span className="text-xs font-black uppercase tracking-wider text-rose-800 block">
-                      Emergency Triage Alert
+                      {t('emergency_triage_alert', 'Emergency Triage Alert')}
                     </span>
                     <span className="text-xs text-rose-700 font-semibold">
-                      {emergencyQueues.length} patient(s) have been flagged for high-priority emergency triage attention.
+                      {t('emergency_flagged_count', { count: emergencyQueues.length }, `${emergencyQueues.length} patient(s) have been flagged for high-priority emergency triage attention.`)}
                     </span>
                   </div>
                 </div>
                 <span className="px-3 py-1 bg-rose-600 text-white text-xs font-black rounded-xl">
-                  PRIORITY #1
+                  {t('priority_num1', 'PRIORITY #1')}
                 </span>
               </div>
             )}
@@ -1265,7 +1270,7 @@ export default function AdminDashboard() {
                   return (
                     <div className="p-12 text-center text-slate-400 text-xs">
                       <Users className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                      <p>No queue items found for department: {selectedDeptFilter}</p>
+                      <p>{t('no_queue_items_dept', { dept: selectedDeptFilter }, `No queue items found for department: ${selectedDeptFilter}`)}</p>
                     </div>
                   );
                 }
@@ -1274,14 +1279,14 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                        <th className="pb-3 px-3">Pos</th>
-                        <th className="pb-3 px-3">Token</th>
-                        <th className="pb-3 px-3">Patient Name</th>
-                        <th className="pb-3 px-3">Clinical Consultation Details</th>
-                        <th className="pb-3 px-3">Specialist & Room</th>
-                        <th className="pb-3 px-3">Arrival Status</th>
-                        <th className="pb-3 px-3">Est. Wait</th>
-                        <th className="pb-3 px-3">Queue Status</th>
+                        <th className="pb-3 px-3">{t('pos_col', 'Pos')}</th>
+                        <th className="pb-3 px-3">{t('token_col', 'Token')}</th>
+                        <th className="pb-3 px-3">{t('patient_name_col', 'Patient Name')}</th>
+                        <th className="pb-3 px-3">{t('clinical_details_col', 'Clinical Consultation Details')}</th>
+                        <th className="pb-3 px-3">{t('specialist_room_col', 'Specialist & Room')}</th>
+                        <th className="pb-3 px-3">{t('arrival_status_col', 'Arrival Status')}</th>
+                        <th className="pb-3 px-3">{t('est_wait_col', 'Est. Wait')}</th>
+                        <th className="pb-3 px-3">{t('queue_status_col', 'Queue Status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1323,14 +1328,14 @@ export default function AdminDashboard() {
                             {q.verified_by_admin || q.arrived_at_hospital ? (
                               <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg font-bold text-[10px] inline-flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                <span>Verified</span>
+                                <span>{t('verified_badge', 'Verified')}</span>
                               </span>
                             ) : (
                               <button
                                 onClick={() => handleQuickFillVerify(q)}
                                 className="px-2 py-1 bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 rounded-lg font-bold text-[10px] inline-flex items-center gap-1 cursor-pointer"
                               >
-                                <span>Pending Check-in</span>
+                                <span>{t('pending_checkin', 'Pending Check-in')}</span>
                               </button>
                             )}
                           </td>
@@ -1343,7 +1348,10 @@ export default function AdminDashboard() {
                               q.status === 'called' ? 'bg-amber-100 text-amber-800' :
                               q.status === 'completed' ? 'bg-slate-100 text-slate-600' : 'bg-sky-100 text-sky-800'
                             }`}>
-                              {q.status}
+                              {q.status === 'in_consultation' ? t('in_consultation_status', 'In Consultation') :
+                               q.status === 'called' ? t('called_status', 'Called') :
+                               q.status === 'completed' ? t('completed_status', 'Completed') :
+                               t('waiting_in_line', 'Waiting')}
                             </span>
                           </td>
                         </tr>
@@ -1363,13 +1371,13 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-sky-600" />
-                  <span>Appointments & Bookings Monitor</span>
+                  <span>{t('appointments_bookings_monitor', 'Appointments & Bookings Monitor')}</span>
                 </h2>
-                <p className="text-xs text-slate-500">Live operational booking records across hospital clinics (Zero Patient PII / Clinical Data)</p>
+                <p className="text-xs text-slate-500">{t('live_operational_booking_records', 'Live operational booking records across hospital clinics (Zero Patient PII / Clinical Data)')}</p>
               </div>
               <div className="flex items-center gap-2.5">
                 <span className="text-xs font-extrabold text-sky-800 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">
-                  {appointments.length} Total Bookings
+                  {t('total_bookings_count', { count: appointments.length }, `${appointments.length} Total Bookings`)}
                 </span>
                 <button
                   type="button"
@@ -1379,7 +1387,7 @@ export default function AdminDashboard() {
                   title="Refresh bookings"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
+                  <span>{t('refresh', 'Refresh')}</span>
                 </button>
               </div>
             </div>
@@ -1390,7 +1398,7 @@ export default function AdminDashboard() {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Filter by token (e.g. Q001), doctor, dept, or booking ID..."
+                  placeholder={t('filter_bookings_placeholder', 'Filter by token (e.g. Q001), doctor, dept, or booking ID...')}
                   value={bookingSearchQuery}
                   onChange={(e) => setBookingSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
@@ -1398,22 +1406,22 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-medium">Status:</span>
+                <span className="text-xs text-slate-500 font-medium">{t('status_filter_label', 'Status:')}</span>
                 <select
                   value={bookingStatusFilter}
                   onChange={(e) => setBookingStatusFilter(e.target.value)}
                   className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                 >
-                  <option value="ALL">All Statuses</option>
-                  <option value="waiting">Waiting in Line</option>
-                  <option value="in_consultation">In Consultation</option>
-                  <option value="ready">Ready (Next Up)</option>
-                  <option value="called">Called</option>
-                  <option value="arrived">Arrived</option>
-                  <option value="booked">Booked</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="missed">Missed</option>
+                  <option value="ALL">{t('all_statuses', 'All Statuses')}</option>
+                  <option value="waiting">{t('waiting_in_line', 'Waiting in Line')}</option>
+                  <option value="in_consultation">{t('in_consultation_status', 'In Consultation')}</option>
+                  <option value="ready">{t('ready_status', 'Ready (Next Up)')}</option>
+                  <option value="called">{t('called_status', 'Called')}</option>
+                  <option value="arrived">{t('arrived_status', 'Arrived')}</option>
+                  <option value="booked">{t('booked_status', 'Booked')}</option>
+                  <option value="completed">{t('completed_status', 'Completed')}</option>
+                  <option value="cancelled">{t('cancelled_status', 'Cancelled')}</option>
+                  <option value="missed">{t('missed_status', 'Missed')}</option>
                 </select>
               </div>
             </div>
@@ -1422,14 +1430,14 @@ export default function AdminDashboard() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                    <th className="pb-3 px-3">Token Number</th>
-                    <th className="pb-3 px-3">Doctor Name</th>
-                    <th className="pb-3 px-3">Department</th>
-                    <th className="pb-3 px-3">Consultation Date</th>
-                    <th className="pb-3 px-3">Consultation Slot</th>
-                    <th className="pb-3 px-3">Exact Booked Date/Time</th>
-                    <th className="pb-3 px-3">Current Queue Position</th>
-                    <th className="pb-3 px-3">Current Status</th>
+                    <th className="pb-3 px-3">{t('token_number_col', 'Token Number')}</th>
+                    <th className="pb-3 px-3">{t('doctor_name_col', 'Doctor Name')}</th>
+                    <th className="pb-3 px-3">{t('department_col', 'Department')}</th>
+                    <th className="pb-3 px-3">{t('consultation_date_col', 'Consultation Date')}</th>
+                    <th className="pb-3 px-3">{t('consultation_slot_col', 'Consultation Slot')}</th>
+                    <th className="pb-3 px-3">{t('exact_booked_time_col', 'Exact Booked Date/Time')}</th>
+                    <th className="pb-3 px-3">{t('current_queue_pos_col', 'Current Queue Position')}</th>
+                    <th className="pb-3 px-3">{t('current_status_col', 'Current Status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1452,7 +1460,7 @@ export default function AdminDashboard() {
                       return (
                         <tr>
                           <td colSpan={8} className="py-10 text-center text-slate-400">
-                            No matching booking records found.
+                            {t('no_matching_bookings', 'No matching booking records found.')}
                           </td>
                         </tr>
                       );
@@ -1465,7 +1473,7 @@ export default function AdminDashboard() {
                       const consultDate = apt.consultation_date || 'Today';
                       
                       const slotObj = apt.consultation_slot || {};
-                      const slotName = slotObj.slot_name || (apt.slot_id === 'evening' ? 'Evening Slot' : 'Morning Slot');
+                      const slotName = slotObj.slot_name || (apt.slot_id === 'evening' ? t('evening_slot', 'Evening Slot') : t('morning_slot', 'Morning Slot'));
                       const slotTime = slotObj.display_time || (apt.slot_id === 'evening' ? '02:00 PM – 09:00 PM' : '09:00 AM – 01:00 PM');
                       
                       const bookedTime = formatExactBookedTime(apt.booked_at || apt.created_at);
@@ -1498,15 +1506,15 @@ export default function AdminDashboard() {
 
                       const getStatusText = (st) => {
                         switch (st) {
-                          case 'in_consultation': return 'In Consultation';
-                          case 'ready': return 'Ready (Next Up)';
-                          case 'called': return 'Called';
-                          case 'waiting': return 'Waiting in Line';
-                          case 'arrived': return 'Arrived at Clinic';
-                          case 'completed': return 'Completed';
-                          case 'cancelled': return 'Cancelled';
-                          case 'missed': return 'Missed';
-                          case 'booked': default: return 'Booked';
+                          case 'in_consultation': return t('in_consultation_status', 'In Consultation');
+                          case 'ready': return t('ready_status', 'Ready (Next Up)');
+                          case 'called': return t('called_status', 'Called');
+                          case 'waiting': return t('waiting_in_line', 'Waiting in Line');
+                          case 'arrived': return t('arrived_at_clinic', 'Arrived at Clinic');
+                          case 'completed': return t('completed_status', 'Completed');
+                          case 'cancelled': return t('cancelled_status', 'Cancelled');
+                          case 'missed': return t('missed_status', 'Missed');
+                          case 'booked': default: return t('booked_status', 'Booked');
                         }
                       };
 
@@ -1515,7 +1523,7 @@ export default function AdminDashboard() {
                           {/* 1. Token number */}
                           <td className="py-3.5 px-3">
                             <div className="font-mono font-black text-slate-900 text-sm">
-                              {tokenNum !== '—' ? `Token #${tokenNum}` : '—'}
+                              {tokenNum !== '—' ? t('token_prefix', { token: tokenNum }, `Token #${tokenNum}`) : '—'}
                             </div>
                             <div className="text-[10px] font-mono text-slate-400 mt-0.5">
                               ID: {apt.booking_id}
@@ -1529,7 +1537,7 @@ export default function AdminDashboard() {
                               <span>{docName}</span>
                             </div>
                             <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
-                              Chamber: {apt.room_number || 'Room 204'}
+                              {t('chamber_label', { room: apt.room_number || 'Room 204' }, `Chamber: ${apt.room_number || 'Room 204'}`)}
                             </div>
                           </td>
 
@@ -1570,10 +1578,10 @@ export default function AdminDashboard() {
                           <td className="py-3.5 px-3">
                             {['waiting', 'ready', 'called', 'in_consultation', 'arrived'].includes(rawStatus) && currentPos != null ? (
                               <span className="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-full font-mono font-black text-xs inline-block">
-                                #{currentPos} in line
+                                {t('in_line_pos', { pos: currentPos }, `#${currentPos} in line`)}
                               </span>
                             ) : rawStatus === 'completed' ? (
-                              <span className="text-slate-400 font-mono text-xs font-semibold">— (Finished)</span>
+                              <span className="text-slate-400 font-mono text-xs font-semibold">{t('finished_status', '— (Finished)')}</span>
                             ) : rawStatus === 'cancelled' || rawStatus === 'missed' ? (
                               <span className="text-slate-400 font-mono text-xs font-semibold">—</span>
                             ) : currentPos != null ? (
@@ -1604,15 +1612,15 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-base font-bold text-slate-900">Medical Specialists Roster</h2>
-                <p className="text-xs text-slate-500">Active hospital physicians and consulting hours</p>
+                <h2 className="text-base font-bold text-slate-900">{t('medical_specialists_roster', 'Medical Specialists Roster')}</h2>
+                <p className="text-xs text-slate-500">{t('active_physicians_hours', 'Active hospital physicians and consulting hours')}</p>
               </div>
               <button
                 onClick={() => setIsDocModalOpen(true)}
                 className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Doctor</span>
+                <span>{t('add_doctor', 'Add Doctor')}</span>
               </button>
             </div>
 
@@ -1620,12 +1628,12 @@ export default function AdminDashboard() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="pb-3">Doctor ID</th>
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Department</th>
-                    <th className="pb-3">Room</th>
-                    <th className="pb-3">Experience</th>
-                    <th className="pb-3">Status</th>
+                    <th className="pb-3">{t('doctor_id_col', 'Doctor ID')}</th>
+                    <th className="pb-3">{t('name', 'Name')}</th>
+                    <th className="pb-3">{t('department', 'Department')}</th>
+                    <th className="pb-3">{t('room', 'Room')}</th>
+                    <th className="pb-3">{t('experience_col', 'Experience')}</th>
+                    <th className="pb-3">{t('status_col', 'Status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1644,7 +1652,7 @@ export default function AdminDashboard() {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           doc.available ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
                         }`}>
-                          {doc.available ? 'Available' : 'Unavailable'}
+                          {doc.available ? t('available_status', 'Available') : t('unavailable_status', 'Unavailable')}
                         </span>
                       </td>
                     </tr>
@@ -1660,15 +1668,15 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-base font-bold text-slate-900">Hospital Departments</h2>
-                <p className="text-xs text-slate-500">Clinical wings and consulting room assignments</p>
+                <h2 className="text-base font-bold text-slate-900">{t('hospital_departments_title', 'Hospital Departments')}</h2>
+                <p className="text-xs text-slate-500">{t('clinical_wings_desc', 'Clinical wings and consulting room assignments')}</p>
               </div>
               <button
                 onClick={() => setIsDeptModalOpen(true)}
                 className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Department</span>
+                <span>{t('add_department', 'Add Department')}</span>
               </button>
             </div>
 
@@ -1683,7 +1691,7 @@ export default function AdminDashboard() {
                   </div>
                   <p className="text-xs text-slate-500 mb-3">{dept.description}</p>
                   <div className="text-[11px] text-slate-600 font-medium">
-                    Department Lead: <span className="font-bold text-slate-800">{dept.head_doctor || 'Senior Specialist'}</span>
+                    {t('dept_lead_label', 'Department Lead:')} <span className="font-bold text-slate-800">{dept.head_doctor || 'Senior Specialist'}</span>
                   </div>
                 </div>
               ))}
@@ -1695,19 +1703,19 @@ export default function AdminDashboard() {
         {activeTab === 'users' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="pb-4 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">Registered System Accounts</h2>
-              <p className="text-xs text-slate-500">Patients, Doctors, and Administrators stored in MongoDB</p>
+              <h2 className="text-base font-bold text-slate-900">{t('registered_system_accounts', 'Registered System Accounts')}</h2>
+              <p className="text-xs text-slate-500">{t('users_stored_mongodb', 'Patients, Doctors, and Administrators stored in MongoDB')}</p>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="pb-3">User ID</th>
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Phone</th>
-                    <th className="pb-3">Role</th>
-                    <th className="pb-3">Status</th>
+                    <th className="pb-3">{t('user_id_col', 'User ID')}</th>
+                    <th className="pb-3">{t('name', 'Name')}</th>
+                    <th className="pb-3">{t('phone', 'Phone')}</th>
+                    <th className="pb-3">{t('role_col', 'Role')}</th>
+                    <th className="pb-3">{t('status_col', 'Status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1740,13 +1748,13 @@ export default function AdminDashboard() {
         {activeTab === 'settings' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs max-w-2xl space-y-6">
             <div className="pb-4 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">Hospital OPD & Queue Parameters</h2>
-              <p className="text-xs text-slate-500">Configure global consultation rules and transit buffers</p>
+              <h2 className="text-base font-bold text-slate-900">{t('hospital_opd_params', 'Hospital OPD & Queue Parameters')}</h2>
+              <p className="text-xs text-slate-500">{t('configure_rules_buffers', 'Configure global consultation rules and transit buffers')}</p>
             </div>
 
             {settingsSaved && (
               <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold">
-                ✓ Hospital operational settings updated successfully.
+                {t('settings_updated_success', '✓ Hospital operational settings updated successfully.')}
               </div>
             )}
 
@@ -1760,7 +1768,7 @@ export default function AdminDashboard() {
             >
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Default Travel Safety Buffer (Minutes)
+                  {t('default_travel_buffer_mins', 'Default Travel Safety Buffer (Minutes)')}
                 </label>
                 <input
                   type="number"
@@ -1772,7 +1780,7 @@ export default function AdminDashboard() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Max Advance Booking Window (Days)
+                  {t('max_advance_booking_days', 'Max Advance Booking Window (Days)')}
                 </label>
                 <input
                   type="number"
@@ -1784,7 +1792,7 @@ export default function AdminDashboard() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Hospital Campus Destination Address
+                  {t('hospital_destination_address', 'Hospital Campus Destination Address')}
                 </label>
                 <input
                   type="text"
@@ -1798,7 +1806,7 @@ export default function AdminDashboard() {
                 type="submit"
                 className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
               >
-                Save Settings
+                {t('save_settings_btn', 'Save Settings')}
               </button>
             </form>
           </div>
@@ -1810,14 +1818,14 @@ export default function AdminDashboard() {
       {isDocModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Register New Doctor</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-4">{t('register_new_doctor_title', 'Register New Doctor')}</h3>
             <form onSubmit={handleCreateDoctor} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Doctor Name</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('doc_name_label', 'Doctor Name')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. Ramesh Rao"
+                  placeholder={t('doc_name_placeholder', 'e.g. Dr. Ramesh Rao')}
                   value={docForm.name}
                   onChange={(e) => setDocForm({ ...docForm, name: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
@@ -1825,7 +1833,7 @@ export default function AdminDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Department</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('department', 'Department')}</label>
                   <select
                     value={docForm.department}
                     onChange={(e) => setDocForm({ ...docForm, department: e.target.value })}
@@ -1837,7 +1845,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Room</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('room', 'Room')}</label>
                   <input
                     type="text"
                     value={docForm.consultation_room}
@@ -1847,10 +1855,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Specialization</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('specialization_label', 'Specialization')}</label>
                 <input
                   type="text"
-                  placeholder="e.g. Cardiac Specialist"
+                  placeholder={t('specialization_placeholder', 'e.g. Cardiac Specialist')}
                   value={docForm.specialization}
                   onChange={(e) => setDocForm({ ...docForm, specialization: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
@@ -1861,14 +1869,14 @@ export default function AdminDashboard() {
                   type="submit"
                   className="flex-1 py-2.5 bg-sky-600 text-white rounded-xl font-bold cursor-pointer"
                 >
-                  Save Doctor
+                  {t('save_doctor_btn', 'Save Doctor')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsDocModalOpen(false)}
                   className="py-2.5 px-4 bg-slate-100 text-slate-700 rounded-xl font-bold cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel', 'Cancel')}
                 </button>
               </div>
             </form>
@@ -1880,24 +1888,24 @@ export default function AdminDashboard() {
       {isDeptModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Add Department</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-4">{t('add_department_title', 'Add Department')}</h3>
             <form onSubmit={handleCreateDept} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Department Name</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('dept_name_label', 'Department Name')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Urology"
+                  placeholder={t('dept_name_placeholder', 'e.g. Urology')}
                   value={deptForm.name}
                   onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                 />
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Description</label>
+                <label className="block font-bold text-slate-700 mb-1">{t('description_label', 'Description')}</label>
                 <textarea
                   rows={3}
-                  placeholder="Clinical focus and services..."
+                  placeholder={t('dept_desc_placeholder', 'Clinical focus and services...')}
                   value={deptForm.description}
                   onChange={(e) => setDeptForm({ ...deptForm, description: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
@@ -1905,7 +1913,7 @@ export default function AdminDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Room / Wing</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('room_wing_label', 'Room / Wing')}</label>
                   <input
                     type="text"
                     value={deptForm.room}
@@ -1914,7 +1922,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Lead Doctor</label>
+                  <label className="block font-bold text-slate-700 mb-1">{t('lead_doctor_label', 'Lead Doctor')}</label>
                   <input
                     type="text"
                     placeholder="Doctor Name"
@@ -1929,14 +1937,14 @@ export default function AdminDashboard() {
                   type="submit"
                   className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold cursor-pointer"
                 >
-                  Save Department
+                  {t('save_dept_btn', 'Save Department')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsDeptModalOpen(false)}
                   className="py-2.5 px-4 bg-slate-100 text-slate-700 rounded-xl font-bold cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel', 'Cancel')}
                 </button>
               </div>
             </form>

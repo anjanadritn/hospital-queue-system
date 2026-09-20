@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, CheckCheck, Clock } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const NotificationsPopover = () => {
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -90,13 +92,13 @@ const NotificationsPopover = () => {
             alignItems: 'center',
             background: '#f8fafc'
           }}>
-            <strong style={{ fontSize: '0.9rem' }}>Notifications</strong>
+            <strong style={{ fontSize: '0.9rem' }}>{t('notifications', 'Notifications')}</strong>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllRead} 
                 style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 4 }}
               >
-                <CheckCheck size={14} /> Mark all read
+                <CheckCheck size={14} /> {t('mark_all_read', 'Mark all read')}
               </button>
             )}
           </div>
@@ -104,7 +106,7 @@ const NotificationsPopover = () => {
           <div style={{ maxHeight: 320, overflowY: 'auto' }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                No notifications yet.
+                {t('notifications_empty', 'No notifications yet.')}
               </div>
             ) : (
               notifications.map((n) => (

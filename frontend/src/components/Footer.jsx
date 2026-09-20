@@ -68,37 +68,37 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Stethoscope className="w-3.5 h-3.5 text-sky-400" />
-              <span>Patient Services</span>
+              <span>{t('patient_services', 'Patient Services')}</span>
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link to="/doctors" className="hover:text-sky-400 transition flex items-center gap-1.5">
-                  Find Doctors & Specialists
+                  {t('find_doctors', 'Find Doctors & Specialists')}
                 </Link>
               </li>
               <li>
                 <Link to="/book" className="hover:text-sky-400 transition flex items-center gap-1.5">
-                  Book In-Clinic Slot
+                  {t('book_consultation', 'Book In-Clinic Slot')}
                 </Link>
               </li>
               <li>
                 <Link to="/tracking" className="hover:text-sky-400 transition flex items-center gap-1.5">
-                  Live Queue Token Tracker
+                  {t('live_token', 'Live Queue Token Tracker')}
                 </Link>
               </li>
               <li>
                 <Link to="/departments" className="hover:text-sky-400 transition flex items-center gap-1.5">
-                  Clinical OPD Departments
+                  {t('departments', 'Clinical OPD Departments')}
                 </Link>
               </li>
               <li>
                 <Link to="/patient" className="hover:text-sky-400 transition flex items-center gap-1.5">
-                  Patient Health Dashboard
+                  {t('my_dashboard', 'Patient Health Dashboard')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="hover:text-teal-300 transition flex items-center gap-1.5 font-medium text-teal-400">
-                  About SIMSRH & Campus
+                  {t('about_simsrh', 'About SIMSRH & Campus')}
                 </Link>
               </li>
             </ul>
@@ -108,32 +108,32 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Cpu className="w-3.5 h-3.5 text-teal-400" />
-              <span>Smart Features</span>
+              <span>{t('smart_features', 'Smart Features')}</span>
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link to="/predict" className="hover:text-teal-400 transition flex items-center gap-1.5">
-                  AI Wait-Time Simulator
+                  {t('ai_simulator', 'AI Wait-Time Simulator')}
                 </Link>
               </li>
               <li>
                 <Link to="/tracking" className="hover:text-teal-400 transition flex items-center gap-1.5">
-                  Smart Arrival & Departure
+                  {t('when_to_leave', 'Smart Arrival & Departure')}
                 </Link>
               </li>
               <li>
                 <Link to="/doctor" className="hover:text-teal-400 transition flex items-center gap-1.5">
-                  Doctor OPD Workstation
+                  {t('doctor_workstation', 'Doctor OPD Workstation')}
                 </Link>
               </li>
               <li>
                 <Link to="/admin" className="hover:text-teal-400 transition flex items-center gap-1.5">
-                  Hospital Operations Portal
+                  {t('admin_management', 'Hospital Operations Portal')}
                 </Link>
               </li>
               <li>
                 <Link to="/analytics" className="hover:text-teal-400 transition flex items-center gap-1.5">
-                  Queue Flow Analytics
+                  {t('queue_analytics', 'Queue Flow Analytics')}
                 </Link>
               </li>
             </ul>
@@ -189,9 +189,9 @@ export default function Footer() {
         {/* Bottom Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} SmartHospital Platform.</span>
+            <span>© {new Date().getFullYear()} {t('brand_title', 'SmartHospital Platform')}.</span>
             <span className="hidden sm:inline">•</span>
-            <span>Developed at Shridevi Institute of Engineering and Technology, Tumkur.</span>
+            <span>{t('academic_project_tag', 'Developed at Shridevi Institute of Engineering and Technology, Tumkur.')}</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">

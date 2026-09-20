@@ -159,7 +159,7 @@ export default function ConsultationRecordModal({ record, onClose }) {
                 </span>
               </div>
               <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200/80 dark:border-slate-700">
-                <span className="text-slate-400 block text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3 text-teal-500" /> Origin</span>
+                <span className="text-slate-400 block text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3 text-teal-500" /> {t('origin', 'Origin')}</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs truncate block" title={city}>
                   {city}
                 </span>
@@ -191,7 +191,7 @@ export default function ConsultationRecordModal({ record, onClose }) {
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs italic text-slate-400">No specific symptoms recorded</span>
+                    <span className="text-xs italic text-slate-400">{t('no_symptoms_reported', 'No specific symptoms recorded')}</span>
                   )}
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function ConsultationRecordModal({ record, onClose }) {
                   <div className="text-xs bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
                     <span className="text-slate-400 block">{t('illness_duration')}:</span>
                     <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      {durationDays} day(s) of symptoms
+                      {durationDays} {t('days_of_symptoms', 'day(s) of symptoms')}
                     </span>
                   </div>
                 )}
@@ -237,7 +237,7 @@ export default function ConsultationRecordModal({ record, onClose }) {
                   </span>
                   {diagnosis ? (
                     <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                      Clinically Confirmed
+                      {t('clinically_confirmed', 'Clinically Confirmed')}
                     </span>
                   ) : null}
                 </div>

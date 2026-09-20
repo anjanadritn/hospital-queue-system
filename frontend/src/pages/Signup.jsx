@@ -20,9 +20,11 @@ import {
   Cpu
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -44,11 +46,11 @@ export default function Signup() {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!phone || phone.length < 10) {
-      setError('Please enter a valid 10-digit mobile number');
+      setError(t('invalid_phone_error', 'Please enter a valid 10-digit mobile number'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwords_dont_match', 'Passwords do not match'));
       return;
     }
 
@@ -68,7 +70,7 @@ export default function Signup() {
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to send verification OTP';
+        t('failed_send_otp', 'Failed to send verification OTP');
       setError(message);
     } finally {
       setLoading(false);
@@ -78,7 +80,7 @@ export default function Signup() {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!otpInput || otpInput.length !== 6) {
-      setError('Please enter the 6-digit OTP code');
+      setError(t('enter_6_digit_otp_error', 'Please enter the 6-digit OTP code'));
       return;
     }
 
@@ -104,7 +106,7 @@ export default function Signup() {
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
-        'Account registration failed. Please verify your OTP.';
+        t('reg_failed_otp', 'Account registration failed. Please verify your OTP.');
       setError(message);
     } finally {
       setLoading(false);
@@ -130,7 +132,7 @@ export default function Signup() {
                   SMART<span className="text-sky-400">HOSPITAL</span>
                 </span>
                 <span className="text-[11px] text-teal-300 font-semibold uppercase tracking-wider block">
-                  Patient Portal Registration
+                  {t('signup_title', 'Patient Portal Registration')}
                 </span>
               </div>
             </div>
@@ -138,13 +140,13 @@ export default function Signup() {
             <div className="space-y-2 pt-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-400/30">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Verified Patient Network</span>
+                <span>{t('enterprise_healthcare_platform', 'Verified Patient Network')}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                Begin Your Connected Clinical Journey
+                {t('signup_hero_title', 'Begin Your Connected Clinical Journey')}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Register with your mobile phone number to unlock advance specialist booking, live queue position tracking, and smart departure alerts.
+                {t('signup_hero_desc', 'Register with your mobile phone number to unlock advance specialist booking, live queue position tracking, and smart departure alerts.')}
               </p>
             </div>
 
@@ -154,8 +156,8 @@ export default function Signup() {
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-emerald-200 block">Instant SMS OTP Verification</span>
-                  <span className="text-slate-400 text-[11px]">Secure patient authentication protocol</span>
+                  <span className="font-extrabold text-emerald-200 block">{t('instant_access', 'Instant SMS OTP Verification')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('doctor_calling_otp_triage', 'Secure patient authentication protocol')}</span>
                 </div>
               </div>
 
@@ -164,8 +166,8 @@ export default function Signup() {
                   <Cpu className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-purple-200 block">Personalized Waiting Prediction</span>
-                  <span className="text-slate-400 text-[11px]">Real-time queue latency calculated for your turn</span>
+                  <span className="font-extrabold text-purple-200 block">{t('ai_wait_time_forecasting', 'Personalized Waiting Prediction')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('rf_ml_queue_prediction', 'Real-time queue latency calculated for your turn')}</span>
                 </div>
               </div>
 
@@ -174,8 +176,8 @@ export default function Signup() {
                   <Activity className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-sky-200 block">Shridevi Hospital Campus Access</span>
-                  <span className="text-slate-400 text-[11px]">Direct integration with Tumkur clinical wings</span>
+                  <span className="font-extrabold text-sky-200 block">{t('hospital_short', 'Shridevi Hospital Campus Access')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('clinical_wings', 'Direct integration with Tumkur clinical wings')}</span>
                 </div>
               </div>
             </div>
@@ -184,7 +186,7 @@ export default function Signup() {
           <div className="relative z-10 pt-6 mt-6 border-t border-white/10 text-xs text-slate-400 flex items-center gap-2">
             <GraduationCap className="w-4 h-4 text-teal-400 shrink-0" />
             <span className="leading-tight">
-              Final-Year Engineering Project • Shridevi Institute of Engineering & Technology, Tumkur
+              {t('academic_project_tag', 'Final-Year Engineering Project • Shridevi Institute of Engineering & Technology, Tumkur')}
             </span>
           </div>
         </div>
@@ -196,13 +198,13 @@ export default function Signup() {
             {/* Header */}
             <div>
               <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block mb-1">
-                New Patient Enrollment
+                {t('new_patient_enrollment', 'New Patient Enrollment')}
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Create Patient Account
+                {t('create_account', 'Create Patient Account')}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Enter your details to generate your patient ID and verify your phone.
+                {t('create_patient_account_desc', 'Enter your details to generate your patient ID and verify your phone.')}
               </p>
             </div>
 
@@ -211,7 +213,7 @@ export default function Signup() {
               <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div className="flex-1">
-                  <span className="font-extrabold block">Registration Issue</span>
+                  <span className="font-extrabold block">{t('authentication_notice', 'Registration Issue')}</span>
                   <p className="mt-0.5">{error}</p>
                 </div>
               </div>
@@ -224,9 +226,9 @@ export default function Signup() {
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">Account Verified & Created!</h3>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">{t('account_verified_created', 'Account Verified & Created!')}</h3>
                   <p className="text-xs text-slate-500">
-                    Your patient profile has been registered in the SmartHospital database. Redirecting to login...
+                    {t('redirecting_to_login', 'Your patient profile has been registered in the SmartHospital database. Redirecting to login...')}
                   </p>
                 </div>
                 <div className="pt-2">
@@ -234,7 +236,7 @@ export default function Signup() {
                     to="/login"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 text-white text-xs font-bold rounded-xl hover:bg-sky-700 transition"
                   >
-                    <span>Proceed to Sign In</span>
+                    <span>{t('proceed_to_signin', 'Proceed to Sign In')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -243,13 +245,13 @@ export default function Signup() {
               /* STEP 1: INITIAL DETAILS */
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{t('full_name', 'Full Name')}</label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Ramesh Kumar"
+                      placeholder={t('full_name_placeholder', 'e.g. Ramesh Kumar')}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -259,14 +261,14 @@ export default function Signup() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">{t('phone_number', 'Phone Number')}</label>
                     <div className="relative">
                       <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       <input
                         type="tel"
                         required
                         maxLength={10}
-                        placeholder="10-digit number"
+                        placeholder={t('phone_placeholder', '10-digit number')}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -275,7 +277,7 @@ export default function Signup() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Email (Optional)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">{t('email_optional', 'Email (Optional)')}</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       <input
@@ -291,13 +293,13 @@ export default function Signup() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">{t('password', 'Password')}</label>
                     <div className="relative">
                       <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
-                        placeholder="Create password"
+                        placeholder={t('password_placeholder', 'Create password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -305,6 +307,7 @@ export default function Signup() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? t('hide_password', 'Hide password') : t('show_password', 'Show password')}
                         className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -313,13 +316,13 @@ export default function Signup() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Confirm Password</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">{t('confirm_password', 'Confirm Password')}</label>
                     <div className="relative">
                       <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         required
-                        placeholder="Confirm password"
+                        placeholder={t('confirm_password_placeholder', 'Confirm password')}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -327,6 +330,7 @@ export default function Signup() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? t('hide_password', 'Hide password') : t('show_password', 'Show password')}
                         className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -343,11 +347,11 @@ export default function Signup() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Sending OTP Verification Code...</span>
+                      <span>{t('sending_otp_code', 'Sending OTP Verification Code...')}</span>
                     </>
                   ) : (
                     <>
-                      <span>Send OTP Code & Verify Phone</span>
+                      <span>{t('send_otp_verify_phone', 'Send OTP Code & Verify Phone')}</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -359,15 +363,15 @@ export default function Signup() {
                 <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-800 space-y-1">
                   <div className="font-bold flex items-center gap-1.5">
                     <KeyRound className="w-4 h-4 text-sky-600" />
-                    <span>Verification Code Sent</span>
+                    <span>{t('verification_code_sent', 'Verification Code Sent')}</span>
                   </div>
                   <p className="text-[11px] text-slate-600">
-                    We sent a 6-digit OTP code to <span className="font-bold text-slate-900">+91 {phone}</span>.
+                    {t('we_sent_otp_to', { phone: `+91 ${phone}` }, `We sent a 6-digit OTP code to +91 ${phone}`)}.
                   </p>
                   {devOtp && (
                     <div className="pt-2">
                       <span className="px-2 py-0.5 bg-sky-200/80 text-sky-900 font-mono font-bold rounded-md text-[10px]">
-                        Demo Auto-Filled OTP: {devOtp}
+                        {t('demo_autofilled_otp', { otp: devOtp }, `Demo Auto-Filled OTP: ${devOtp}`)}
                       </span>
                     </div>
                   )}
@@ -375,7 +379,7 @@ export default function Signup() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 text-center">
-                    Enter 6-Digit OTP Code
+                    {t('enter_otp', 'Enter 6-Digit OTP Code')}
                   </label>
                   <input
                     type="text"
@@ -395,7 +399,7 @@ export default function Signup() {
                     onClick={() => setOtpSent(false)}
                     className="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer"
                   >
-                    Edit Phone
+                    {t('edit_phone', 'Edit Phone')}
                   </button>
                   <button
                     type="submit"
@@ -405,11 +409,11 @@ export default function Signup() {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Verifying & Creating...</span>
+                        <span>{t('verifying_and_creating', 'Verifying & Creating...')}</span>
                       </>
                     ) : (
                       <>
-                        <span>Complete Registration</span>
+                        <span>{t('complete_registration', 'Complete Registration')}</span>
                         <CheckCircle2 className="w-4 h-4" />
                       </>
                     )}
@@ -421,9 +425,9 @@ export default function Signup() {
             {/* Login Link */}
             <div className="pt-4 border-t border-slate-100 text-center">
               <p className="text-xs text-slate-500">
-                Already have an account?{' '}
+                {t('already_have_account', 'Already have an account?')}{' '}
                 <Link to="/login" className="text-sky-600 font-extrabold hover:underline">
-                  Sign In Here
+                  {t('sign_in_here', 'Sign In Here')}
                 </Link>
               </p>
             </div>

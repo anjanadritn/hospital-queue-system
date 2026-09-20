@@ -21,6 +21,7 @@ import {
   getDepartureState
 } from '../services/departureStateService';
 import LiveRouteMap from './LiveRouteMap';
+import { useLanguage } from '../context/LanguageContext';
 
 const TUMKUR_OPTIONS = [
   'Tumkur Bus Stand',
@@ -50,6 +51,7 @@ function calculateHaversineMeters(lat1, lon1, lat2, lon2) {
 }
 
 export default function DepartureCard({ travelInfo: initialTravelInfo, onRefreshQueue }) {
+  const { t } = useLanguage();
   const [currentTravelInfo, setCurrentTravelInfo] = useState(initialTravelInfo);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [isLeavingSubmitting, setIsLeavingSubmitting] = useState(false);
@@ -642,25 +644,25 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-extrabold text-base text-white tracking-tight">Smart Patient Departure Engine</h3>
+              <h3 className="font-extrabold text-base text-white tracking-tight">{t('when_to_leave', 'Smart Patient Departure Engine')}</h3>
               {isExactGps && liveCoords ? (
                 <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span>✓ Exact GPS Active</span>
+                  <span>✓ {t('live_gps_active', 'Exact GPS Active')}</span>
                 </span>
               ) : (gpsStatus === 'denied' || gpsStatus === 'unavailable') ? (
                 <span className="text-[10px] font-bold bg-rose-500/20 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 text-rose-400" />
-                  <span>GPS unavailable — Using approximate location</span>
+                  <span>{t('gps_unavailable', 'GPS unavailable — Using approximate location')}</span>
                 </span>
               ) : (
                 <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 text-amber-400" />
-                  <span>Approximate Landmark Transit</span>
+                  <span>{t('approx_landmark', 'Approximate Landmark Transit')}</span>
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-sky-300 font-medium">Destination: SIMSRH Campus, Sira Road, NH4, Lingapura, Tumakuru – 572106</p>
+            <p className="text-[11px] text-sky-300 font-medium">{t('destination', 'Destination')}: {t('destination_address', 'SIMSRH Campus, Sira Road, NH4, Lingapura, Tumakuru – 572106')}</p>
           </div>
         </div>
 
@@ -686,10 +688,10 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             )}
             <span>
               {calculating
-                ? 'Locating...'
+                ? t('locating', 'Locating...')
                 : isExactGps
-                  ? 'Live GPS Active'
-                  : 'Live GPS'}
+                  ? t('live_gps_active', 'Live GPS Active')
+                  : t('live_gps', 'Live GPS')}
             </span>
           </button>
 
@@ -722,12 +724,12 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <span>
-              Device GPS: <strong className="text-emerald-300">{liveCoords ? `${liveCoords[1].toFixed(6)}°N, ${liveCoords[0].toFixed(6)}°E` : 'Acquiring...'}</strong>
+              {t('device_gps', { coords: '' }, 'Device GPS')}: <strong className="text-emerald-300">{liveCoords ? `${liveCoords[1].toFixed(6)}°N, ${liveCoords[0].toFixed(6)}°E` : 'Acquiring...'}</strong>
               {lastGpsReading?.accuracy ? ` (±${lastGpsReading.accuracy}m)` : ''}
             </span>
           </div>
           <div className="text-slate-300 text-[10px]">
-            Active Route: <strong className="text-sky-300">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.0} km</strong> ({travelInfo.travel_time_min ?? travelDuration} mins to SIMSRH)
+            {t('route_metrics', { distance: travelInfo.distance_km != null ? travelInfo.distance_km : 0.0, duration: travelInfo.travel_time_min ?? travelDuration }, `Active Route: ${travelInfo.distance_km != null ? travelInfo.distance_km : 0.0} km (${travelInfo.travel_time_min ?? travelDuration} mins to SIMSRH)`)}
           </div>
         </div>
       )}
@@ -766,26 +768,26 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
               <span className="text-xs font-black uppercase tracking-widest text-red-400 flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4 text-red-400 animate-pulse" />
-                2-Minute Grace Period Expired
+                {t('late_arrival_warning_subtitle', '2-Minute Grace Period Expired')}
               </span>
               {displayArrivalDeadline && (
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-200 border border-red-500/40">
-                  Deadline was: {displayArrivalDeadline}
+                  {t('arrival_deadline', 'Deadline was')}: {displayArrivalDeadline}
                 </span>
               )}
             </div>
 
             <div className="text-3xl sm:text-5xl font-black text-red-400 font-mono tracking-tight mb-2 uppercase">
-              ARRIVAL DEADLINE PASSED
+              {t('arrival_deadline', 'ARRIVAL DEADLINE PASSED')}
             </div>
 
             <p className="text-sm font-bold text-red-100 max-w-xl mx-auto leading-relaxed">
-              Your 2-minute grace period has expired. You may be moved to the end of your doctor's queue.
+              {t('late_arrival_desc', "Your 2-minute grace period has expired. You may be moved to the end of your doctor's queue.")}
             </p>
 
             {travelInfo.late_arrival_reordered && (
               <div className="mt-3 text-xs bg-amber-500/20 text-amber-200 border border-amber-500/40 rounded-xl px-4 py-2 inline-block font-semibold">
-                ⚠️ Notice: Your position has been updated to the end of Dr. {travelInfo.doctor_name || "your doctor"}'s queue due to late arrival.
+                ⚠️ {t('details', 'Notice')}: {t('late_arrival_desc', `Your position has been updated to the end of Dr. ${travelInfo.doctor_name || "your doctor"}'s queue due to late arrival.`)}
               </div>
             )}
           </div>
@@ -797,25 +799,25 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
               <span className="text-xs font-black uppercase tracking-widest text-rose-300 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-rose-400 animate-bounce" />
-                Action Required
+                {t('emergency_priority', 'Action Required')}
               </span>
               {displayArrivalTime && (
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  Expected Arrival: {displayArrivalTime} (Passed)
+                  {t('expected_arrival', 'Expected Arrival')}: {displayArrivalTime} ({t('urgent', 'Passed')})
                 </span>
               )}
             </div>
 
             <div className="text-3xl sm:text-5xl font-black text-rose-300 font-mono tracking-tight mb-2 uppercase">
-              URGENT — YOU MAY BE LATE
+              {t('urgent', 'URGENT — YOU MAY BE LATE')}
             </div>
 
             <p className="text-sm font-bold text-rose-100 max-w-xl mx-auto leading-relaxed">
-              Your expected hospital arrival time has passed. Leave immediately to avoid missing your queue position.
+              {t('hurry_leave_immediately', 'Your expected hospital arrival time has passed. Leave immediately to avoid missing your queue position.')}
             </p>
 
             <div className="mt-3 text-xs bg-rose-950/70 text-rose-200 border border-rose-500/40 rounded-xl px-4 py-2 inline-block font-medium">
-              ⚠️ Arriving late may cause you to be moved to the <strong>END of your doctor's queue</strong> after the 2-minute arrival deadline ({displayArrivalDeadline || 'soon'}).
+              ⚠️ {t('late_warning_buffer', `Arriving late may cause you to be moved to the END of your doctor's queue after the 2-minute arrival deadline (${displayArrivalDeadline || 'soon'}).`)}
             </div>
           </div>
         )}
@@ -826,25 +828,25 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
               <span className="text-xs font-black uppercase tracking-widest text-amber-300 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-amber-400 animate-pulse" />
-                Departure Window Active
+                {t('departure_status', 'Departure Window Active')}
               </span>
               {displayDepartureTime && (
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  Recommended: {displayDepartureTime}
+                  {t('safe_departure_time', 'Recommended')}: {displayDepartureTime}
                 </span>
               )}
             </div>
 
             <div className="text-4xl sm:text-6xl font-black text-amber-300 font-mono tracking-tight mb-2 animate-pulse">
-              LEAVE NOW
+              {t('leave_now', 'LEAVE NOW')}
             </div>
 
             <p className="text-sm font-bold text-amber-100 max-w-xl mx-auto leading-relaxed">
-              Your recommended departure time has arrived.
+              {t('hurry_leave_immediately', 'Your recommended departure time has arrived.')}
             </p>
 
             <p className="text-xs text-slate-300 mt-1 max-w-xl mx-auto">
-              Start your journey from {selectedOrigin} immediately to reach SIMSRH on schedule before your expected arrival ({displayArrivalTime || 'soon'}).
+              {t('safe_on_time', `Start your journey from ${selectedOrigin} immediately to reach SIMSRH on schedule before your expected arrival (${displayArrivalTime || 'soon'}).`)}
             </p>
           </div>
         )}
@@ -854,7 +856,7 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           <div>
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="text-xs font-extrabold uppercase tracking-widest text-teal-300">
-                Recommended Departure Time
+                {t('safe_departure_time', 'Recommended Departure Time')}
               </span>
               {minsUntilDeparture !== null && (
                 <span
@@ -864,7 +866,7 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
                       : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   }`}
                 >
-                  {minsUntilDeparture > 0 ? `In ~${minsUntilDeparture} mins` : 'Depart Soon'}
+                  {minsUntilDeparture > 0 ? `In ~${minsUntilDeparture} ${t('mins_short', 'mins')}` : t('leave_now', 'Depart Soon')}
                 </span>
               )}
             </div>
@@ -885,16 +887,16 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-300 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                Hospital Arrival Verified
+                {t('arrival_verified_title', 'Hospital Arrival Verified')}
               </span>
             </div>
 
             <div className="text-3xl sm:text-5xl font-black text-emerald-300 font-mono tracking-tight mb-2">
-              ARRIVED AT SIMSRH
+              {t('arrival_verified_title', 'ARRIVED AT SIMSRH')}
             </div>
 
             <p className="text-xs text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
-              Your arrival has been verified. Please wait in the OPD lounge for your token to be called.
+              {t('otp_verified_success', 'Your arrival has been verified. Please wait in the OPD lounge for your token to be called.')}
             </p>
           </div>
         )}
@@ -904,13 +906,13 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-4 flex-wrap text-xs text-slate-300">
             {displayArrivalTime && (
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-400">Expected Hospital Arrival:</span>
+                <span className="text-slate-400">{t('expected_arrival', 'Expected Hospital Arrival')}:</span>
                 <span className="font-bold text-sky-200">{displayArrivalTime}</span>
               </div>
             )}
             {displayArrivalDeadline && (
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-400">2-Min Arrival Deadline:</span>
+                <span className="text-slate-400">{t('arrival_deadline', '2-Min Arrival Deadline')}:</span>
                 <span className="font-bold text-rose-300">{displayArrivalDeadline}</span>
               </div>
             )}
@@ -923,9 +925,9 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-bold shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>
-                You are en route to SIMSRH
+                {t('patient_en_route', 'You are en route to SIMSRH')}
                 {travelInfo.leaving_now_at
-                  ? ` (Departed at ${new Date(travelInfo.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })})`
+                  ? ` (${t('you_have_departed', { time: new Date(travelInfo.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) }, `Departed at ${new Date(travelInfo.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`)})`
                   : ''}
               </span>
             </div>
@@ -946,12 +948,12 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
               {isLeavingSubmitting ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Synchronizing Departure & GPS...</span>
+                  <span>{t('marking_departure', 'Synchronizing Departure & GPS...')}</span>
                 </>
               ) : (
                 <>
                   <Car className="w-4 h-4" />
-                  <span>I'm Leaving Now</span>
+                  <span>{t('i_am_leaving_now', "I'm Leaving Now")}</span>
                 </>
               )}
             </button>
@@ -969,19 +971,19 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
       {/* Grid Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center relative z-10">
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Transit Distance</span>
-          <span className="text-lg font-black text-white">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.2} km</span>
+          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('route_metrics', 'Transit Distance')}</span>
+          <span className="text-lg font-black text-white">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.2} {t('km_short', 'km')}</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Travel Duration</span>
-          <span className="text-lg font-black text-sky-300">{travelDuration} mins</span>
+          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('live_travel_duration', 'Travel Duration')}</span>
+          <span className="text-lg font-black text-sky-300">{travelDuration} {t('mins_short', 'mins')}</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Safety Buffer</span>
-          <span className="text-lg font-black text-teal-300">+{safetyBuffer} mins</span>
+          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('safety_buffer_included', 'Safety Buffer')}</span>
+          <span className="text-lg font-black text-teal-300">+{safetyBuffer} {t('mins_short', 'mins')}</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">OPD Turn Window</span>
+          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('expected_consultation_label', 'OPD Turn Window')}</span>
           <span className="text-lg font-black text-white">{displayTurnWindow}</span>
         </div>
       </div>
@@ -992,7 +994,7 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           <div className="flex items-center gap-2">
             <Navigation className="w-4 h-4 text-sky-400" />
             <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-              Live Road Route Navigation
+              {t('when_to_leave', 'Live Road Route Navigation')}
             </span>
           </div>
           <span className="text-[10px] text-sky-300/80 font-medium">

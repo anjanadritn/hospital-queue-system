@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const DEPARTMENTS = [
   'All Departments',
@@ -29,6 +30,7 @@ const DEPARTMENTS = [
 ];
 
 export default function LiveQueueBoard({ initialDepartment = '' }) {
+  const { t } = useLanguage();
   const [selectedDept, setSelectedDept] = useState(initialDepartment);
   const [selectedSlot, setSelectedSlot] = useState(''); // '' for all, 'morning', 'evening'
   const [selectedDoctor, setSelectedDoctor] = useState(''); // '' for all doctors
@@ -99,15 +101,14 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800/60">
-                Live OPD Queue Board
+                {t('live_queue_board', 'Live OPD Queue Board')}
               </span>
-              <span className="text-xs text-slate-400 hidden sm:inline">• Zero-PII Public Display</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1.5 flex items-center gap-2">
-              Real-Time Consultation Queue
+              {t('live_tracking_title', 'Real-Time Consultation Queue')}
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-              Dynamically recalculated using Random Forest machine learning based on live doctor consultations.
+              {t('live_queue_subtitle', 'Dynamically recalculated using Random Forest machine learning based on live doctor consultations.')}
             </p>
           </div>
 
@@ -120,7 +121,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                   selectedSlot === '' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'
                 }`}
               >
-                All Slots
+                {t('all_slots', 'All Slots')}
               </button>
               <button
                 onClick={() => setSelectedSlot('morning')}
@@ -128,7 +129,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                   selectedSlot === 'morning' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'
                 }`}
               >
-                Morning
+                {t('morning_slot', 'Morning')}
               </button>
               <button
                 onClick={() => setSelectedSlot('evening')}
@@ -136,7 +137,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                   selectedSlot === 'evening' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'
                 }`}
               >
-                Evening
+                {t('evening_slot', 'Evening')}
               </button>
             </div>
 
@@ -144,9 +145,9 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
             <select
               value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(e.target.value)}
-              className="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
             >
-              <option value="">All Doctors</option>
+              <option value="">{t('all_doctors', 'All Doctors')}</option>
               {doctorsList.map((doc) => (
                 <option key={doc.doctor_id} value={doc.doctor_id}>
                   {doc.name} ({doc.department})
@@ -158,11 +159,11 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
             >
               {DEPARTMENTS.map((dept) => (
                 <option key={dept} value={dept === 'All Departments' ? '' : dept}>
-                  {dept}
+                  {dept === 'All Departments' ? t('all_departments', 'All Departments') : dept}
                 </option>
               ))}
             </select>
@@ -171,8 +172,8 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
             <button
               onClick={() => fetchLiveQueue(true)}
               disabled={isRefreshing}
-              title="Refresh queue"
-              className="p-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl border border-slate-700 transition"
+              title={t('refresh', 'Refresh queue')}
+              className="p-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl border border-slate-700 transition cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
             </button>
@@ -185,7 +186,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-400">
             <RefreshCw className="w-8 h-8 animate-spin text-sky-600 mb-3" />
-            <p className="text-sm font-medium">Streaming live hospital queue data...</p>
+            <p className="text-sm font-medium">{t('loading_clinical_records', 'Streaming live hospital queue data...')}</p>
           </div>
         ) : error && totalCount === 0 ? (
           <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center gap-3">
@@ -200,14 +201,14 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
                     <Building2 className="w-3.5 h-3.5 text-sky-600" />
-                    Doctor-Specific OPD Queues ({doctorQueueList.length} Active {doctorQueueList.length === 1 ? 'Chamber' : 'Chambers'})
+                    {t('doctor_workstation', 'Doctor-Specific OPD Queues')} ({doctorQueueList.length})
                   </h3>
                   {selectedDoctor && (
                     <button
                       onClick={() => setSelectedDoctor('')}
-                      className="text-xs text-sky-600 hover:text-sky-700 font-semibold underline"
+                      className="text-xs text-sky-600 hover:text-sky-700 font-semibold underline cursor-pointer"
                     >
-                      View All Doctor Queues
+                      {t('all_doctors', 'View All Doctor Queues')}
                     </button>
                   )}
                 </div>
@@ -220,7 +221,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                       <button
                         key={dq.doctor_id || dq.doctor_name}
                         onClick={() => setSelectedDoctor(isSelected ? '' : (dq.doctor_id || ''))}
-                        className={`text-left p-3.5 rounded-2xl border transition-all duration-200 ${
+                        className={`text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
                           isSelected
                             ? 'bg-sky-50/80 border-sky-400 shadow-sm ring-2 ring-sky-300'
                             : 'bg-white hover:bg-slate-50/80 border-slate-200/80 shadow-xs'
@@ -241,13 +242,13 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                         </div>
                         <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
                           <span className="text-emerald-700 font-bold">
-                            Serving: {consultingToken || 'Open'}
+                            {t('in_consultation', 'Serving')}: {consultingToken || t('ready', 'Open')}
                           </span>
                           <span className="text-sky-700 font-semibold">
-                            Next: {nextToken || 'None'}
+                            {t('next_in_line', 'Next')}: {nextToken || t('ready', 'None')}
                           </span>
                           <span className="text-slate-400 font-bold">
-                            {dq.total_active} waiting
+                            {dq.total_active} {t('waiting', 'waiting')}
                           </span>
                         </div>
                       </button>
@@ -269,11 +270,11 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
                     </span>
                     <span className="text-xs font-black uppercase tracking-wider text-emerald-800">
-                      Now In Consultation
+                      {t('currently_consulting', 'Now In Consultation')}
                     </span>
                   </div>
                   <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-full">
-                    Active Room
+                    {t('active_now', 'Active Room')}
                   </span>
                 </div>
 
@@ -303,10 +304,10 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                         <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                           <span className="flex items-center gap-1 font-medium text-emerald-700">
                             <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                            Consultation in progress
+                            {t('in_consultation', 'Consultation in progress')}
                           </span>
                           <span className="font-semibold text-slate-700">
-                            Est. ~{item.predicted_duration || 12} mins
+                            ~{item.predicted_duration || 12} {t('mins_short', 'mins')}
                           </span>
                         </div>
                       </div>
@@ -315,7 +316,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                 ) : (
                   <div className="py-8 text-center text-slate-400">
                     <Stethoscope className="w-8 h-8 mx-auto text-slate-300 mb-1.5" />
-                    <p className="text-xs font-medium">Chamber currently open for next patient</p>
+                    <p className="text-xs font-medium">{t('ready_to_call', 'Chamber currently open for next patient')}</p>
                   </div>
                 )}
               </div>
@@ -327,11 +328,11 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                   <div className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-sky-600" />
                     <span className="text-xs font-black uppercase tracking-wider text-sky-800">
-                      Next Patient (Position #1)
+                      {t('next_in_line', 'Next Patient (Position #1)')}
                     </span>
                   </div>
                   <span className="px-2.5 py-0.5 bg-sky-100 text-sky-800 text-[11px] font-bold rounded-full">
-                    Please Be Ready
+                    {t('ready', 'Please Be Ready')}
                   </span>
                 </div>
 
@@ -358,19 +359,19 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
 
                     <div className="mt-4 grid grid-cols-2 gap-2 text-center bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Est. Wait</span>
-                        <span className="text-sm font-black text-sky-700">~{nextPatient.estimated_wait_time || 5} min</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">{t('estimated_wait_time', 'Est. Wait')}</span>
+                        <span className="text-sm font-black text-sky-700">~{nextPatient.estimated_wait_time || 5} {t('mins_short', 'min')}</span>
                       </div>
                       <div className="border-l border-slate-200">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Expected Start</span>
-                        <span className="text-sm font-black text-slate-800">{nextPatient.expected_consultation_time || 'Immediate'}</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">{t('expected_consultation_label', 'Expected Start')}</span>
+                        <span className="text-sm font-black text-slate-800">{nextPatient.expected_consultation_time || t('ready', 'Immediate')}</span>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="py-8 text-center text-slate-400">
                     <UserCheck className="w-8 h-8 mx-auto text-slate-300 mb-1.5" />
-                    <p className="text-xs font-medium">No queue wait for next position</p>
+                    <p className="text-xs font-medium">{t('no_waiting_patients', 'No queue wait for next position')}</p>
                   </div>
                 )}
               </div>
@@ -381,10 +382,10 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                  Upcoming Queue Progression ({upcomingPatients.length} Waiting)
+                  {t('upcoming_queue', 'Upcoming Queue Progression')} ({upcomingPatients.length} {t('waiting', 'Waiting')})
                 </h3>
                 <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-                  Expected times update progressively with each consultation
+                  {t('live_queue_subtitle', 'Expected times update progressively with each consultation')}
                 </span>
               </div>
 
@@ -418,11 +419,11 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
 
                       <div className="mt-3 pt-2.5 border-t border-slate-200/70 flex items-center justify-between text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-400 block font-semibold">Wait</span>
-                          <span className="font-bold text-slate-700">~{patient.estimated_wait_time}m</span>
+                          <span className="text-[10px] text-slate-400 block font-semibold">{t('estimated_wait_time', 'Wait')}</span>
+                          <span className="font-bold text-slate-700">~{patient.estimated_wait_time}{t('mins_short', 'm')}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] text-slate-400 block font-semibold">Expected</span>
+                          <span className="text-[10px] text-slate-400 block font-semibold">{t('expected_consultation_label', 'Expected')}</span>
                           <span className="font-black text-sky-700">{patient.expected_consultation_time}</span>
                         </div>
                       </div>
@@ -431,7 +432,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
                 </div>
               ) : (
                 <div className="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
-                  No further patients in this slot queue. Immediate consultation available!
+                  {t('no_waiting_patients', 'No further patients in this slot queue. Immediate consultation available!')}
                 </div>
               )}
             </div>

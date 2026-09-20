@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, X, Activity, Check } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, customSymptoms, onChangeCustomSymptoms }) {
+  const { t } = useLanguage();
   const [symptoms, setSymptoms] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL');
@@ -12,6 +14,21 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
   }, []);
 
   const categories = ['ALL', 'GENERAL', 'RESPIRATORY', 'DIGESTIVE', 'NEUROLOGICAL', 'SKIN', 'ENT', 'URINARY', 'MUSCULOSKELETAL'];
+
+  const getCatLabel = (cat) => {
+    switch (cat) {
+      case 'ALL': return t('filter_all', 'ALL');
+      case 'GENERAL': return t('cat_general', 'GENERAL');
+      case 'RESPIRATORY': return t('cat_respiratory', 'RESPIRATORY');
+      case 'DIGESTIVE': return t('cat_digestive', 'DIGESTIVE');
+      case 'NEUROLOGICAL': return t('cat_neurological', 'NEUROLOGICAL');
+      case 'SKIN': return t('cat_skin', 'SKIN');
+      case 'ENT': return t('cat_ent', 'ENT');
+      case 'URINARY': return t('cat_urinary', 'URINARY');
+      case 'MUSCULOSKELETAL': return t('cat_musculoskeletal', 'MUSCULOSKELETAL');
+      default: return cat;
+    }
+  };
 
   const filteredSymptoms = symptoms.filter((s) => {
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,14 +50,14 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
       {/* Search & Category Pills */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-          Select Presenting Symptoms
+          {t('select_presenting_symptoms', 'Select Presenting Symptoms')}
         </label>
 
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Type to search symptoms (e.g. fever, cough, chest)..."
+            placeholder={t('search_symptoms_placeholder', 'Type to search symptoms (e.g. fever, cough, chest)...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
@@ -54,11 +71,11 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
               key={cat}
               type="button"
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-bold shrink-0 transition ${
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold shrink-0 transition cursor-pointer ${
                 activeCategory === cat ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              {cat}
+              {getCatLabel(cat)}
             </button>
           ))}
         </div>
@@ -73,7 +90,7 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
               key={s.id}
               type="button"
               onClick={() => toggleSymptom(s.name)}
-              className={`p-2 rounded-lg text-left text-xs font-semibold transition flex items-center justify-between border ${
+              className={`p-2 rounded-lg text-left text-xs font-semibold transition flex items-center justify-between border cursor-pointer ${
                 isSelected
                   ? 'bg-sky-50 border-sky-300 text-sky-900 shadow-2xs'
                   : 'bg-white border-slate-200/60 text-slate-700 hover:border-slate-300'
@@ -95,7 +112,7 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-100 text-sky-800 rounded-full text-xs font-bold border border-sky-200"
             >
               {s}
-              <button type="button" onClick={() => toggleSymptom(s)} className="hover:text-sky-950">
+              <button type="button" onClick={() => toggleSymptom(s)} className="hover:text-sky-950 cursor-pointer">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -106,17 +123,17 @@ export default function SymptomSelector({ selectedSymptoms, onChangeSymptoms, cu
       {/* Custom Symptoms Textarea */}
       <div>
         <label className="block text-xs font-bold text-slate-700 mb-1">
-          Add Other Symptoms / Health Concerns
+          {t('add_other_symptoms', 'Add Other Symptoms / Health Concerns')}
         </label>
         <textarea
           rows={2}
           value={customSymptoms}
           onChange={(e) => onChangeCustomSymptoms(e.target.value)}
-          placeholder="Describe any other symptoms (e.g. 'I have had a mild headache for two days and fatigue')..."
+          placeholder={t('describe_symptoms_placeholder', "Describe any other symptoms (e.g. 'I have had a mild headache for two days and fatigue')...")}
           className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition resize-none"
         />
         <p className="text-[10px] text-slate-400 mt-1">
-          * Note: Symptoms are collected to estimate consultation duration and optimize queue scheduling. This is NOT a medical diagnosis.
+          {t('symptoms_disclaimer', '* Note: Symptoms are collected to estimate consultation duration and optimize queue scheduling. This is NOT a medical diagnosis.')}
         </p>
       </div>
 

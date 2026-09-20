@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import StatusBadge from '../components/StatusBadge';
 import LoadingState from '../components/LoadingState';
 import DepartureCard from '../components/DepartureCard';
@@ -30,6 +31,7 @@ import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
 
 export default function QueueTracking() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQueueId = searchParams.get('queue_id') || null;
@@ -209,13 +211,13 @@ export default function QueueTracking() {
         <div className="text-center max-w-xl mx-auto">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-3 py-1 rounded-full border border-sky-200 mb-3">
             <Activity className="w-3.5 h-3.5 text-sky-600" />
-            <span>Live Consultation Tracker</span>
+            <span>{t('live_tracking_title', 'Live Consultation Tracker')}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-            Real-Time Queue Status
+            {t('live_tracking_title', 'Real-Time Queue Status')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Welcome, <span className="font-bold text-slate-800">{user?.name || queueData?.patient_name || 'Patient'}</span> — Follow your live position, transit alerts, and doctor call status.
+            {t('welcome_back', { name: user?.name || queueData?.patient_name || 'Patient' }, `Welcome, ${user?.name || queueData?.patient_name || 'Patient'}`)} — {t('live_tracking_subtitle', 'Follow your live position, transit alerts, and doctor call status.')}
           </p>
         </div>
 
@@ -226,7 +228,7 @@ export default function QueueTracking() {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Enter Token ID (e.g. Q001, B001)..."
+                placeholder={t('search_token_placeholder', 'Enter Token ID (e.g. Q001, B001)...')}
                 value={queueIdInput}
                 onChange={(e) => setQueueIdInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition uppercase font-mono shadow-2xs"
@@ -237,7 +239,7 @@ export default function QueueTracking() {
               type="submit"
               className="px-6 py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition shadow-xs shrink-0 cursor-pointer"
             >
-              Track
+              {t('search', 'Track')}
             </button>
           </form>
         </div>
@@ -246,7 +248,7 @@ export default function QueueTracking() {
         <div className="flex items-center justify-between px-2 text-xs font-semibold text-slate-600">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-sky-600" />
-            <span>Real-Time Sync:</span>
+            <span>{t('real_time_sync', 'Real-Time Sync:')}</span>
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition cursor-pointer ${
@@ -255,9 +257,9 @@ export default function QueueTracking() {
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
-              {autoRefresh ? '● ACTIVE (5s)' : '○ PAUSED'}
+              {autoRefresh ? t('active_sync', '● ACTIVE (5s)') : t('paused_sync', '○ PAUSED')}
             </button>
-            <span className="text-[10px] text-slate-400 hidden sm:inline">• Last updated: {lastUpdated}</span>
+            <span className="text-[10px] text-slate-400 hidden sm:inline">• {t('last_visit', 'Last updated')}: {lastUpdated}</span>
           </div>
 
           <button
@@ -265,24 +267,24 @@ export default function QueueTracking() {
             className="inline-flex items-center gap-1.5 text-sky-600 hover:text-sky-700 font-bold cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>{t('refresh', 'Refresh')}</span>
           </button>
         </div>
 
         {loading && !queueData ? (
-          <LoadingState message="Fetching live queue status from MongoDB..." />
+          <LoadingState message={t('loading_clinical_records', 'Fetching live queue status...')} />
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-3xl p-8 text-center max-w-md mx-auto shadow-xs space-y-4">
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
-              <h3 className="text-base font-bold text-red-900 mb-1">Queue Access Notice</h3>
+              <h3 className="text-base font-bold text-red-900 mb-1">{t('service_comm_notice', 'Queue Access Notice')}</h3>
               <p className="text-xs text-red-700 font-medium">{error}</p>
             </div>
             <button
               onClick={loadMyActiveQueue}
               className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
             >
-              Load Active Token
+              {t('your_active_token', 'Load Active Token')}
             </button>
           </div>
         ) : queueData ? (
@@ -291,15 +293,15 @@ export default function QueueTracking() {
             {/* Visual 5-Step Stepper */}
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-4">
-                Consultation Journey Stepper
+                {t('consultation_timeline', 'Consultation Journey Stepper')}
               </span>
               <div className="grid grid-cols-5 gap-2 text-center text-xs">
                 {[
-                  { step: 1, label: 'Token Issued' },
-                  { step: 2, label: 'In Queue' },
-                  { step: 3, label: 'Approaching' },
-                  { step: 4, label: 'Consulting' },
-                  { step: 5, label: 'Completed' }
+                  { step: 1, label: t('token', 'Token Issued') },
+                  { step: 2, label: t('waiting_line', 'In Queue') },
+                  { step: 3, label: t('on_schedule', 'Approaching') },
+                  { step: 4, label: t('in_consultation', 'Consulting') },
+                  { step: 5, label: t('completed', 'Completed') }
                 ].map((s) => {
                   const isDone = currentStep > s.step;
                   const isCurrent = currentStep === s.step;
@@ -340,12 +342,12 @@ export default function QueueTracking() {
                     <PhoneCall className="w-5 h-5 text-white animate-pulse" />
                   </div>
                   <div>
-                    <p className="font-extrabold text-base">Doctor Is Calling Your Token Now!</p>
-                    <p className="text-xs text-rose-100">Please proceed immediately to {queueData.room_number || 'OPD Consultation Room'}.</p>
+                    <p className="font-extrabold text-base">{t('doctor_calling_now', 'Doctor Is Calling Your Token Now!')}</p>
+                    <p className="text-xs text-rose-100">{t('please_proceed_room', { room: queueData.room_number || 'OPD Consultation Room' }, `Please proceed immediately to ${queueData.room_number || 'OPD Consultation Room'}.`)}</p>
                   </div>
                 </div>
                 <span className="px-3 py-1 bg-white text-rose-600 font-black rounded-lg text-xs tracking-wider uppercase">
-                  Called
+                  {t('called', 'Called')}
                 </span>
               </div>
             )}
@@ -360,7 +362,7 @@ export default function QueueTracking() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-3">
                 <div>
                   <span className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider block">
-                    Queue Token
+                    {t('queue_token_number', 'Queue Token')}
                   </span>
                   <span className="text-3xl font-extrabold font-mono text-slate-900">
                     {queueData.queue_id}
@@ -377,7 +379,7 @@ export default function QueueTracking() {
                 <div className="flex items-center gap-2.5">
                   <User className="w-4 h-4 text-sky-600 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Patient</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{t('patient', 'Patient')}</span>
                     <span className="font-extrabold text-slate-800">{queueData.patient_name || user?.name || 'Patient'}</span>
                   </div>
                 </div>
@@ -385,7 +387,7 @@ export default function QueueTracking() {
                 <div className="flex items-center gap-2.5">
                   <Stethoscope className="w-4 h-4 text-sky-600 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Doctor</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{t('doctor', 'Doctor')}</span>
                     <span className="font-extrabold text-slate-800">{queueData.doctor_name || 'Specialist Doctor'}</span>
                   </div>
                 </div>
@@ -393,7 +395,7 @@ export default function QueueTracking() {
                 <div className="flex items-center gap-2.5">
                   <MapPin className="w-4 h-4 text-sky-600 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Room & Dept</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{t('room', 'Room')} & {t('department_label', 'Dept')}</span>
                     <span className="font-extrabold text-slate-800">{queueData.department} • {queueData.room_number || 'Room 101'}</span>
                   </div>
                 </div>
@@ -401,7 +403,7 @@ export default function QueueTracking() {
                 <div className="flex items-center gap-2.5">
                   <Phone className="w-4 h-4 text-sky-600 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Phone</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{t('phone_number', 'Phone')}</span>
                     <span className="font-extrabold text-slate-800">{queueData.patient_phone || user?.phone || 'N/A'}</span>
                   </div>
                 </div>
@@ -413,7 +415,7 @@ export default function QueueTracking() {
                 {/* Position (Blue) */}
                 <div className="bg-sky-50/80 border border-sky-200/70 rounded-2xl p-5 text-center">
                   <span className="text-xs font-bold text-sky-700 uppercase tracking-wider block mb-1">
-                    Your Position
+                    {t('queue_pos', 'Your Position')}
                   </span>
                   <span className="text-4xl font-extrabold text-slate-900">#{queueData.position}</span>
                 </div>
@@ -421,7 +423,7 @@ export default function QueueTracking() {
                 {/* Patients Ahead (Orange/Yellow) */}
                 <div className="bg-amber-50/80 border border-amber-200/70 rounded-2xl p-5 text-center">
                   <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block mb-1">
-                    Ahead in Line
+                    {t('ahead_in_line', 'Ahead in Line')}
                   </span>
                   <span className="text-4xl font-extrabold text-amber-900">
                     {Math.max(0, queueData.position - 1)}
@@ -432,15 +434,15 @@ export default function QueueTracking() {
                 <div className="bg-purple-50/80 border border-purple-200/70 rounded-2xl p-5 text-center">
                   <span className="text-xs font-bold text-purple-700 uppercase tracking-wider flex items-center justify-center gap-1 mb-1">
                     <Cpu className="w-3.5 h-3.5 text-purple-600" />
-                    <span>Est. Queue Wait</span>
+                    <span>{t('estimated_wait_time', 'Est. Queue Wait')}</span>
                   </span>
                   <span className="text-4xl font-extrabold text-purple-900">
                     ~{typeof queueData.predicted_wait_time === 'number'
                       ? queueData.predicted_wait_time
-                      : (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)}m
+                      : (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)}{t('mins_short', 'm')}
                   </span>
                   <span className="text-[10px] text-purple-600 font-medium block mt-1">
-                    Random Forest: ~{predictedConsultationDuration || queueData.predicted_duration || queueData.predicted_consultation_duration || 12}m/visit
+                    {t('rf_model_prediction', 'Random Forest')}: ~{predictedConsultationDuration || queueData.predicted_duration || queueData.predicted_consultation_duration || 12}{t('mins_short', 'm')}/visit
                   </span>
                 </div>
 
@@ -450,7 +452,7 @@ export default function QueueTracking() {
               {queueData.symptoms && queueData.symptoms.length > 0 && (
                 <div className="pt-3 border-t border-slate-100">
                   <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1.5">
-                    Reported Symptoms:
+                    {t('presenting_symptoms', 'Reported Symptoms')}:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {queueData.symptoms.map((sym, i) => (
@@ -460,7 +462,7 @@ export default function QueueTracking() {
                     ))}
                     {queueData.custom_symptoms && (
                       <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-lg border border-amber-200">
-                        Note: {queueData.custom_symptoms}
+                        {t('details', 'Note')}: {queueData.custom_symptoms}
                       </span>
                     )}
                   </div>
@@ -516,9 +518,9 @@ export default function QueueTracking() {
                     <ShieldAlert className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-base">Require Immediate Emergency Attention?</h4>
+                    <h4 className="font-extrabold text-base">{t('emergency_triage', 'Require Immediate Emergency Attention?')}</h4>
                     <p className="text-xs text-red-100 mt-0.5">
-                      Escalate your token to Emergency Priority for prompt clinical triage.
+                      {t('emergency_priority_desc', 'Escalate your token to Emergency Priority for prompt clinical triage.')}
                     </p>
                   </div>
                 </div>
@@ -528,7 +530,7 @@ export default function QueueTracking() {
                   disabled={escalating}
                   className="w-full sm:w-auto px-6 py-3 bg-white text-red-700 hover:bg-red-50 font-bold rounded-2xl text-xs transition shadow-md shrink-0 cursor-pointer"
                 >
-                  {escalating ? 'Escalating...' : 'Request Emergency Priority'}
+                  {escalating ? t('loading', 'Escalating...') : t('escalate_emergency', 'Request Emergency Priority')}
                 </button>
               </div>
             )}
@@ -537,12 +539,12 @@ export default function QueueTracking() {
         ) : (
           <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-xs space-y-4 max-w-md mx-auto">
             <Ticket className="w-12 h-12 text-slate-300 mx-auto" />
-            <p className="text-xs text-slate-500">You don't currently have an active consultation token.</p>
+            <p className="text-xs text-slate-500">{t('no_active_consultations', "You don't currently have an active consultation token.")}</p>
             <button
               onClick={() => navigate('/book')}
               className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
             >
-              Book Consultation
+              {t('book_consultation', 'Book Consultation')}
             </button>
           </div>
         )}

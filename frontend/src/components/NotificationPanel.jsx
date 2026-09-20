@@ -13,8 +13,10 @@ import {
   Sparkles
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function NotificationPanel({ patientId }) {
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -116,7 +118,7 @@ export default function NotificationPanel({ patientId }) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2.5 text-slate-600 hover:text-sky-700 rounded-2xl hover:bg-slate-100 transition cursor-pointer"
-        title="Notifications & Alerts"
+        title={t('notifications', 'Notifications')}
         aria-label="View notifications"
       >
         <Bell className="w-5 h-5" />
@@ -138,10 +140,10 @@ export default function NotificationPanel({ patientId }) {
             <div className="p-4 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-sky-400" />
-                <span className="font-extrabold text-xs tracking-wide">Notification Center</span>
+                <span className="font-extrabold text-xs tracking-wide">{t('notification_center', 'Notification Center')}</span>
                 {unreadCount > 0 && (
                   <span className="px-2 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-extrabold">
-                    {unreadCount} new
+                    {t('new_notifications', { count: unreadCount }, `${unreadCount} new`)}
                   </span>
                 )}
               </div>
@@ -154,7 +156,7 @@ export default function NotificationPanel({ patientId }) {
                     title="Mark all as read"
                   >
                     <CheckCheck className="w-3 h-3" />
-                    <span>Read all</span>
+                    <span>{t('mark_all_read', 'Read all')}</span>
                   </button>
                 )}
                 <button
@@ -171,8 +173,8 @@ export default function NotificationPanel({ patientId }) {
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 space-y-2">
                   <CheckCircle2 className="w-10 h-10 text-slate-200 mx-auto" />
-                  <p className="text-xs font-semibold text-slate-500">All caught up!</p>
-                  <p className="text-[11px] text-slate-400">No active alerts for this account.</p>
+                  <p className="text-xs font-semibold text-slate-500">{t('all_caught_up', 'All caught up!')}</p>
+                  <p className="text-[11px] text-slate-400">{t('no_notifications_desc', 'No active alerts for this account.')}</p>
                 </div>
               ) : (
                 notifications.map((n) => {
@@ -200,7 +202,7 @@ export default function NotificationPanel({ patientId }) {
                             title="Mark as read"
                           >
                             <Check className="w-3 h-3" />
-                            <span>Read</span>
+                            <span>{t('read', 'Read')}</span>
                           </button>
                         )}
                       </div>

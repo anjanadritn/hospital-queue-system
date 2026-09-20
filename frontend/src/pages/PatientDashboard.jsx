@@ -438,13 +438,13 @@ export default function PatientDashboard() {
                 <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
                 <span>Patient ID: {user?.patient_id || 'SHP-2026-PT'}</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-emerald-300 text-[11px]">Portal Active</span>
+                <span className="text-emerald-300 text-[11px]">{t('portal_active', 'Portal Active')}</span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-                Welcome, {user?.name || 'Valued Patient'}
+                {t('welcome_back', { name: user?.name || 'Valued Patient' }, `Welcome, ${user?.name || 'Valued Patient'}`)}
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-                Track your upcoming consultations, monitor live OPD waiting tokens, and view smart departure calculations in real time.
+                {t('dashboard_subtitle', 'Track your upcoming consultations, monitor live OPD waiting tokens, and view smart departure calculations in real time.')}
               </p>
             </div>
 
@@ -455,14 +455,14 @@ export default function PatientDashboard() {
                 title="Refresh Records"
               >
                 <RefreshCw className="w-4 h-4" />
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">{t('refresh', 'Refresh')}</span>
               </button>
               <Link
                 to="/book"
                 className="flex-1 md:flex-none px-6 py-3 bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Book Consultation</span>
+                <span>{t('book_consultation', 'Book Consultation')}</span>
               </Link>
             </div>
           </div>
@@ -474,37 +474,37 @@ export default function PatientDashboard() {
           {/* Active / Next Appointment (Blue/Teal) */}
           <div className="bg-white rounded-2xl p-5 border border-sky-100 shadow-xs hover:border-sky-300 transition">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Upcoming Visits</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('upcoming_visits', 'Upcoming Visits')}</span>
               <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
                 <Calendar className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-extrabold text-slate-900">{upcomingAppointments.length}</div>
             <p className="text-[11px] text-sky-600 font-semibold mt-0.5">
-              {upcomingAppointments.length > 0 ? 'Confirmed in system' : 'No upcoming visits'}
+              {upcomingAppointments.length > 0 ? t('confirmed_in_system', 'Confirmed in system') : t('no_upcoming_visits', 'No upcoming visits')}
             </p>
           </div>
 
           {/* Active Queue Token (Orange/Amber) */}
           <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-xs hover:border-amber-300 transition">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Live OPD Token</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('live_opd_token', 'Live OPD Token')}</span>
               <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                 <Ticket className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-extrabold text-amber-900">
-              {activeQueue ? `#${activeQueue.position}` : 'None'}
+              {activeQueue ? `#${activeQueue.position}` : t('none', 'None')}
             </div>
             <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
-              {activeQueue ? `${activeQueue.queue_id} in progress` : 'Not in queue line'}
+              {activeQueue ? t('token_in_progress', { token: activeQueue.queue_id }, `${activeQueue.queue_id} in progress`) : t('not_in_queue_line', 'Not in queue line')}
             </p>
           </div>
 
           {/* AI Wait Estimate (Purple) */}
           <div className="bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:border-purple-300 transition">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">AI Estimated Wait</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('ai_estimated_wait', 'AI Estimated Wait')}</span>
               <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
                 <Cpu className="w-4 h-4" />
               </div>
@@ -524,14 +524,14 @@ export default function PatientDashboard() {
             className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-xs hover:border-emerald-300 hover:shadow-sm transition cursor-pointer group"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Completed Visits</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('completed_visits', 'Completed Visits')}</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-extrabold text-emerald-800">{medicalHistory.length}</div>
             <p className="text-[11px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
-              <span>View medical records</span>
+              <span>{t('view_medical_records', 'View medical records')}</span>
               <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </p>
           </div>
@@ -548,7 +548,7 @@ export default function PatientDashboard() {
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            Overview & Live Token
+            {t('overview_live_token', 'Overview & Live Token')}
           </button>
 
           <button
@@ -577,7 +577,7 @@ export default function PatientDashboard() {
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>Appointment Bookings ({appointments.length})</span>
+            <span>{t('appointment_bookings', 'Appointment Bookings')} ({appointments.length})</span>
           </button>
 
           <button
@@ -589,7 +589,7 @@ export default function PatientDashboard() {
             }`}
           >
             <Bell className="w-3.5 h-3.5" />
-            <span>Notifications ({notifications.length})</span>
+            <span>{t('notifications_tab', 'Notifications')} ({notifications.length})</span>
             {notifications.filter(n => !n.read).length > 0 && (
               <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black">
                 {notifications.filter(n => !n.read).length}
@@ -622,13 +622,13 @@ export default function PatientDashboard() {
                   </div>
                   <div>
                     <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-100 block">
-                      Urgent Live OPD Notification
+                      {t('urgent_opd_notification', 'Urgent Live OPD Notification')}
                     </span>
                     <h3 className="text-xl sm:text-2xl font-extrabold">
-                      Doctor is Calling Your Token (#{activeQueue.queue_id}) Now!
+                      {t('doctor_calling_token', { token: activeQueue.queue_id }, `Doctor is Calling Your Token (#${activeQueue.queue_id}) Now!`)}
                     </h3>
                     <p className="text-xs sm:text-sm text-white/90 mt-0.5">
-                      Please proceed immediately to <span className="font-bold underline">{activeQueue.room_number || 'Room 204'}</span> for your consultation.
+                      {t('proceed_immediately_to', { room: activeQueue.room_number || 'Room 204' }, `Please proceed immediately to ${activeQueue.room_number || 'Room 204'} for your consultation.`)}
                     </p>
                   </div>
                 </div>
@@ -636,7 +636,7 @@ export default function PatientDashboard() {
                   to={`/tracking?queue_id=${activeQueue.queue_id}`}
                   className="w-full sm:w-auto px-8 py-3.5 bg-white text-slate-900 hover:bg-slate-100 font-extrabold rounded-2xl text-xs transition shadow-lg shrink-0 text-center cursor-pointer"
                 >
-                  Open Live Pass & Directions
+                  {t('open_live_pass', 'Open Live Pass & Directions')}
                 </Link>
               </div>
             )}
@@ -697,10 +697,10 @@ export default function PatientDashboard() {
                       </div>
                       <div>
                         <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
-                          Real-Time Travel & Departure Guidance
+                          {t('real_time_travel_guidance', 'Real-Time Travel & Departure Guidance')}
                         </span>
                         <div className="text-[11px] text-slate-500">
-                          Destination: Shridevi Institute of Medical Sciences (SIMSRH), Lingapura, Tumakuru
+                          {t('destination_simsrh', 'Destination: Shridevi Institute of Medical Sciences (SIMSRH), Lingapura, Tumakuru')}
                         </div>
                       </div>
                     </div>
@@ -714,7 +714,7 @@ export default function PatientDashboard() {
                           ? 'bg-rose-100 text-rose-800 animate-bounce'
                           : 'bg-amber-100 text-amber-800'
                       }`}>
-                        <span>● Reminder: {activeQueue.leave_reminder_status.replace(/_/g, ' ')}</span>
+                        <span>● {t('reminder', 'Reminder')}: {activeQueue.leave_reminder_status.replace(/_/g, ' ')}</span>
                       </span>
                     )}
                   </div>
@@ -728,25 +728,28 @@ export default function PatientDashboard() {
                         </div>
                         <div>
                           <div className="text-xs font-black text-emerald-900">
-                            You're On Your Way to SIMSRH!
+                            {t('on_your_way_to_simsrh', "You're On Your Way to SIMSRH!")}
                           </div>
                           <div className="text-[11px] text-emerald-700 mt-0.5">
-                            Departed at {activeQueue.leaving_now_at ? new Date(activeQueue.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}. Expected transit: ~{activeQueue.travel_info?.travel_time_minutes || 15} mins.
+                            {t('departed_at', {
+                              time: activeQueue.leaving_now_at ? new Date(activeQueue.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently',
+                              mins: activeQueue.travel_info?.travel_time_minutes || 15
+                            }, `Departed at ${activeQueue.leaving_now_at ? new Date(activeQueue.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}. Expected transit: ~${activeQueue.travel_info?.travel_time_minutes || 15} mins.`)}
                           </div>
                         </div>
                       </div>
                       <span className="px-3 py-1 bg-white text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold shadow-2xs">
-                        Expected Arrival: ~{activeQueue.expected_arrival_time || activeQueue.expected_consultation_time || 'On Schedule'}
+                        {t('expected_arrival', 'Expected Arrival')}: ~{activeQueue.expected_arrival_time || activeQueue.expected_consultation_time || 'On Schedule'}
                       </span>
                     </div>
                   ) : (
                     <div className="p-4 bg-gradient-to-r from-sky-50 to-teal-50 border border-sky-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
                         <div className="text-xs font-extrabold text-slate-900">
-                          Are you starting your journey to SIMSRH now?
+                          {t('starting_journey_question', 'Are you starting your journey to SIMSRH now?')}
                         </div>
                         <p className="text-[11px] text-slate-600 mt-0.5 max-w-lg">
-                          Recommended departure time: <strong className="text-teal-800 font-bold">{activeQueue.recommended_departure_time || activeQueue.travel_info?.recommended_departure_time || 'Leave Soon'}</strong> (Expected consultation: <strong className="text-sky-800 font-bold">{activeQueue.expected_consultation_time || activeQueue.travel_info?.expected_consultation_time || '~15m'}</strong>). Let the hospital know so your queue position is actively preserved.
+                          {t('recommended_departure')}: <strong className="text-teal-800 font-bold">{activeQueue.recommended_departure_time || activeQueue.travel_info?.recommended_departure_time || 'Leave Soon'}</strong> ({t('expected_consultation_time')}: <strong className="text-sky-800 font-bold">{activeQueue.expected_consultation_time || activeQueue.travel_info?.expected_consultation_time || '~15m'}</strong>).
                         </p>
                         {leavingSuccessMsg && (
                           <div className="text-xs font-bold text-emerald-700 mt-1">
@@ -764,12 +767,12 @@ export default function PatientDashboard() {
                         {leavingLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Updating GPS & Status...</span>
+                            <span>{t('confirming_departure', 'Confirming Departure...')}</span>
                           </>
                         ) : (
                           <>
                             <Navigation className="w-4 h-4" />
-                            <span>I'M LEAVING NOW</span>
+                            <span>{t('im_leaving_now_btn', "I'M LEAVING NOW")}</span>
                           </>
                         )}
                       </button>
@@ -795,7 +798,7 @@ export default function PatientDashboard() {
                     {activeQueue.verified_by_admin || activeQueue.arrived_at_hospital ? (
                       <span className="px-4 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold inline-flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span>Arrival Verified at Reception Desk</span>
+                        <span>{t('arrival_verified_reception', 'Arrival Verified at Reception Desk')}</span>
                       </span>
                     ) : (
                       <button
@@ -804,7 +807,7 @@ export default function PatientDashboard() {
                         className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Arrived at Reception</span>
+                        <span>{t('i_have_arrived_reception', 'I Have Arrived at Reception')}</span>
                       </button>
                     )}
                   </div>
@@ -823,10 +826,10 @@ export default function PatientDashboard() {
                       </div>
                       <div>
                         <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block">
-                          Confirmed Upcoming Consultation
+                          {t('confirmed_upcoming_consultation', 'Confirmed Upcoming Consultation')}
                         </span>
                         <h3 className="text-lg font-extrabold text-slate-900">
-                          Booking Reference: <span className="font-mono text-sky-700">{nextAppointment.booking_id}</span>
+                          {t('booking_reference', 'Booking Reference')}: <span className="font-mono text-sky-700">{nextAppointment.booking_id}</span>
                         </h3>
                       </div>
                     </div>
@@ -839,13 +842,13 @@ export default function PatientDashboard() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Specialist & Specialty</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">{t('specialist_and_opd', 'Specialist & Specialty')}</span>
                       <div className="text-base font-bold text-slate-900">{nextAppointment.doctor_id || 'Specialist Doctor'}</div>
                       <div className="text-xs font-bold text-sky-700 mt-0.5">{nextAppointment.department || 'Clinical OPD'}</div>
                     </div>
 
                     <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Clinic & Room</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">{t('chamber_room', 'Clinic & Room')}</span>
                       <div className="text-base font-bold text-emerald-700 flex items-center gap-1.5 mt-0.5">
                         <DoorOpen className="w-4 h-4" />
                         <span>{nextAppointment.room_number || 'Room 204'}</span>
@@ -854,10 +857,10 @@ export default function PatientDashboard() {
                     </div>
 
                     <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">Scheduled Date & Token</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">{t('scheduled_date_token', 'Scheduled Date & Token')}</span>
                       <div className="text-base font-bold text-slate-900 mt-0.5">{nextAppointment.consultation_date}</div>
                       <div className="text-xs font-mono font-bold text-sky-700">
-                        {nextAppointment.queue_id ? `Token: ${nextAppointment.queue_id}` : 'Token Assigned on Entry'}
+                        {nextAppointment.queue_id ? `${t('token')}: ${nextAppointment.queue_id}` : t('token_assigned_on_entry', 'Token Assigned on Entry')}
                       </div>
                     </div>
                   </div>
@@ -865,7 +868,7 @@ export default function PatientDashboard() {
                   {/* Symptoms summary */}
                   {nextAppointment.symptoms && nextAppointment.symptoms.length > 0 && (
                     <div className="bg-slate-50 p-4 rounded-2xl mb-6 text-xs text-slate-700 border border-slate-100">
-                      <span className="font-bold text-slate-900 block mb-1.5">Reported Symptoms:</span>
+                      <span className="font-bold text-slate-900 block mb-1.5">{t('reported_symptoms')}:</span>
                       <div className="flex flex-wrap gap-1.5">
                         {nextAppointment.symptoms.map((s, i) => (
                           <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-semibold rounded-lg border border-slate-200">
@@ -885,7 +888,7 @@ export default function PatientDashboard() {
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-t border-slate-100 pt-5 gap-3">
                     <div className="text-xs text-slate-500 flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <span>Your consultation is registered in the hospital database.</span>
+                      <span>{t('consultation_registered_msg')}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -894,7 +897,7 @@ export default function PatientDashboard() {
                           to={`/tracking?queue_id=${nextAppointment.queue_id}`}
                           className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-2"
                         >
-                          <span>Track Live Queue & Pass</span>
+                          <span>{t('track_consultation', 'Track Live Queue & Pass')}</span>
                           <ArrowRight className="w-4 h-4" />
                         </Link>
                       ) : (
@@ -903,7 +906,7 @@ export default function PatientDashboard() {
                           disabled={joining}
                           className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                         >
-                          <span>{joining ? 'Assigning Token...' : 'Enter Live Queue'}</span>
+                          <span>{joining ? t('loading', 'Assigning Token...') : t('enter_live_queue', 'Enter Live Queue')}</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
                       )}
@@ -930,16 +933,16 @@ export default function PatientDashboard() {
                   <Stethoscope className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-900 mb-1">No Active Consultations Found</h3>
+                  <h3 className="text-lg font-extrabold text-slate-900 mb-1">{t('no_active_consultations', 'No Active Consultations Found')}</h3>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
-                    Schedule an appointment with an OPD specialist at SIMSRH Tumakuru to receive a queue token and transit departure guidance.
+                    {t('schedule_appointment_prompt', 'Schedule an appointment with an OPD specialist at SIMSRH Tumakuru to receive a queue token and transit departure guidance.')}
                   </p>
                 </div>
                 <Link
                   to="/book"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer"
                 >
-                  <span>Schedule Consultation</span>
+                  <span>{t('schedule_consultation', 'Schedule Consultation')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -955,10 +958,10 @@ export default function PatientDashboard() {
                     </div>
                     <div>
                       <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-700 block">
-                        Recent Clinical Consultation
+                        {t('recent_clinical_consultation')}
                       </span>
                       <h4 className="text-base font-extrabold text-slate-900">
-                        {medicalHistory[0].doctor_name || medicalHistory[0].doctor_id || 'Attending Physician'}
+                        {medicalHistory[0].doctor_name || medicalHistory[0].doctor_id || t('attending_physician')}
                         <span className="text-xs font-semibold text-slate-500 ml-2">
                           ({medicalHistory[0].department || 'General Medicine'})
                         </span>
@@ -969,13 +972,13 @@ export default function PatientDashboard() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-teal-600" />
-                      {medicalHistory[0].consultation_date || (medicalHistory[0].created_at ? medicalHistory[0].created_at.split('T')[0] : 'Recent')}
+                      {medicalHistory[0].consultation_date || (medicalHistory[0].created_at ? medicalHistory[0].created_at.split('T')[0] : t('recent'))}
                     </span>
                     <button
                       onClick={() => handleTabChange('medical-history')}
                       className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
                     >
-                      <span>View All ({medicalHistory.length})</span>
+                      <span>{t('view_all')} ({medicalHistory.length})</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -984,7 +987,7 @@ export default function PatientDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   <div className="p-3 bg-sky-50/50 rounded-xl border border-sky-100">
                     <span className="text-[10px] font-bold text-sky-800 uppercase tracking-wider block mb-1">
-                      Reported Symptoms
+                      {t('reported_symptoms')}
                     </span>
                     <p className="text-slate-700 font-medium">
                       {(medicalHistory[0].patient_reported?.symptoms || medicalHistory[0].symptoms || []).join(', ') || 'Routine consultation'}
@@ -993,11 +996,11 @@ export default function PatientDashboard() {
 
                   <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
                     <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block mb-1">
-                      Clinical Assessment / Diagnosis
+                      {t('clinical_assessment_diagnosis')}
                     </span>
                     <p className="text-slate-800 font-semibold">
                       {medicalHistory[0].doctor_assessment?.diagnosis || medicalHistory[0].diagnosis || (
-                        <span className="italic text-slate-400">Diagnosis pending physician entry</span>
+                        <span className="italic text-slate-400">{t('diagnosis_pending_entry')}</span>
                       )}
                     </p>
                   </div>
@@ -1294,31 +1297,31 @@ export default function PatientDashboard() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <div>
-                <h3 className="text-base font-extrabold text-slate-900">Consultation & Appointment Bookings</h3>
-                <p className="text-xs text-slate-500">Log of your scheduled clinic visits and active queue bookings</p>
+                <h3 className="text-base font-extrabold text-slate-900">{t('consultation_bookings')}</h3>
+                <p className="text-xs text-slate-500">{t('bookings_subtitle')}</p>
               </div>
               <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold">
-                {appointments.length} Bookings
+                {appointments.length} {t('bookings')}
               </span>
             </div>
 
             {appointments.length === 0 ? (
               <div className="p-12 text-center text-slate-400 text-xs">
                 <Calendar className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                <p>No appointment records found.</p>
+                <p>{t('no_appointments_found')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                      <th className="pb-3 px-3">Booking ID</th>
-                      <th className="pb-3 px-3">Token #</th>
-                      <th className="pb-3 px-3">Doctor & Dept</th>
-                      <th className="pb-3 px-3">Date</th>
-                      <th className="pb-3 px-3">Symptoms</th>
-                      <th className="pb-3 px-3">Priority</th>
-                      <th className="pb-3 px-3">Status</th>
+                      <th className="pb-3 px-3">{t('booking_id', 'Booking ID')}</th>
+                      <th className="pb-3 px-3">{t('token', 'Token #')}</th>
+                      <th className="pb-3 px-3">{t('doctor_and_dept', 'Doctor & Dept')}</th>
+                      <th className="pb-3 px-3">{t('date', 'Date')}</th>
+                      <th className="pb-3 px-3">{t('symptoms', 'Symptoms')}</th>
+                      <th className="pb-3 px-3">{t('priority', 'Priority')}</th>
+                      <th className="pb-3 px-3">{t('status', 'Status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1509,8 +1512,8 @@ export default function PatientDashboard() {
               {/* RIGHT: UPDATE PATIENT PROFILE FORM (7 cols) */}
               <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5">
                 <div className="border-b border-slate-100 pb-3">
-                  <h4 className="text-base font-extrabold text-slate-900">Update Profile Information</h4>
-                  <p className="text-xs text-slate-500">Edit demographic and physical details to keep your medical records current</p>
+                  <h4 className="text-base font-extrabold text-slate-900">{t('update_profile_info')}</h4>
+                  <p className="text-xs text-slate-500">{t('edit_profile_desc')}</p>
                 </div>
 
                 <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
@@ -1542,7 +1545,7 @@ export default function PatientDashboard() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Email Address</label>
+                      <label className="block font-bold text-slate-700 mb-1">{t('email', 'Email Address')}</label>
                       <input
                         type="email"
                         value={profileForm.email}
@@ -1586,9 +1589,9 @@ export default function PatientDashboard() {
                         onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
                       >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="Male">{t('male', 'Male')}</option>
+                        <option value="Female">{t('female', 'Female')}</option>
+                        <option value="Other">{t('other', 'Other')}</option>
                       </select>
                     </div>
                   </div>
@@ -1631,12 +1634,12 @@ export default function PatientDashboard() {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">PDO Reference / Health Card ID (Optional)</label>
+                    <label className="block font-bold text-slate-700 mb-1">{t('pdo_ref_optional')}</label>
                     <input
                       type="text"
                       value={profileForm.pdo || ''}
                       onChange={(e) => setProfileForm({ ...profileForm, pdo: e.target.value })}
-                      placeholder="Optional local health card or reference number"
+                      placeholder={t('optional_health_card')}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
                     />
                   </div>
@@ -1648,7 +1651,7 @@ export default function PatientDashboard() {
                       className="w-full py-3.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
                     >
                       <Save className="w-4 h-4" />
-                      <span>{profileSaving ? 'Saving Profile...' : t('update_profile', 'Update Profile Details')}</span>
+                      <span>{profileSaving ? t('saving_profile') : t('update_profile', 'Update Profile Details')}</span>
                     </button>
                   </div>
                 </form>

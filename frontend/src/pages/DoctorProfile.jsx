@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import QueueJoinModal from '../components/QueueJoinModal';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import LoadingState from '../components/LoadingState';
@@ -34,6 +35,7 @@ export default function DoctorProfile() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const [doctor, setDoctor] = useState(null);
   const [queueItems, setQueueItems] = useState([]);
@@ -124,16 +126,16 @@ export default function DoctorProfile() {
   };
 
   if (loading) {
-    return <LoadingState message="Loading doctor credentials, live OPD queue, and reviews..." />;
+    return <LoadingState message={t('loading_clinical_records', 'Loading doctor credentials, live OPD queue, and reviews...')} />;
   }
 
   if (error || !doctor) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <ErrorState
-          title="Doctor Not Found"
-          message={error || "The requested doctor profile does not exist in Shridevi Hospital's directory."}
-          actionLabel="Back to Doctors"
+          title={t('no_doctors_found', 'Doctor Not Found')}
+          message={error || t('no_doctors_found_desc', "The requested doctor profile does not exist in Shridevi Hospital's directory.")}
+          actionLabel={t('find_doctors', 'Back to Doctors')}
           onAction={() => navigate('/doctors')}
         />
       </div>
@@ -158,7 +160,7 @@ export default function DoctorProfile() {
         <div className="mb-6 flex items-center gap-2 text-xs font-semibold text-slate-500">
           <Link to="/doctors" className="hover:text-sky-600 flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Doctors Directory</span>
+            <span>{t('find_doctors', 'Doctors Directory')}</span>
           </Link>
           <span>/</span>
           <span className="text-sky-700 font-bold">{doctor.department}</span>
@@ -192,7 +194,7 @@ export default function DoctorProfile() {
                   </span>
                   <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-0.5 rounded-full border border-teal-100 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
-                    <span>Verified Specialist</span>
+                    <span>{t('verified', 'Verified Specialist')}</span>
                   </span>
                   <span
                     className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold ${
@@ -202,7 +204,7 @@ export default function DoctorProfile() {
                     }`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${doctor.available ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                    {doctor.available ? 'In Clinic Today' : 'Away'}
+                    {doctor.available ? t('in_clinic_today', 'In Clinic Today') : t('away', 'Away')}
                   </span>
                 </div>
 
@@ -223,7 +225,7 @@ export default function DoctorProfile() {
                     <span>{rating} / 5.0</span>
                   </div>
                   <span className="text-slate-300">•</span>
-                  <span className="text-slate-600">{reviewsCount} Verified Patient Stories</span>
+                  <span className="text-slate-600">{reviewsCount} {t('patient_reviews', 'Verified Patient Stories')}</span>
                   <span className="text-slate-300">•</span>
                   <span className="text-emerald-700 font-bold">98% Recommended</span>
                 </div>
@@ -233,11 +235,11 @@ export default function DoctorProfile() {
             {/* Right: Quick Action Card */}
             <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/80 flex flex-col sm:flex-row lg:flex-col gap-3 min-w-[260px]">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">Consultation Fee:</span>
+                <span className="text-slate-500 font-medium">{t('consultation_fee', 'Consultation Fee:')}</span>
                 <span className="font-extrabold text-slate-900 text-sm">₹{fee} <span className="text-[10px] text-slate-400 font-normal">OPD</span></span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">OPD Location:</span>
+                <span className="text-slate-500 font-medium">{t('location_label', 'OPD Location:')}</span>
                 <span className="font-bold text-slate-800">{doctor.consultation_room || 'Room 101'}</span>
               </div>
 
@@ -247,7 +249,7 @@ export default function DoctorProfile() {
                   className="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 text-sky-700 font-bold rounded-xl text-xs border border-sky-200 transition text-center shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Calendar className="w-3.5 h-3.5 text-sky-600" />
-                  <span>Book Slot</span>
+                  <span>{t('book_slot', 'Book Slot')}</span>
                 </Link>
 
                 <button
@@ -256,7 +258,7 @@ export default function DoctorProfile() {
                   className="flex-1 py-2.5 px-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {!isAuthenticated && <Lock className="w-3.5 h-3.5" />}
-                  <span>Join Queue</span>
+                  <span>{t('join_queue', 'Join Queue')}</span>
                 </button>
               </div>
             </div>
@@ -274,26 +276,26 @@ export default function DoctorProfile() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-black text-base tracking-tight">Live OPD Queue Counter</h3>
+                  <h3 className="font-black text-base tracking-tight">{t('live_opd_token_journey', 'Live OPD Queue Counter')}</h3>
                   <span className="text-[10px] font-extrabold bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
-                    Live Room 204 Feed
+                    {t('opd_live', 'Live Feed')}
                   </span>
                 </div>
                 <p className="text-xs text-sky-200 font-medium">
                   {inConsultationPatient
-                    ? `Now in consultation: Token ${inConsultationPatient.queue_id}`
-                    : 'Doctor consultation room is ready for next token.'}
+                    ? `${t('now_serving', 'Now serving')}: ${t('token_number', { token: inConsultationPatient.queue_id }, 'Token ' + inConsultationPatient.queue_id)}`
+                    : t('doctor_room_ready', 'Doctor consultation room is ready for next token.')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-6 self-start sm:self-auto">
               <div className="text-right">
-                <span className="text-[11px] text-slate-300 block font-semibold">Patients Ahead</span>
+                <span className="text-[11px] text-slate-300 block font-semibold">{t('patients_ahead', 'Patients Ahead')}</span>
                 <span className="text-2xl font-black text-white">{waitingCount}</span>
               </div>
               <div className="text-right">
-                <span className="text-[11px] text-slate-300 block font-semibold">Avg Consultation</span>
+                <span className="text-[11px] text-slate-300 block font-semibold">{t('avg_consultation_time', 'Avg Consultation')}</span>
                 <span className="text-2xl font-black text-teal-300">~{doctor.avg_consultation_duration || 14}m</span>
               </div>
             </div>
@@ -306,10 +308,10 @@ export default function DoctorProfile() {
           {/* Tab Navigation */}
           <div className="flex items-center border-b border-slate-200 px-6 pt-2 bg-slate-50/50 overflow-x-auto scrollbar-thin">
             {[
-              { id: 'overview', label: 'Overview & Expertise', icon: Stethoscope },
-              { id: 'schedule', label: 'OPD Schedule & Live Queue', icon: Clock },
-              { id: 'reviews', label: `Patient Stories (${reviewsCount})`, icon: Star },
-              { id: 'location', label: 'Hospital Location & Directions', icon: MapPin }
+              { id: 'overview', label: t('overview', 'Overview & Expertise'), icon: Stethoscope },
+              { id: 'schedule', label: t('opd_schedule', 'OPD Schedule & Live Queue'), icon: Clock },
+              { id: 'reviews', label: `${t('patient_reviews', 'Patient Stories')} (${reviewsCount})`, icon: Star },
+              { id: 'location', label: t('chamber_location', 'Hospital Location & Directions'), icon: MapPin }
             ].map((tab) => {
               const IconComp = tab.icon;
               return (

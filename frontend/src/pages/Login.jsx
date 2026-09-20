@@ -22,11 +22,13 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const [role, setRole] = useState('patient');
   const [phone, setPhone] = useState('');
@@ -75,7 +77,7 @@ export default function Login() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Invalid phone number or password for selected role.');
+      setError(err.response?.data?.error || t('invalid_credentials', 'Invalid phone number or password for selected role.'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ export default function Login() {
                   SMART<span className="text-sky-400">HOSPITAL</span>
                 </span>
                 <span className="text-[11px] text-teal-300 font-semibold uppercase tracking-wider block">
-                  Clinical OPD & Queue Care
+                  {t('brand_tagline', 'Clinical OPD & Queue Care')}
                 </span>
               </div>
             </div>
@@ -110,13 +112,13 @@ export default function Login() {
             <div className="space-y-2 pt-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-400/30">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Enterprise Healthcare Platform</span>
+                <span>{t('enterprise_healthcare_platform', 'Enterprise Healthcare Platform')}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                Modern Patient Care & Smart Queue Intelligence
+                {t('login_hero_title', 'Modern Patient Care & Smart Queue Intelligence')}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Connect seamlessly with OPD specialists, track consultation progress in real time, and receive AI-driven departure recommendations.
+                {t('login_hero_desc', 'Connect seamlessly with OPD specialists, track consultation progress in real time, and receive AI-driven departure recommendations.')}
               </p>
             </div>
 
@@ -127,8 +129,8 @@ export default function Login() {
                   <Cpu className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-purple-200 block">AI Wait-Time Forecasting</span>
-                  <span className="text-slate-400 text-[11px]">Random Forest ML queue latency prediction</span>
+                  <span className="font-extrabold text-purple-200 block">{t('ai_wait_time_forecasting', 'AI Wait-Time Forecasting')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('rf_ml_queue_prediction', 'Random Forest ML queue latency prediction')}</span>
                 </div>
               </div>
 
@@ -137,8 +139,8 @@ export default function Login() {
                   <Activity className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-emerald-200 block">Tumkur Smart Transit Sync</span>
-                  <span className="text-slate-400 text-[11px]">Dynamic departure alerts from Bus Stand & Batawadi</span>
+                  <span className="font-extrabold text-emerald-200 block">{t('tumkur_smart_transit_sync', 'Tumkur Smart Transit Sync')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('dynamic_departure_alerts', 'Dynamic departure alerts from Bus Stand & Batawadi')}</span>
                 </div>
               </div>
 
@@ -147,8 +149,8 @@ export default function Login() {
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-sky-200 block">Live OPD Token Journey</span>
-                  <span className="text-slate-400 text-[11px]">Doctor calling, 6-digit OTP verification & triage</span>
+                  <span className="font-extrabold text-sky-200 block">{t('live_opd_token_journey', 'Live OPD Token Journey')}</span>
+                  <span className="text-slate-400 text-[11px]">{t('doctor_calling_otp_triage', 'Doctor calling, 6-digit OTP verification & triage')}</span>
                 </div>
               </div>
             </div>
@@ -158,7 +160,7 @@ export default function Login() {
           <div className="relative z-10 pt-6 mt-6 border-t border-white/10 text-xs text-slate-400 flex items-center gap-2">
             <GraduationCap className="w-4 h-4 text-teal-400 shrink-0" />
             <span className="leading-tight">
-              Final-Year Engineering Project • Shridevi Institute of Engineering and Technology, Tumkur
+              {t('academic_project_tag', 'Final-Year Engineering Project • Shridevi Institute of Engineering and Technology, Tumkur')}
             </span>
           </div>
         </div>
@@ -170,13 +172,13 @@ export default function Login() {
             {/* Header */}
             <div>
               <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block mb-1">
-                Portal Authentication
+                {t('portal_authentication', 'Portal Authentication')}
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Sign In to SmartHospital
+                {t('sign_in_smarthospital', 'Sign In to SmartHospital')}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Select your account role and enter credentials to continue.
+                {t('select_account_role_desc', 'Select your account role and enter credentials to continue.')}
               </p>
             </div>
 
@@ -185,10 +187,10 @@ export default function Login() {
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-900 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                  <span>1-Click Examiner Demo Login:</span>
+                  <span>{t('quick_demo_login', '1-Click Examiner Demo Login:')}</span>
                 </span>
                 <span className="text-[10px] text-sky-700 font-bold bg-sky-100/80 px-2 py-0.5 rounded-full">
-                  Instant Access
+                  {t('instant_access', 'Instant Access')}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs font-bold">
@@ -201,7 +203,7 @@ export default function Login() {
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
                   }`}
                 >
-                  Patient
+                  {t('patient', 'Patient')}
                 </button>
                 <button
                   type="button"
@@ -212,7 +214,7 @@ export default function Login() {
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
                   }`}
                 >
-                  Doctor
+                  {t('doctor', 'Doctor')}
                 </button>
                 <button
                   type="button"
@@ -223,7 +225,7 @@ export default function Login() {
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
                   }`}
                 >
-                  Admin
+                  {t('admin', 'Admin')}
                 </button>
               </div>
             </div>
@@ -231,13 +233,13 @@ export default function Login() {
             {/* Role Switcher Tabs */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Select Account Role
+                {t('select_account_role', 'Select Account Role')}
               </label>
               <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
                 {[
-                  { id: 'patient', label: 'Patient', icon: Users },
-                  { id: 'doctor', label: 'Doctor', icon: Stethoscope },
-                  { id: 'admin', label: 'Admin', icon: ShieldCheck }
+                  { id: 'patient', label: t('patient', 'Patient'), icon: Users },
+                  { id: 'doctor', label: t('doctor', 'Doctor'), icon: Stethoscope },
+                  { id: 'admin', label: t('admin', 'Admin'), icon: ShieldCheck }
                 ].map((r) => {
                   const Icon = r.icon;
                   const isSelected = role === r.id;
@@ -265,7 +267,7 @@ export default function Login() {
               <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div className="flex-1">
-                  <span className="font-extrabold block">Authentication Notice</span>
+                  <span className="font-extrabold block">{t('authentication_notice', 'Authentication Notice')}</span>
                   <p className="mt-0.5">{error}</p>
                 </div>
               </div>
@@ -275,7 +277,7 @@ export default function Login() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Mobile Phone Number
+                  {t('phone_number', 'Mobile Phone Number')}
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -283,7 +285,7 @@ export default function Login() {
                     type="tel"
                     required
                     maxLength={10}
-                    placeholder="10-digit phone number"
+                    placeholder={t('phone_placeholder', '10-digit mobile number')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition shadow-2xs"
@@ -293,12 +295,12 @@ export default function Login() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-700">Password</label>
+                  <label className="text-xs font-bold text-slate-700">{t('password', 'Password')}</label>
                   <Link
                     to="/forgot-password"
                     className="text-[11px] font-bold text-sky-600 hover:text-sky-700 transition"
                   >
-                    Forgot Password?
+                    {t('forgot_password', 'Forgot Password?')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -306,7 +308,7 @@ export default function Login() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
-                    placeholder="Enter your account password"
+                    placeholder={t('password_placeholder', 'Enter your account password')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition shadow-2xs"
@@ -314,6 +316,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? t('hide_password', 'Hide password') : t('show_password', 'Show password')}
                     className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -330,11 +333,11 @@ export default function Login() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Authenticating Account...</span>
+                    <span>{t('authenticating_account', 'Authenticating Account...')}</span>
                   </>
                 ) : (
                   <>
-                    <span className="capitalize">Sign In as {role}</span>
+                    <span className="capitalize">{t('login_as_role', { role: t(role, role) }, `Sign In as ${role}`)}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -344,9 +347,9 @@ export default function Login() {
             {/* Registration Link */}
             <div className="pt-4 border-t border-slate-100 text-center">
               <p className="text-xs text-slate-500">
-                New to SmartHospital?{' '}
+                {t('new_to_smarthospital', 'New to SmartHospital?')}{' '}
                 <Link to="/signup" className="text-sky-600 font-extrabold hover:underline">
-                  Register a Patient Account
+                  {t('create_account', 'Register a Patient Account')}
                 </Link>
               </p>
             </div>

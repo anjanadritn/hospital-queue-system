@@ -1,11 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, LogIn, UserPlus, X, ShieldAlert } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function LoginRequiredModal({ isOpen, onClose, title = "Login Required", message = "Please login or create a patient account before joining a hospital queue.", returnPath = "/doctors" }) {
+export default function LoginRequiredModal({ isOpen, onClose, title, message, returnPath = "/doctors" }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   if (!isOpen) return null;
+
+  const displayTitle = title || t('login_required_title', 'Login Required');
+  const displayMessage = message || t('login_required_desc', 'Please login or create a patient account before joining a hospital queue.');
 
   const handleLoginClick = () => {
     onClose();
@@ -32,33 +37,33 @@ export default function LoginRequiredModal({ isOpen, onClose, title = "Login Req
           <Lock className="w-8 h-8" />
         </div>
 
-        <h2 className="text-xl font-extrabold text-slate-900 mb-2">{title}</h2>
+        <h2 className="text-xl font-extrabold text-slate-900 mb-2">{displayTitle}</h2>
         <p className="text-xs text-slate-600 mb-6 font-medium leading-relaxed">
-          {message}
+          {displayMessage}
         </p>
 
         <div className="space-y-3">
           <button
             onClick={handleLoginClick}
-            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
           >
             <LogIn className="w-4 h-4" />
-            <span>Login to Continue</span>
+            <span>{t('login_to_continue', 'Login to Continue')}</span>
           </button>
 
           <button
             onClick={handleSignupClick}
-            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2"
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
           >
             <UserPlus className="w-4 h-4 text-sky-600" />
-            <span>Create Patient Account</span>
+            <span>{t('create_patient_account', 'Create Patient Account')}</span>
           </button>
 
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-slate-600 transition"
+            className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            Cancel
+            {t('cancel', 'Cancel')}
           </button>
         </div>
 

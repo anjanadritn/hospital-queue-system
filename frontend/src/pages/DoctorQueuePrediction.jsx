@@ -218,7 +218,7 @@ export default function DoctorQueuePrediction() {
               title="Return to Main OPD Console"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to OPD Console</span>
+              <span>{t('back_to_opd_console', 'Back to OPD Console')}</span>
             </Link>
             <div className="h-4 w-px bg-slate-200 hidden sm:block" />
             <span className="text-xs font-semibold text-slate-500 hidden sm:inline">
@@ -248,7 +248,7 @@ export default function DoctorQueuePrediction() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold tracking-wider uppercase bg-purple-500/30 text-purple-200 border border-purple-400/40">
-                  ML Queue Prediction
+                  {t('ml_queue_prediction', 'ML Queue Prediction')}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/10 text-slate-200">
                   {department} • {roomNumber}
@@ -267,7 +267,7 @@ export default function DoctorQueuePrediction() {
                       className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
                     >
                       <option value="all" className="text-slate-900 font-semibold">
-                        All OPD Stations
+                        {t('all_opd_stations', 'All OPD Stations')}
                       </option>
                       {doctors.map((d) => (
                         <option key={d.doctor_id} value={d.doctor_id} className="text-slate-900 font-semibold">
@@ -279,11 +279,10 @@ export default function DoctorQueuePrediction() {
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Queue Consultation Predictions
+                {t('queue_consultation_predictions', 'Queue Consultation Predictions')}
               </h1>
               <p className="text-xs sm:text-sm text-purple-200/90 max-w-2xl leading-relaxed">
-                Live consultation durations and expected start times computed progressively via Random Forest ML.
-                Patient identities and medical symptoms remain strictly confidential.
+                {t('predictions_subtitle', 'Live consultation durations and expected start times computed progressively via Random Forest ML.')}
               </p>
             </div>
 
@@ -291,13 +290,13 @@ export default function DoctorQueuePrediction() {
             <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 text-center">
                 <div className="text-2xl font-black text-white">{processedTokens.length}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-200">Active In Queue</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-200">{t('active_in_queue', 'Active In Queue')}</div>
               </div>
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 text-center">
                 <div className="text-2xl font-black text-purple-300">
                   {processedTokens.reduce((acc, curr) => acc + curr.predictedDuration, 0)}m
                 </div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-200">Total Est. Workload</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-200">{t('total_est_workload', 'Total Est. Workload')}</div>
               </div>
             </div>
           </div>

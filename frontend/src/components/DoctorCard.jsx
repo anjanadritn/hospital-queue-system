@@ -13,12 +13,15 @@ import {
   Sparkles,
   CheckCircle2
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import Tooltip from './Tooltip';
 
 export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
+  const { t } = useLanguage();
+
   const tooltipText = !isAuthenticated
-    ? "Login required to join this doctor's queue"
-    : `Join Dr. ${doctor.name}'s OPD queue`;
+    ? t('login_required_to_join', "Login required to join this doctor's queue")
+    : t('join_queue_title', { doctor: doctor.name }, `Join Dr. ${doctor.name}'s OPD queue`);
 
   const initials = doctor.name
     ? doctor.name.replace('Dr. ', '').split(' ').map((n) => n[0]).join('').slice(0, 2)
@@ -53,7 +56,7 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
                   {doctor.department}
                 </span>
                 <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
-                  Verified
+                  {t('verified', 'Verified')}
                 </span>
               </div>
               {/* Star Rating & Patient Stories (Practo signature) */}
@@ -64,7 +67,7 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
                 </div>
                 <span className="text-slate-300">•</span>
                 <span className="text-[11px] font-medium text-slate-500 hover:text-sky-600 transition">
-                  {reviewsCount} patient stories
+                  {reviewsCount} {t('patient_reviews', 'patient reviews')}
                 </span>
               </div>
             </div>
@@ -79,11 +82,11 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${doctor.available ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-            {doctor.available ? 'In Clinic Today' : 'Away'}
+            {doctor.available ? t('in_clinic_today', 'In Clinic Today') : t('away', 'Away')}
           </span>
         </div>
 
-        {/* Doctor Name & Qualifications */}
+        {/* Doctor Name & Qualifications - note clinical names preserved */}
         <Link
           to={`/doctors/${doctor.doctor_id}`}
           className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors block mb-0.5 leading-snug"
@@ -100,30 +103,30 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
         {/* Practo-style Highlight Badges & Info */}
         <div className="bg-slate-50/80 rounded-2xl p-3 border border-slate-100 space-y-2 mb-4 text-xs">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 font-medium">Experience:</span>
-            <span className="font-bold text-slate-800">{doctor.experience || '8+ years'} practice</span>
+            <span className="text-slate-500 font-medium">{t('experience', 'Experience:')}</span>
+            <span className="font-bold text-slate-800">{doctor.experience || '8+ years'} {t('practice', 'practice')}</span>
           </div>
 
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-slate-500 font-medium flex items-center gap-1">
               <MapPin className="w-3 h-3 text-slate-400" />
-              <span>Location:</span>
+              <span>{t('location_label', 'Location:')}</span>
             </span>
-            <span className="font-bold text-slate-800">SIMSRH Tumakuru, {doctor.consultation_room || 'OPD'}</span>
+            <span className="font-bold text-slate-800">{t('hospital_short', 'SIMSRH Tumakuru')}, {doctor.consultation_room || 'OPD'}</span>
           </div>
 
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 font-medium">Consultation Fee:</span>
-            <span className="font-extrabold text-emerald-700">₹{fee} <span className="text-[10px] font-normal text-slate-400">at clinic</span></span>
+            <span className="text-slate-500 font-medium">{t('consultation_fee', 'Consultation Fee:')}</span>
+            <span className="font-extrabold text-emerald-700">₹{fee} <span className="text-[10px] font-normal text-slate-400">{t('at_clinic', 'at clinic')}</span></span>
           </div>
 
           <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/60">
             <span className="text-slate-500 font-medium flex items-center gap-1">
               <Cpu className="w-3 h-3 text-purple-500" />
-              <span>AI Wait Window:</span>
+              <span>{t('ai_wait_window', 'AI Wait Window:')}</span>
             </span>
             <span className="font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">
-              ~{doctor.avg_consultation_duration || 14} min/patient
+              ~{doctor.avg_consultation_duration || 14} {t('min_per_patient', 'min/patient')}
             </span>
           </div>
         </div>
@@ -137,7 +140,7 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
           className="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 text-sky-700 hover:text-sky-800 rounded-xl text-xs font-bold transition text-center border border-sky-200 shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <Calendar className="w-3.5 h-3.5 text-sky-600" />
-          <span>Book Slot</span>
+          <span>{t('book_slot', 'Book Slot')}</span>
         </Link>
 
         <Tooltip text={tooltipText} position="top">
@@ -147,7 +150,7 @@ export default function DoctorCard({ doctor, onJoinQueue, isAuthenticated }) {
             className="flex-1 py-2.5 px-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm shadow-sky-600/20 hover:shadow-md cursor-pointer disabled:cursor-not-allowed"
           >
             {!isAuthenticated && <Lock className="w-3.5 h-3.5" />}
-            <span>Join Queue</span>
+            <span>{t('join_queue', 'Join Queue')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </Tooltip>
