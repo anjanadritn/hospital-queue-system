@@ -61,3 +61,27 @@ def get_appointments_for_patient(patient_id):
 
     res = get_patient_appointments(patient_id)
     return jsonify(res), 200
+
+@appointment_bp.route("/appointments/slots", methods=["GET"])
+def get_slots_availability():
+    """
+    Get live consultation slot availability and booking counts from the database.
+    Query params:
+      - date: YYYY-MM-DD (defaults to today)
+      - doctor_id: optional doctor filter
+      - department: optional department filter
+    """
+    consultation_date = request.args.get("date")
+    doctor_id = request.args.get("doctor_id")
+    department = request.args.get("department")
+
+    from services.slot_service import get_slot_counts
+    slot_data = get_slot_counts(
+        consultation_date=consultation_date,
+        doctor_id=doctor_id,
+        department=department
+    )
+    return jsonify({
+        "date": consultation_date or "",
+        "slots": slot_data
+    }), 200

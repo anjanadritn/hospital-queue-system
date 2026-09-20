@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
+import LiveQueueBoard from '../components/LiveQueueBoard';
 
 const DEPARTMENT_METADATA = {
   'Cardiology': { icon: Heart, color: 'text-rose-600 bg-rose-50 border-rose-100', description: 'Specialized heart care, ECG, diagnostic evaluations & advanced cardiac monitoring.', room: 'Room 204' },
@@ -287,8 +288,15 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* 2.5 LIVE CONSULTATION QUEUE BOARD */}
+      <section id="live-consultation-queue" className="py-12 bg-slate-50 border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LiveQueueBoard />
+        </div>
+      </section>
+
       {/* 3. PRACTO-STYLE QUICK SERVICES CARDS */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">

@@ -294,6 +294,44 @@ export const hospitalApi = {
   adminGetPatientRecords: async (patientId) => {
     const response = await apiClient.get(`/admin/patients/${patientId}/records`);
     return response.data;
+  },
+
+  // 13. Consultation Slots, Public Live Queue & Patient Departure
+  getSlotAvailability: async (date = '', doctorId = '', department = '') => {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (doctorId) params.append('doctor_id', doctorId);
+    if (department) params.append('department', department);
+    const queryString = params.toString();
+    const response = await apiClient.get(`/appointments/slots${queryString ? `?${queryString}` : ''}`);
+    return response.data;
+  },
+  getPublicQueue: async (department = '', slotId = '', doctorId = '', date = '') => {
+    const params = new URLSearchParams();
+    if (department) params.append('department', department);
+    if (slotId) params.append('slot_id', slotId);
+    if (doctorId) params.append('doctor_id', doctorId);
+    if (date) params.append('date', date);
+    const queryString = params.toString();
+    const response = await apiClient.get(`/queue/public${queryString ? `?${queryString}` : ''}`);
+    return response.data;
+  },
+  confirmLeavingNow: async (queueId, coords = null) => {
+    const payload = {};
+    if (coords && coords.length === 2) {
+      payload.origin_longitude = coords[0];
+      payload.origin_latitude = coords[1];
+    }
+    const response = await apiClient.post(`/queue/${queueId}/leave-now`, payload);
+    return response.data;
+  },
+  getAdminSlotAnalytics: async (date = '') => {
+    const response = await apiClient.get(`/admin/slots${date ? `?date=${encodeURIComponent(date)}` : ''}`);
+    return response.data;
+  },
+  evaluateQueueReminders: async () => {
+    const response = await apiClient.post('/queue/evaluate-reminders');
+    return response.data;
   }
 };
 

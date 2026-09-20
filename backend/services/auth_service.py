@@ -41,6 +41,18 @@ INITIAL_USERS = [
         "created_at": datetime.now(timezone.utc).isoformat()
     },
     {
+        "user_id": "U_DOC_D002",
+        "doctor_id": "D002",
+        "name": "Dr. Rajesh Kumar",
+        "phone": "9876543220",
+        "email": "rajesh.kumar@smarthospital.org",
+        "password_hash": generate_password_hash("DoctorPass123!"),
+        "role": "doctor",
+        "phone_verified": True,
+        "status": "VERIFIED",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
         "user_id": "U_PAT_P001",
         "patient_id": "P001",
         "name": "Anjan",

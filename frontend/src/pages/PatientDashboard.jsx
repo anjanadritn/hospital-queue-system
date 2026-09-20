@@ -32,6 +32,8 @@ import DepartureCard from '../components/DepartureCard';
 import StatusBadge from '../components/StatusBadge';
 import LoadingState from '../components/LoadingState';
 import ConsultationRecordModal from '../components/ConsultationRecordModal';
+import MyLiveQueueSection from '../components/MyLiveQueueSection';
+import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
 import { getBrowserLocation } from '../services/locationService';
 
 export default function PatientDashboard() {
@@ -49,6 +51,8 @@ export default function PatientDashboard() {
 
   const [appointments, setAppointments] = useState([]);
   const [activeQueue, setActiveQueue] = useState(null);
+  const [liveQueueData, setLiveQueueData] = useState(null);
+  const [queueRefreshing, setQueueRefreshing] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [patientProfile, setPatientProfile] = useState(null);
   const [medicalHistory, setMedicalHistory] = useState([]);
@@ -90,6 +94,50 @@ export default function PatientDashboard() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
 
+  const fetchMyLiveQueue = async (queueObj) => {
+    if (!queueObj) {
+      setLiveQueueData(null);
+      return;
+    }
+    const doctorId = queueObj.doctor_id;
+    const slotId = queueObj.slot_id || queueObj.consultation_slot?.slot_id;
+    const date = queueObj.consultation_date || queueObj.consultation_slot?.date;
+    const dept = queueObj.department;
+    if (doctorId && slotId) {
+      try {
+        const pubData = await hospitalApi.getPublicQueue(dept, slotId, doctorId, date);
+        setLiveQueueData(pubData);
+      } catch (err) {
+        console.error('Error fetching live queue for patient doctor slot:', err);
+      }
+    }
+  };
+
+  const handleRefreshLiveQueue = async () => {
+    if (!activeQueue) return;
+    setQueueRefreshing(true);
+    try {
+      const doctorId = activeQueue.doctor_id;
+      const slotId = activeQueue.slot_id || activeQueue.consultation_slot?.slot_id;
+      const date = activeQueue.consultation_date || activeQueue.consultation_slot?.date;
+      const dept = activeQueue.department;
+      const [freshQueue, pubData] = await Promise.all([
+        hospitalApi.getMyActiveQueue(),
+        hospitalApi.getPublicQueue(dept, slotId, doctorId, date)
+      ]);
+      if (freshQueue && freshQueue.queue_id) {
+        setActiveQueue(freshQueue);
+      }
+      if (pubData) {
+        setLiveQueueData(pubData);
+      }
+    } catch (e) {
+      console.error('Manual queue refresh error:', e);
+    } finally {
+      setQueueRefreshing(false);
+    }
+  };
+
   const loadDashboardData = async () => {
     if (!user) {
       setLoading(false);
@@ -112,8 +160,10 @@ export default function PatientDashboard() {
       }
       if (queueData.status === 'fulfilled' && queueData.value && queueData.value.queue_id) {
         setActiveQueue(queueData.value);
+        fetchMyLiveQueue(queueData.value);
       } else {
         setActiveQueue(null);
+        setLiveQueueData(null);
       }
       if (notifsData.status === 'fulfilled' && notifsData.value) {
         const notifList = Array.isArray(notifsData.value) 
@@ -179,8 +229,10 @@ export default function PatientDashboard() {
           }
           if (queueData.status === 'fulfilled' && queueData.value && queueData.value.queue_id) {
             setActiveQueue(queueData.value);
+            fetchMyLiveQueue(queueData.value);
           } else {
             setActiveQueue(null);
+            setLiveQueueData(null);
           }
           if (notifsData.status === 'fulfilled' && notifsData.value) {
             const notifList = Array.isArray(notifsData.value)
@@ -321,8 +373,40 @@ export default function PatientDashboard() {
     }
   };
 
+  const [leavingLoading, setLeavingLoading] = useState(false);
+  const [leavingSuccessMsg, setLeavingSuccessMsg] = useState('');
 
-  // Filter upcoming vs past appointments
+  const handleConfirmLeaving = async (queueId) => {
+    if (!queueId) return;
+    setLeavingLoading(true);
+    setLeavingSuccessMsg('');
+    try {
+      let coords = null;
+      try {
+        coords = await getBrowserLocation();
+      } catch (e) {
+        console.log('Using fallback coordinates for departure:', e);
+      }
+      const res = await hospitalApi.confirmLeavingNow(queueId, coords);
+      if (res && (res.queue_entry || res.queue_id)) {
+        const updatedEntry = res.queue_entry || res;
+        setActiveQueue(prev => ({
+          ...prev,
+          ...updatedEntry,
+          leaving_now: true,
+          leave_reminder_status: 'LEAVING_CONFIRMED'
+        }));
+        setLeavingSuccessMsg('✓ Departure confirmed! Your travel progress is now actively synchronized with SIMSRH.');
+        await loadDashboardData();
+      }
+    } catch (err) {
+      console.error('Error confirming departure:', err);
+      alert(err.response?.data?.error || 'Could not record departure. Please retry.');
+    } finally {
+      setLeavingLoading(false);
+    }
+  };
+
   const nowStr = new Date().toISOString().split('T')[0];
   const upcomingAppointments = appointments.filter(
     (a) => a.consultation_date >= nowStr && a.status !== 'completed' && a.status !== 'cancelled'
@@ -426,7 +510,7 @@ export default function PatientDashboard() {
               </div>
             </div>
             <div className="text-2xl font-extrabold text-purple-900">
-              {activeQueue?.predicted_wait_time ? `~${activeQueue.predicted_wait_time}m` : '~12m'}
+              {typeof activeQueue?.predicted_wait_time === 'number' ? `~${activeQueue.predicted_wait_time}m` : '~5m'}
             </div>
             <p className="text-[11px] text-purple-700 font-semibold mt-0.5 flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-purple-500" />
@@ -585,84 +669,112 @@ export default function PatientDashboard() {
               </div>
             )}
 
-            {/* ACTIVE LIVE QUEUE SPOTLIGHT (If currently in queue) */}
+            {/* LATE ARRIVAL REORDERED WARNING CARD */}
+            {activeQueue?.late_arrival_reordered && (
+              <LateArrivalWarningCard queueData={activeQueue} />
+            )}
+
+            {/* MY LIVE QUEUE SECTION (Strictly doctor_id + consultation_date + consultation_slot) */}
+            {activeQueue && (
+              <MyLiveQueueSection
+                activeQueue={activeQueue}
+                liveQueueData={liveQueueData}
+                onRefresh={handleRefreshLiveQueue}
+                refreshing={queueRefreshing}
+              />
+            )}
+
+            {/* TRAVEL TRANSIT & ARRIVAL VERIFICATION */}
             {activeQueue && (
               <div className="bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-teal-500/10 rounded-3xl p-6 sm:p-8 border border-amber-200/80 shadow-md space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-amber-200/60">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-md animate-pulse">
-                      <Activity className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="inline-flex items-center gap-2">
-                        <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900">
-                          {t('live_token')}
-                        </span>
-                        <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 rounded-full text-xs font-mono font-black">
-                          TOKEN #{activeQueue.queue_id}
-                        </span>
+
+                {/* INTERACTIVE "I'M LEAVING NOW" & TRAVEL TRANSIT SECTION */}
+                <div className="bg-white/95 rounded-2xl p-5 border border-sky-200/80 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                        <Navigation className="w-5 h-5" />
                       </div>
-                      <h2 className="text-xl font-extrabold text-slate-900">
-                        {t('position')} #{activeQueue.position} • {activeQueue.doctor_name || activeQueue.doctor_id || 'Assigned Specialist'}
-                      </h2>
+                      <div>
+                        <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                          Real-Time Travel & Departure Guidance
+                        </span>
+                        <div className="text-[11px] text-slate-500">
+                          Destination: Shridevi Institute of Medical Sciences (SIMSRH), Lingapura, Tumakuru
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Durable Reminder Alert Badge */}
+                    {activeQueue.leave_reminder_status && activeQueue.leave_reminder_status !== 'NOT_REQUIRED' && (
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider inline-flex items-center gap-1 ${
+                        activeQueue.leave_reminder_status === 'LEAVING_CONFIRMED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : activeQueue.leave_reminder_status === 'URGENT_REMINDER_SENT'
+                          ? 'bg-rose-100 text-rose-800 animate-bounce'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        <span>● Reminder: {activeQueue.leave_reminder_status.replace(/_/g, ' ')}</span>
+                      </span>
+                    )}
                   </div>
 
-                  <Link
-                    to={`/tracking?queue_id=${activeQueue.queue_id}`}
-                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
-                  >
-                    <span>{t('live_token')}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
+                  {/* Departure Status / Interactive Action */}
+                  {activeQueue.leaving_now ? (
+                    <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                          ✓
+                        </div>
+                        <div>
+                          <div className="text-xs font-black text-emerald-900">
+                            You're On Your Way to SIMSRH!
+                          </div>
+                          <div className="text-[11px] text-emerald-700 mt-0.5">
+                            Departed at {activeQueue.leaving_now_at ? new Date(activeQueue.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}. Expected transit: ~{activeQueue.travel_info?.travel_time_minutes || 15} mins.
+                          </div>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 bg-white text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold shadow-2xs">
+                        Expected Arrival: ~{activeQueue.expected_arrival_time || activeQueue.expected_consultation_time || 'On Schedule'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-gradient-to-r from-sky-50 to-teal-50 border border-sky-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">
+                          Are you starting your journey to SIMSRH now?
+                        </div>
+                        <p className="text-[11px] text-slate-600 mt-0.5 max-w-lg">
+                          Recommended departure time: <strong className="text-teal-800 font-bold">{activeQueue.recommended_departure_time || activeQueue.travel_info?.recommended_departure_time || 'Leave Soon'}</strong> (Expected consultation: <strong className="text-sky-800 font-bold">{activeQueue.expected_consultation_time || activeQueue.travel_info?.expected_consultation_time || '~15m'}</strong>). Let the hospital know so your queue position is actively preserved.
+                        </p>
+                        {leavingSuccessMsg && (
+                          <div className="text-xs font-bold text-emerald-700 mt-1">
+                            {leavingSuccessMsg}
+                          </div>
+                        )}
+                      </div>
 
-                {/* 4 QUEUE STATUS TILES */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white/90 p-4 rounded-2xl border border-amber-100 shadow-xs">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Patients Ahead</span>
-                    <div className="text-xl font-black text-amber-900 mt-0.5">
-                      {Math.max(0, activeQueue.position - 1)} {Math.max(0, activeQueue.position - 1) === 1 ? 'Patient' : 'Patients'}
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmLeaving(activeQueue.queue_id)}
+                        disabled={leavingLoading}
+                        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-700 hover:to-sky-700 text-white rounded-xl text-xs font-black transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 shrink-0"
+                      >
+                        {leavingLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Updating GPS & Status...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Navigation className="w-4 h-4" />
+                            <span>I'M LEAVING NOW</span>
+                          </>
+                        )}
+                      </button>
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      Ahead in OPD line
-                    </div>
-                  </div>
-
-                  <div className="bg-white/90 p-4 rounded-2xl border border-purple-100 shadow-xs">
-                    <span className="text-[11px] font-bold text-purple-600 uppercase block flex items-center gap-1">
-                      <Cpu className="w-3.5 h-3.5" /> {t('estimated_wait_time')}
-                    </span>
-                    <div className="text-xl font-black text-purple-900 mt-0.5">
-                      ~{activeQueue.predicted_wait_time || 15} mins
-                    </div>
-                    <div className="text-[10px] text-purple-700 font-semibold mt-0.5">
-                      Random Forest Model
-                    </div>
-                  </div>
-
-                  <div className="bg-white/90 p-4 rounded-2xl border border-sky-100 shadow-xs">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Doctor Status</span>
-                    <div className="text-sm font-extrabold text-sky-900 mt-1 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{activeQueue.status === 'in_consultation' ? t('in_consultation') : t('waiting')}</span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      {activeQueue.room_number || 'Room 204'} • {activeQueue.department}
-                    </div>
-                  </div>
-
-                  <div className="bg-white/90 p-4 rounded-2xl border border-teal-100 shadow-xs">
-                    <span className="text-[11px] font-bold text-teal-700 uppercase block flex items-center gap-1">
-                      <Navigation className="w-3.5 h-3.5" /> {t('recommended_departure')}
-                    </span>
-                    <div className="text-xl font-black text-teal-900 mt-0.5">
-                      {activeQueue.travel_info?.recommended_departure_time || 'Leave Soon'}
-                    </div>
-                    <div className="text-[10px] text-teal-700 mt-0.5">
-                      From {activeQueue.city || 'Tumakuru'} (~{activeQueue.travel_info?.travel_time_minutes || 15}m transit)
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* 6-DIGIT HOSPITAL ARRIVAL VERIFICATION CODE CARD */}
@@ -799,8 +911,17 @@ export default function PatientDashboard() {
                   </div>
                 </div>
 
-                {/* INTEGRATED TUMKUR SMART DEPARTURE CARD */}
-                <DepartureCard travelInfo={nextAppointment.travel_info} />
+                {/* INTEGRATED TUMKUR SMART DEPARTURE CARD - ONLY AFTER LEAVING STARTED */}
+                {(activeQueue?.leaving_now || nextAppointment?.leaving_now) && (
+                  <DepartureCard travelInfo={{
+                    ...(activeQueue?.travel_info || nextAppointment?.travel_info || {}),
+                    expected_consultation_time: activeQueue?.expected_consultation_time || activeQueue?.travel_info?.expected_consultation_time,
+                    expected_consultation_iso: activeQueue?.expected_consultation_iso || activeQueue?.travel_info?.expected_consultation_iso,
+                    recommended_departure_time: activeQueue?.recommended_departure_time || activeQueue?.travel_info?.recommended_departure_time,
+                    recommended_departure_iso: activeQueue?.recommended_departure_iso || activeQueue?.travel_info?.recommended_departure_iso,
+                    leaving_now: true
+                  }} />
+                )}
               </div>
             ) : (
               /* EMPTY STATE */

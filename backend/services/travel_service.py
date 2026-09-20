@@ -1,5 +1,10 @@
 import logging
 from datetime import datetime, timedelta, timezone
+try:
+    from zoneinfo import ZoneInfo
+    HOSPITAL_TZ = ZoneInfo("Asia/Kolkata")
+except Exception:
+    HOSPITAL_TZ = timezone(timedelta(hours=5, minutes=30))
 from typing import Dict, List, Optional
 from services.location_service import location_service
 
@@ -115,24 +120,31 @@ def calculate_travel_metrics(
             route_geometry = None
             source = "fallback"
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(HOSPITAL_TZ)
 
-    if wait_time_min is not None and int(wait_time_min) > 0:
-        consultation_dt = now + timedelta(minutes=int(wait_time_min))
-    elif expected_consultation_iso:
+    if expected_consultation_iso:
         try:
             consultation_dt = datetime.fromisoformat(expected_consultation_iso.replace("Z", "+00:00"))
+            if consultation_dt.tzinfo is not None:
+                consultation_dt = consultation_dt.astimezone(HOSPITAL_TZ)
+            else:
+                consultation_dt = consultation_dt.replace(tzinfo=HOSPITAL_TZ)
         except Exception:
             consultation_dt = now + timedelta(minutes=35)
+    elif wait_time_min is not None and int(wait_time_min) > 0:
+        consultation_dt = now + timedelta(minutes=int(wait_time_min))
     else:
         consultation_dt = now + timedelta(minutes=35)
 
-    arrival_dt = consultation_dt - timedelta(minutes=safety_buffer_min)
+    raw_arrival_dt = consultation_dt - timedelta(minutes=safety_buffer_min)
+    arrival_dt = max(now, raw_arrival_dt)
     departure_dt = arrival_dt - timedelta(minutes=travel_time_min)
+    arrival_deadline_dt = arrival_dt + timedelta(minutes=2)
 
     consultation_str = consultation_dt.strftime("%I:%M %p")
     arrival_str = arrival_dt.strftime("%I:%M %p")
     departure_str = departure_dt.strftime("%I:%M %p")
+    arrival_deadline_str = arrival_deadline_dt.strftime("%I:%M %p")
 
     return {
         "hospital_name": HOSPITAL_NAME,
@@ -148,10 +160,14 @@ def calculate_travel_metrics(
         "patient_address": patient_address or "Tumkur City",
         "distance_km": distance_km,
         "travel_time_min": travel_time_min,
+        "travel_time_minutes": travel_time_min,
         "safety_buffer_min": safety_buffer_min,
         "expected_consultation_time": consultation_str,
         "expected_consultation_iso": consultation_dt.isoformat(),
         "expected_hospital_arrival": arrival_str,
+        "expected_hospital_arrival_iso": arrival_dt.isoformat(),
+        "arrival_deadline_time": arrival_deadline_str,
+        "arrival_deadline_iso": arrival_deadline_dt.isoformat(),
         "recommended_departure_time": departure_str,
         "recommended_departure_iso": departure_dt.isoformat(),
         "departure_alert": f"🚗 Start from {patient_address} around {departure_str} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {consultation_str}.",

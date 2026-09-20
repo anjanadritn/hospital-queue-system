@@ -101,14 +101,130 @@ def get_analytics():
 @admin_bp.route("/admin/appointments", methods=["GET"])
 @require_auth(allowed_roles=["admin"])
 def get_all_appointments_admin():
-    """Admin endpoint to monitor all appointments and booking statuses"""
+    """
+    Admin endpoint to monitor operational booking details:
+      - Token number
+      - Doctor name
+      - Department
+      - Consultation date
+      - Consultation slot
+      - Exact booked date/time
+      - Current queue position
+      - Current status
+    Uses existing appointment and queue data.
+    Strictly omits unnecessary patient personal details and clinical symptoms.
+    """
     try:
         db = get_db()
         apts = list(db.appointments.find().sort("created_at", -1))
-        return jsonify(serialize_docs(apts)), 200
+        
+        # Batch lookup active queue records to obtain live authoritative position & status
+        queue_ids = [a.get("queue_id") for a in apts if a.get("queue_id")]
+        booking_ids = [a.get("booking_id") for a in apts if a.get("booking_id")]
+        
+        queue_docs = list(db.queue.find({
+            "$or": [
+                {"queue_id": {"$in": queue_ids}},
+                {"booking_id": {"$in": booking_ids}}
+            ]
+        }))
+        queue_by_token = {}
+        for q in queue_docs:
+            if q.get("queue_id"):
+                queue_by_token[q["queue_id"]] = q
+            if q.get("booking_id"):
+                queue_by_token[q["booking_id"]] = q
+
+        # Batch lookup doctor names
+        doc_ids = list(set([a.get("doctor_id") for a in apts if a.get("doctor_id")]))
+        doctors = list(db.doctors.find({"doctor_id": {"$in": doc_ids}}, {"doctor_id": 1, "name": 1, "department": 1}))
+        doctor_name_map = {d["doctor_id"]: d.get("name") for d in doctors}
+
+        results = []
+        for a in apts:
+            q_entry = queue_by_token.get(a.get("queue_id")) or queue_by_token.get(a.get("booking_id"))
+            
+            # Authoritative current status & position from live queue
+            current_status = (q_entry and q_entry.get("status")) or a.get("status") or "booked"
+            
+            current_position = None
+            if q_entry and q_entry.get("position") is not None:
+                current_position = q_entry.get("position")
+            elif a.get("queue_position") is not None:
+                current_position = a.get("queue_position")
+            
+            doc_name = (
+                a.get("doctor_name") 
+                or (q_entry and q_entry.get("doctor_name")) 
+                or doctor_name_map.get(a.get("doctor_id")) 
+                or a.get("doctor_id") 
+                or "On-Duty Specialist"
+            )
+
+            slot = a.get("consultation_slot") or (q_entry and q_entry.get("consultation_slot")) or {}
+            slot_id = slot.get("slot_id") or a.get("slot_id") or "morning"
+            slot_name = slot.get("slot_name") or ("Evening Slot" if slot_id == "evening" else "Morning Slot")
+            display_time = slot.get("display_time") or ("02:00 PM – 09:00 PM" if slot_id == "evening" else "09:00 AM – 01:00 PM")
+
+            results.append({
+                "booking_id": a.get("booking_id"),
+                "token_number": a.get("queue_id") or (q_entry and q_entry.get("queue_id")) or "—",
+                "queue_id": a.get("queue_id") or (q_entry and q_entry.get("queue_id")),
+                "doctor_name": doc_name,
+                "doctor_id": a.get("doctor_id"),
+                "department": a.get("department") or (q_entry and q_entry.get("department")) or "General OPD",
+                "consultation_date": a.get("consultation_date") or slot.get("date"),
+                "consultation_slot": {
+                    "slot_id": slot_id,
+                    "slot_name": slot_name,
+                    "display_time": display_time,
+                    "date": a.get("consultation_date") or slot.get("date")
+                },
+                "booked_at": a.get("created_at"),
+                "created_at": a.get("created_at"),
+                "current_queue_position": current_position,
+                "position": current_position,
+                "current_status": current_status,
+                "status": current_status,
+                "room_number": a.get("room_number") or (q_entry and q_entry.get("room_number")) or "Room 204",
+                "priority": a.get("priority", "normal")
+            })
+
+        return jsonify(serialize_docs(results)), 200
     except Exception:
         from services.appointment_service import IN_MEMORY_BOOKINGS
-        return jsonify(serialize_docs(IN_MEMORY_BOOKINGS)), 200
+        from services.queue_service import IN_MEMORY_QUEUE
+        queue_by_token = {q.get("queue_id"): q for q in IN_MEMORY_QUEUE if q.get("queue_id")}
+        results = []
+        for a in IN_MEMORY_BOOKINGS:
+            q_entry = queue_by_token.get(a.get("queue_id"))
+            current_status = (q_entry and q_entry.get("status")) or a.get("status") or "booked"
+            current_position = (q_entry and q_entry.get("position")) if q_entry else a.get("queue_position")
+            slot = a.get("consultation_slot") or {}
+            slot_id = slot.get("slot_id") or a.get("slot_id") or "morning"
+            results.append({
+                "booking_id": a.get("booking_id"),
+                "token_number": a.get("queue_id") or "—",
+                "queue_id": a.get("queue_id"),
+                "doctor_name": a.get("doctor_name") or a.get("doctor_id") or "On-Duty Specialist",
+                "doctor_id": a.get("doctor_id"),
+                "department": a.get("department", "General OPD"),
+                "consultation_date": a.get("consultation_date"),
+                "consultation_slot": {
+                    "slot_id": slot_id,
+                    "slot_name": slot.get("slot_name") or ("Evening Slot" if slot_id == "evening" else "Morning Slot"),
+                    "display_time": slot.get("display_time") or ("02:00 PM – 09:00 PM" if slot_id == "evening" else "09:00 AM – 01:00 PM")
+                },
+                "booked_at": a.get("created_at"),
+                "created_at": a.get("created_at"),
+                "current_queue_position": current_position,
+                "position": current_position,
+                "current_status": current_status,
+                "status": current_status,
+                "room_number": a.get("room_number", "Room 204"),
+                "priority": a.get("priority", "normal")
+            })
+        return jsonify(serialize_docs(results)), 200
 
 @admin_bp.route("/admin/patients", methods=["GET"])
 @require_auth(allowed_roles=["admin"])
@@ -143,3 +259,17 @@ def get_admin_patient_records(patient_id: str):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@admin_bp.route("/admin/slots", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def get_admin_slots_analytics_route():
+    """
+    Admin Slot & Queue Analytics:
+    Returns real database-driven counts for Morning (09:00 - 01:00) and Evening (02:00 - 09:00) slots:
+    total booked, arrived, waiting, completed, missed, cancelled, emergency cases, remaining patients,
+    and live queue averages.
+    """
+    consultation_date = request.args.get("date")
+    from services.slot_service import get_admin_slot_analytics
+    analytics = get_admin_slot_analytics(consultation_date=consultation_date)
+    return jsonify(analytics), 200

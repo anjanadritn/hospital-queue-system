@@ -127,6 +127,7 @@ def test_advance_booking_valid_2_days(client, patient_token):
             "doctor_id": "D001",
             "department": "Cardiology",
             "consultation_date": d_str,
+            "consultation_slot": "morning",
             "symptoms": ["Fever", "Cough"],
             "custom_symptoms": "Mild weakness"
         }
@@ -142,6 +143,7 @@ def test_advance_booking_exceed_2_days_forbidden(client, patient_token):
         "doctor_id": "D001",
         "department": "Cardiology",
         "consultation_date": three_days_later,
+        "consultation_slot": "morning",
         "symptoms": ["Fever"]
     }
     res = client.post("/appointments/book", json=payload, headers={"Authorization": f"Bearer {patient_token}"})
@@ -155,7 +157,8 @@ def test_consultation_otp_flow(client, patient_token):
         "patient_id": "P001",
         "doctor_id": "D001",
         "department": "Cardiology",
-        "consultation_date": date.today().isoformat()
+        "consultation_date": date.today().isoformat(),
+        "consultation_slot": "morning"
     }, headers={"Authorization": f"Bearer {patient_token}"})
     booking_id = book_res.get_json()["booking_id"]
 

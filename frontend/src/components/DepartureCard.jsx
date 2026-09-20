@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   MapPin,
   AlertCircle,
+  AlertTriangle,
   RefreshCw,
   Sparkles,
   Car,
@@ -12,6 +13,13 @@ import {
   Radio
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { getBrowserLocation } from '../services/locationService';
+import {
+  DEPARTURE_STATES,
+  parseIsoOrTime,
+  isPatientArrivedOrTerminal,
+  getDepartureState
+} from '../services/departureStateService';
 import LiveRouteMap from './LiveRouteMap';
 
 const TUMKUR_OPTIONS = [
@@ -41,19 +49,47 @@ function calculateHaversineMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-export default function DepartureCard({ travelInfo: initialTravelInfo }) {
+export default function DepartureCard({ travelInfo: initialTravelInfo, onRefreshQueue }) {
   const [currentTravelInfo, setCurrentTravelInfo] = useState(initialTravelInfo);
-  const [selectedOrigin, setSelectedOrigin] = useState(
-    initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude
-      ? (initialTravelInfo.patient_address || 'Current GPS Location')
-      : (initialTravelInfo?.patient_address || 'Tumkur Bus Stand')
-  );
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [isLeavingSubmitting, setIsLeavingSubmitting] = useState(false);
+  const [leavingError, setLeavingError] = useState(null);
+  const [lastGpsReading, setLastGpsReading] = useState(null);
+  const [gpsErrorMessage, setGpsErrorMessage] = useState(null);
+
+  // Exact GPS state: only true if verified from real browser GPS reading
+  const [isExactGps, setIsExactGps] = useState(() => {
+    return Boolean(
+      initialTravelInfo?.location_source === 'gps' &&
+      initialTravelInfo?.is_approximate_location === false &&
+      initialTravelInfo?.origin_latitude &&
+      initialTravelInfo?.origin_longitude
+    );
+  });
+
+  const [selectedOrigin, setSelectedOrigin] = useState(() => {
+    if (
+      initialTravelInfo?.location_source === 'gps' &&
+      initialTravelInfo?.origin_latitude &&
+      initialTravelInfo?.origin_longitude &&
+      initialTravelInfo?.is_approximate_location === false
+    ) {
+      return 'Current GPS Location';
+    }
+    return initialTravelInfo?.patient_address || initialTravelInfo?.city || 'Tumakuru';
+  });
+
   const [calculating, setCalculating] = useState(false);
   const [minsUntilDeparture, setMinsUntilDeparture] = useState(null);
 
-  // Live GPS tracking state
+  // Live GPS tracking state: [lon, lat]
   const [liveCoords, setLiveCoords] = useState(() => {
-    if (initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude) {
+    if (
+      initialTravelInfo?.location_source === 'gps' &&
+      initialTravelInfo?.origin_latitude &&
+      initialTravelInfo?.origin_longitude &&
+      initialTravelInfo?.is_approximate_location === false
+    ) {
       return [
         Number(initialTravelInfo.origin_longitude),
         Number(initialTravelInfo.origin_latitude)
@@ -62,35 +98,90 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
     return null;
   });
 
-  const [gpsStatus, setGpsStatus] = useState(
-    (initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude)
-      ? 'watching'
-      : 'idle'
-  );
-
-  const [liveTrackingActive, setLiveTrackingActive] = useState(
-    Boolean(
-      (initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude) ||
+  const [gpsStatus, setGpsStatus] = useState(() => {
+    if (
+      initialTravelInfo?.location_source === 'gps' &&
+      initialTravelInfo?.origin_latitude &&
+      initialTravelInfo?.origin_longitude &&
       initialTravelInfo?.is_approximate_location === false
-    )
-  );
+    ) {
+      return 'watching';
+    }
+    return 'idle';
+  });
+
+  const [liveTrackingActive, setLiveTrackingActive] = useState(() => {
+    return Boolean(
+      initialTravelInfo?.location_source === 'gps' &&
+      initialTravelInfo?.origin_latitude &&
+      initialTravelInfo?.origin_longitude &&
+      initialTravelInfo?.is_approximate_location === false
+    );
+  });
 
   const lastRecalcPosRef = useRef(
-    initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude
+    initialTravelInfo?.location_source === 'gps' &&
+    initialTravelInfo?.origin_latitude &&
+    initialTravelInfo?.origin_longitude &&
+    initialTravelInfo?.is_approximate_location === false
       ? { lat: Number(initialTravelInfo.origin_latitude), lon: Number(initialTravelInfo.origin_longitude) }
       : null
   );
   const lastRecalcTimeRef = useRef(Date.now());
   const isRecalculatingRef = useRef(false);
 
-  // Sync state when parent travelInfo prop changes
+  // Lightweight timer every 30 seconds to recalculate current departure state and time diffs
   useEffect(() => {
-    if (initialTravelInfo) {
-      setCurrentTravelInfo(initialTravelInfo);
-      if (initialTravelInfo.origin_latitude && initialTravelInfo.origin_longitude) {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Sync state when parent travelInfo prop changes (e.g. 5-second queue polling)
+  useEffect(() => {
+    if (!initialTravelInfo) return;
+
+    setCurrentTravelInfo(prev => {
+      if (!prev) return initialTravelInfo;
+      // When live GPS is active with valid coordinates, NEVER overwrite GPS coordinates,
+      // distance, travel duration, or route geometry with the fallback landmark
+      if (isExactGps && liveCoords && liveCoords.length === 2) {
+        return {
+          ...initialTravelInfo,
+          origin_latitude: prev.origin_latitude || liveCoords[1],
+          origin_longitude: prev.origin_longitude || liveCoords[0],
+          origin_coordinates: prev.origin_coordinates || liveCoords,
+          distance_km: prev.distance_km,
+          travel_time_min: prev.travel_time_min,
+          travel_time_minutes: prev.travel_time_minutes || prev.travel_time_min,
+          route_geometry: prev.route_geometry,
+          patient_address: 'Current GPS Location',
+          is_approximate_location: false,
+          location_source: 'gps',
+          recommended_departure_time: prev.recommended_departure_time || initialTravelInfo.recommended_departure_time,
+          recommended_departure_iso: prev.recommended_departure_iso || initialTravelInfo.recommended_departure_iso,
+          departure_alert: prev.departure_alert || initialTravelInfo.departure_alert
+        };
+      }
+      return {
+        ...prev,
+        ...initialTravelInfo
+      };
+    });
+
+    if (!isExactGps) {
+      if (
+        initialTravelInfo.location_source === 'gps' &&
+        initialTravelInfo.origin_latitude &&
+        initialTravelInfo.origin_longitude &&
+        initialTravelInfo.is_approximate_location === false
+      ) {
         setSelectedOrigin(initialTravelInfo.patient_address || 'Current GPS Location');
         const coords = [Number(initialTravelInfo.origin_longitude), Number(initialTravelInfo.origin_latitude)];
         setLiveCoords(coords);
+        setIsExactGps(true);
+        setGpsStatus('watching');
         lastRecalcPosRef.current = {
           lat: Number(initialTravelInfo.origin_latitude),
           lon: Number(initialTravelInfo.origin_longitude)
@@ -98,44 +189,39 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
       } else if (initialTravelInfo.patient_address) {
         setSelectedOrigin(initialTravelInfo.patient_address);
       }
-
-      if (!initialTravelInfo.recommended_departure_time && (initialTravelInfo.patient_address || initialTravelInfo.origin_latitude)) {
-        const orig = initialTravelInfo.patient_address || initialTravelInfo.city || 'Tumakuru';
-        hospitalApi.calculateTravelDeparture({
-          origin: orig,
-          origin_latitude: initialTravelInfo.origin_latitude,
-          origin_longitude: initialTravelInfo.origin_longitude,
-          expected_consultation_iso: initialTravelInfo.expected_consultation_iso,
-          safety_buffer_min: 10
-        }).then((res) => {
-          if (res && res.recommended_departure_time) {
-            setCurrentTravelInfo(res);
-          }
-        }).catch((err) => console.warn('Could not calculate initial departure:', err));
-      }
     }
-  }, [initialTravelInfo]);
+
+    if (!initialTravelInfo.recommended_departure_time && !isExactGps && (initialTravelInfo.patient_address || initialTravelInfo.origin_latitude)) {
+      const orig = initialTravelInfo.patient_address || initialTravelInfo.city || 'Tumakuru';
+      hospitalApi.calculateTravelDeparture({
+        origin: orig,
+        origin_latitude: initialTravelInfo.origin_latitude,
+        origin_longitude: initialTravelInfo.origin_longitude,
+        expected_consultation_iso: initialTravelInfo.expected_consultation_iso,
+        safety_buffer_min: 10
+      }).then((res) => {
+        if (res && res.recommended_departure_time) {
+          setCurrentTravelInfo(res);
+        }
+      }).catch((err) => console.warn('Could not calculate initial departure:', err));
+    }
+  }, [initialTravelInfo, isExactGps]);
 
   // Real-time calculation of time remaining until departure
   useEffect(() => {
     const info = currentTravelInfo || initialTravelInfo;
-    if (!info?.recommended_departure_iso) return;
-
-    const updateTimer = () => {
-      try {
-        const depTime = new Date(info.recommended_departure_iso).getTime();
-        const now = new Date().getTime();
-        const diffMins = Math.round((depTime - now) / 60000);
-        setMinsUntilDeparture(diffMins);
-      } catch {
-        setMinsUntilDeparture(null);
-      }
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 30000);
-    return () => clearInterval(timer);
-  }, [currentTravelInfo, initialTravelInfo]);
+    const depMs = parseIsoOrTime(
+      info?.recommended_departure_iso,
+      info?.recommended_departure_time,
+      info?.consultation_date
+    );
+    if (!depMs) {
+      setMinsUntilDeparture(null);
+      return;
+    }
+    const diffMins = Math.round((depMs - currentTime) / 60000);
+    setMinsUntilDeparture(diffMins);
+  }, [currentTravelInfo, initialTravelInfo, currentTime]);
 
   // Watch GPS Position and throttle route recalculation (movement >= 75m or interval)
   useEffect(() => {
@@ -148,9 +234,11 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
         const lat = Number(pos.coords.latitude.toFixed(6));
         const lon = Number(pos.coords.longitude.toFixed(6));
 
-        // 1. Move patient marker in real-time immediately
+        // Move patient marker in real-time immediately with newest coordinate
         setLiveCoords([lon, lat]);
+        setIsExactGps(true);
         setGpsStatus('watching');
+        setSelectedOrigin('Current GPS Location');
 
         const now = Date.now();
         const lastPos = lastRecalcPosRef.current;
@@ -162,10 +250,6 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
         }
 
         const timeElapsed = now - lastTime;
-        // Throttled recalculation:
-        // - Initial position fix
-        // - Meaningful movement >= 75m (between 50m and 100m) with at least 10s cooldown
-        // - Movement >= 25m after 60s
         const shouldRecalculate =
           !lastPos ||
           (distMeters >= 75 && timeElapsed >= 10000) ||
@@ -185,7 +269,13 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
             safety_buffer_min: activeInfo?.safety_buffer_min || 10
           }).then((res) => {
             if (res && res.recommended_departure_time) {
-              setCurrentTravelInfo(res);
+              setCurrentTravelInfo({
+                ...res,
+                origin_latitude: lat,
+                origin_longitude: lon,
+                is_approximate_location: false,
+                location_source: 'gps'
+              });
               setSelectedOrigin('Current GPS Location');
             }
           }).catch((err) => {
@@ -199,6 +289,7 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
         if (err.code === err.PERMISSION_DENIED) {
           setGpsStatus('denied');
           setLiveTrackingActive(false);
+          setIsExactGps(false);
           setLiveCoords(null);
         } else {
           setGpsStatus('unavailable');
@@ -207,7 +298,7 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
       {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 5000
+        maximumAge: 0
       }
     );
 
@@ -219,12 +310,94 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
   if (!currentTravelInfo && !initialTravelInfo) return null;
   const travelInfo = currentTravelInfo || initialTravelInfo;
 
+  // Authoritative dynamic departure state from CURRENT browser/server time
+  const departureState = getDepartureState(travelInfo, currentTime);
+
+  // Current doctor-specific expected consultation time (OPD Turn Window)
+  const displayTurnWindow =
+    travelInfo?.expected_consultation_time ||
+    initialTravelInfo?.expected_consultation_time ||
+    '11:15 AM';
+
+  const travelDuration = Number(
+    travelInfo?.travel_time_min ||
+    travelInfo?.travel_time_minutes ||
+    initialTravelInfo?.travel_time_min ||
+    initialTravelInfo?.travel_time_minutes ||
+    18
+  );
+
+  const safetyBuffer = Number(
+    travelInfo?.safety_buffer_min ||
+    initialTravelInfo?.safety_buffer_min ||
+    10
+  );
+
+  // Recommended Departure Time
+  let displayDepartureTime = travelInfo?.recommended_departure_time || initialTravelInfo?.recommended_departure_time;
+  const consultIso = travelInfo?.expected_consultation_iso || initialTravelInfo?.expected_consultation_iso;
+  if (consultIso) {
+    try {
+      const consultMs = new Date(consultIso).getTime();
+      if (!isNaN(consultMs)) {
+        const offsetMin = travelDuration + safetyBuffer;
+        const depMs = consultMs - (offsetMin * 60 * 1000);
+        const depDate = new Date(depMs);
+        displayDepartureTime = depDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
+    } catch {
+      // fallback to backend string
+    }
+  }
+
+  // Expected Hospital Arrival Time
+  let displayArrivalTime =
+    travelInfo?.expected_hospital_arrival ||
+    travelInfo?.expected_arrival_time ||
+    initialTravelInfo?.expected_hospital_arrival ||
+    initialTravelInfo?.expected_arrival_time;
+
+  if (!displayArrivalTime && (travelInfo?.expected_hospital_arrival_iso || travelInfo?.expected_arrival_iso)) {
+    try {
+      const dt = new Date(travelInfo.expected_hospital_arrival_iso || travelInfo.expected_arrival_iso);
+      displayArrivalTime = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {}
+  }
+
+  // 2-Minute Grace Arrival Deadline Time
+  let displayArrivalDeadline =
+    travelInfo?.arrival_deadline_time ||
+    initialTravelInfo?.arrival_deadline_time;
+
+  if (!displayArrivalDeadline && travelInfo?.arrival_deadline_iso) {
+    try {
+      const dt = new Date(travelInfo.arrival_deadline_iso);
+      displayArrivalDeadline = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {}
+  }
+
+  // If deadline time string still missing, derive it as expected arrival + 2 mins
+  if (!displayArrivalDeadline && displayArrivalTime) {
+    const arrMs = parseIsoOrTime(
+      travelInfo?.expected_hospital_arrival_iso || travelInfo?.expected_arrival_iso,
+      displayArrivalTime,
+      travelInfo?.consultation_date
+    );
+    if (arrMs) {
+      displayArrivalDeadline = new Date(arrMs + 2 * 60 * 1000).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+  }
+
   // Manual origin change (user chooses landmark from dropdown)
   const handleOriginChange = async (origin) => {
     setSelectedOrigin(origin);
-    // Pause live GPS tracking when user explicitly chooses a landmark
     setLiveTrackingActive(false);
     setLiveCoords(null);
+    setIsExactGps(false);
     setGpsStatus('idle');
     lastRecalcPosRef.current = null;
     setCalculating(true);
@@ -245,55 +418,172 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
     }
   };
 
-  // Button click to enable/refresh live GPS
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
+  // Button click to enable/refresh live GPS (GPS reading alone does NOT trigger leaving_now)
+  const handleUseCurrentLocation = async () => {
     setCalculating(true);
-    setLiveTrackingActive(true);
+    setGpsStatus('fetching');
+    setGpsErrorMessage(null);
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = Number(pos.coords.latitude.toFixed(6));
-          const lon = Number(pos.coords.longitude.toFixed(6));
-          setLiveCoords([lon, lat]);
-          setGpsStatus('watching');
-          lastRecalcPosRef.current = { lat, lon };
-          lastRecalcTimeRef.current = Date.now();
+    console.log('[Live GPS] Requesting fresh high-accuracy device GPS (maximumAge: 0)...');
 
-          const res = await hospitalApi.calculateTravelDeparture({
-            origin: 'Current GPS Location',
+    const loc = await getBrowserLocation({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
+
+    console.log('[Live GPS] Result from locationService:', loc);
+
+    if (loc.success) {
+      const lat = Number(loc.latitude.toFixed(6));
+      const lon = Number(loc.longitude.toFixed(6));
+      const accuracy = loc.accuracy ? Math.round(loc.accuracy) : null;
+      const newCoords = [lon, lat];
+
+      console.log(`[Live GPS] Fresh Browser GPS coordinates acquired: lat=${lat}, lon=${lon}, accuracy=±${accuracy}m`);
+
+      // 2. Store returned coordinates
+      setLiveCoords(newCoords);
+      setIsExactGps(true);
+      setGpsStatus('watching');
+      setLiveTrackingActive(true);
+      setSelectedOrigin('Current GPS Location');
+      setLastGpsReading({ lat, lon, accuracy, timestamp: new Date().toLocaleTimeString() });
+      lastRecalcPosRef.current = { lat, lon };
+      lastRecalcTimeRef.current = Date.now();
+
+      try {
+        const activeInfo = currentTravelInfo || initialTravelInfo;
+        console.log(`[Live GPS] Calling route calculation with exact coordinates: origin_latitude=${lat}, origin_longitude=${lon}`);
+        const res = await hospitalApi.calculateTravelDeparture({
+          origin: 'Current GPS Location',
+          origin_latitude: lat,
+          origin_longitude: lon,
+          expected_consultation_iso: activeInfo?.expected_consultation_iso,
+          safety_buffer_min: activeInfo?.safety_buffer_min || 10
+        });
+        console.log('[Live GPS] Route calculation response:', res);
+        if (res && res.recommended_departure_time) {
+          console.log(`[Live GPS] Route updated successfully: distance_km=${res.distance_km}, travel_time_min=${res.travel_time_min}`);
+          setCurrentTravelInfo(prev => ({
+            ...prev,
+            ...res,
             origin_latitude: lat,
             origin_longitude: lon,
-            expected_consultation_iso: travelInfo.expected_consultation_iso,
-            safety_buffer_min: travelInfo.safety_buffer_min || 10
-          });
-          if (res && res.recommended_departure_time) {
-            setCurrentTravelInfo(res);
-            setSelectedOrigin('Current GPS Location');
-          }
-        } catch (e) {
-          console.warn('Could not calculate departure with GPS:', e);
-        } finally {
-          setCalculating(false);
+            origin_coordinates: newCoords,
+            distance_km: res.distance_km,
+            travel_time_min: res.travel_time_min,
+            travel_time_minutes: res.travel_time_minutes || res.travel_time_min,
+            route_geometry: res.route_geometry,
+            patient_address: 'Current GPS Location',
+            is_approximate_location: false,
+            location_source: 'gps'
+          }));
+          setSelectedOrigin('Current GPS Location');
         }
-      },
-      (geoErr) => {
+      } catch (e) {
+        console.warn('[Live GPS] Could not calculate departure with GPS:', e);
+      } finally {
         setCalculating(false);
-        if (geoErr.code === geoErr.PERMISSION_DENIED) {
-          setGpsStatus('denied');
-          setLiveTrackingActive(false);
-          setLiveCoords(null);
-        } else {
-          setGpsStatus('unavailable');
+      }
+    } else {
+      console.warn('[Live GPS] Browser GPS failed or was denied:', loc);
+      setCalculating(false);
+      setIsExactGps(false);
+      setLiveCoords(null);
+      setLiveTrackingActive(false);
+      if (loc.code === 1) {
+        setGpsStatus('denied');
+        setGpsErrorMessage('GPS Permission Denied — Using approximate location');
+      } else {
+        setGpsStatus('unavailable');
+        setGpsErrorMessage('GPS Unavailable — Using approximate location');
+      }
+    }
+  };
+
+  // MANUAL "I'M LEAVING NOW" ACTION
+  const handleConfirmLeavingNow = async () => {
+    if (isLeavingSubmitting) return;
+    setIsLeavingSubmitting(true);
+    setLeavingError(null);
+
+    const activeInfo = currentTravelInfo || initialTravelInfo;
+    const queueId = activeInfo?.queue_id || activeInfo?.booking_id;
+    if (!queueId) {
+      setLeavingError('No active queue token found to record departure.');
+      setIsLeavingSubmitting(false);
+      return;
+    }
+
+    try {
+      // 1. Capture fresh browser GPS reading (high accuracy, no cache)
+      let coords = null;
+      try {
+        const loc = await getBrowserLocation({
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+        if (loc && loc.success) {
+          const lat = Number(loc.latitude.toFixed(6));
+          const lon = Number(loc.longitude.toFixed(6));
+          coords = [lon, lat];
+          setLiveCoords(coords);
+          setIsExactGps(true);
+          setGpsStatus('watching');
+          setLiveTrackingActive(true);
+          setSelectedOrigin('Current GPS Location');
+          setLastGpsReading({ lat, lon, accuracy: loc.accuracy ? Math.round(loc.accuracy) : null, timestamp: new Date().toLocaleTimeString() });
+          lastRecalcPosRef.current = { lat, lon };
+          lastRecalcTimeRef.current = Date.now();
         }
-        alert('GPS location permission denied or unavailable. Using approximate landmark.');
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+      } catch (locErr) {
+        console.warn('Could not capture fresh GPS for departure, using recorded coordinates:', locErr);
+      }
+
+      // If no fresh GPS, use currently active exact GPS coordinates if available
+      if (!coords && liveCoords && isExactGps) {
+        coords = liveCoords;
+      }
+
+      console.log(`[Leaving Now] Confirming departure for ${queueId} with coords:`, coords);
+
+      // 2. Call backend confirmLeavingNow API (stores timestamp, updates departure and travel metrics)
+      const res = await hospitalApi.confirmLeavingNow(queueId, coords);
+      console.log('[Leaving Now] API response:', res);
+      if (res) {
+        const updated = res.queue_entry || res.data || res;
+        setCurrentTravelInfo(prev => ({
+          ...prev,
+          ...updated,
+          leaving_now: true,
+          leaving_now_at: updated.leaving_now_at || new Date().toISOString()
+        }));
+
+        if (onRefreshQueue) {
+          try {
+            await onRefreshQueue();
+          } catch {
+            // refresh callback best effort
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to confirm leaving now:', err);
+      const serverMsg = err.response?.data?.error || err.response?.data?.message;
+      if (err.response?.status === 401) {
+        setLeavingError('Authentication required: Please log in as the patient to record departure.');
+      } else if (err.response?.status === 403) {
+        setLeavingError(serverMsg || 'Unauthorized: You can only record departure for your own active queue token.');
+      } else if (serverMsg) {
+        setLeavingError(serverMsg);
+      } else {
+        setLeavingError(err.message || 'Could not record departure. Please retry.');
+      }
+    } finally {
+      setIsLeavingSubmitting(false);
+    }
   };
 
   return (
@@ -311,15 +601,20 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold text-base text-white tracking-tight">Smart Patient Departure Engine</h3>
-              {travelInfo.is_approximate_location === false || liveCoords ? (
+              {isExactGps && liveCoords ? (
                 <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  {gpsStatus === 'watching' ? 'Live GPS Active' : 'Exact GPS Route'}
+                  <span>✓ Exact GPS Active</span>
+                </span>
+              ) : (gpsStatus === 'denied' || gpsStatus === 'unavailable') ? (
+                <span className="text-[10px] font-bold bg-rose-500/20 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 text-rose-400" />
+                  <span>GPS unavailable — Using approximate location</span>
                 </span>
               ) : (
                 <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 text-amber-400" />
-                  Approximate Landmark Transit
+                  <span>Approximate Landmark Transit</span>
                 </span>
               )}
             </div>
@@ -334,18 +629,26 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
             onClick={handleUseCurrentLocation}
             disabled={calculating}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer disabled:opacity-50 border ${
-              gpsStatus === 'watching'
+              isExactGps
                 ? 'bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-400/50 text-emerald-200'
                 : 'bg-sky-500/20 hover:bg-sky-500/30 border-sky-400/40 text-sky-200'
             }`}
             title="Update departure using real browser GPS"
           >
-            {gpsStatus === 'watching' ? (
+            {calculating ? (
+              <RefreshCw className="w-3.5 h-3.5 text-sky-300 animate-spin" />
+            ) : isExactGps ? (
               <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             ) : (
               <Navigation className="w-3.5 h-3.5 text-sky-300" />
             )}
-            <span>{gpsStatus === 'watching' ? 'Live GPS Watching' : 'Use Live GPS'}</span>
+            <span>
+              {calculating
+                ? 'Locating...'
+                : isExactGps
+                  ? 'Live GPS Active'
+                  : 'Live GPS'}
+            </span>
           </button>
 
           <div className="flex items-center gap-2 bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-sm">
@@ -371,51 +674,273 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
         </div>
       </div>
 
-      {/* Main Hero Countdown & Departure Banner */}
-      <div className="my-6 text-center bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 relative z-10">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-teal-300">
-            Recommended Departure Time
-          </span>
-          {minsUntilDeparture !== null && (
-            <span
-              className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                minsUntilDeparture > 0
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+      {/* Temporary Debug GPS Pill / Log Console */}
+      {(lastGpsReading || (isExactGps && liveCoords)) && (
+        <div className="mb-4 px-3.5 py-2 rounded-2xl bg-sky-950/80 border border-sky-400/40 text-[11px] font-mono text-sky-200 flex items-center justify-between flex-wrap gap-2 shadow-inner">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span>
+              Device GPS: <strong className="text-emerald-300">{liveCoords ? `${liveCoords[1].toFixed(6)}°N, ${liveCoords[0].toFixed(6)}°E` : 'Acquiring...'}</strong>
+              {lastGpsReading?.accuracy ? ` (±${lastGpsReading.accuracy}m)` : ''}
+            </span>
+          </div>
+          <div className="text-slate-300 text-[10px]">
+            Active Route: <strong className="text-sky-300">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.0} km</strong> ({travelInfo.travel_time_min ?? travelDuration} mins to SIMSRH)
+          </div>
+        </div>
+      )}
+
+      {/* GPS Error Alert if permission denied or unavailable */}
+      {gpsErrorMessage && !isExactGps && (
+        <div className="mb-4 px-3.5 py-2 rounded-2xl bg-rose-950/80 border border-rose-500/50 text-[11px] text-rose-200 flex items-center justify-between shadow-inner">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+            <span className="font-semibold">{gpsErrorMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setGpsErrorMessage(null)}
+            className="text-rose-400 hover:text-white text-xs cursor-pointer ml-2 px-1"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Main Hero Countdown & Departure Banner with Authoritative State Evaluation */}
+      <div className={`my-6 text-center backdrop-blur-md rounded-3xl p-6 border relative z-10 transition-all ${
+        departureState === DEPARTURE_STATES.VERY_LATE
+          ? 'bg-rose-950/40 border-red-500/50 shadow-2xl shadow-rose-950/50 ring-1 ring-red-500/40'
+          : departureState === DEPARTURE_STATES.URGENT
+          ? 'bg-orange-950/40 border-amber-500/50 shadow-2xl shadow-amber-950/50 ring-1 ring-amber-500/40'
+          : departureState === DEPARTURE_STATES.LEAVE_NOW
+          ? 'bg-amber-950/30 border-amber-400/40 shadow-xl'
+          : 'bg-white/5 border-white/10'
+      }`}>
+
+        {/* STATE 1: VERY_LATE (Arrival deadline has passed without arrival verification) */}
+        {departureState === DEPARTURE_STATES.VERY_LATE && (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-widest text-red-400 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-400 animate-pulse" />
+                2-Minute Grace Period Expired
+              </span>
+              {displayArrivalDeadline && (
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-200 border border-red-500/40">
+                  Deadline was: {displayArrivalDeadline}
+                </span>
+              )}
+            </div>
+
+            <div className="text-3xl sm:text-5xl font-black text-red-400 font-mono tracking-tight mb-2 uppercase">
+              ARRIVAL DEADLINE PASSED
+            </div>
+
+            <p className="text-sm font-bold text-red-100 max-w-xl mx-auto leading-relaxed">
+              Your 2-minute grace period has expired. You may be moved to the end of your doctor's queue.
+            </p>
+
+            {travelInfo.late_arrival_reordered && (
+              <div className="mt-3 text-xs bg-amber-500/20 text-amber-200 border border-amber-500/40 rounded-xl px-4 py-2 inline-block font-semibold">
+                ⚠️ Notice: Your position has been updated to the end of Dr. {travelInfo.doctor_name || "your doctor"}'s queue due to late arrival.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STATE 2: URGENT (Expected hospital arrival has passed, but within 2-minute deadline) */}
+        {departureState === DEPARTURE_STATES.URGENT && (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-widest text-rose-300 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-rose-400 animate-bounce" />
+                Action Required
+              </span>
+              {displayArrivalTime && (
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  Expected Arrival: {displayArrivalTime} (Passed)
+                </span>
+              )}
+            </div>
+
+            <div className="text-3xl sm:text-5xl font-black text-rose-300 font-mono tracking-tight mb-2 uppercase">
+              URGENT — YOU MAY BE LATE
+            </div>
+
+            <p className="text-sm font-bold text-rose-100 max-w-xl mx-auto leading-relaxed">
+              Your expected hospital arrival time has passed. Leave immediately to avoid missing your queue position.
+            </p>
+
+            <div className="mt-3 text-xs bg-rose-950/70 text-rose-200 border border-rose-500/40 rounded-xl px-4 py-2 inline-block font-medium">
+              ⚠️ Arriving late may cause you to be moved to the <strong>END of your doctor's queue</strong> after the 2-minute arrival deadline ({displayArrivalDeadline || 'soon'}).
+            </div>
+          </div>
+        )}
+
+        {/* STATE 3: LEAVE_NOW (Recommended departure reached, but before expected arrival) */}
+        {departureState === DEPARTURE_STATES.LEAVE_NOW && (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-widest text-amber-300 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-400 animate-pulse" />
+                Departure Window Active
+              </span>
+              {displayDepartureTime && (
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Recommended: {displayDepartureTime}
+                </span>
+              )}
+            </div>
+
+            <div className="text-4xl sm:text-6xl font-black text-amber-300 font-mono tracking-tight mb-2 animate-pulse">
+              LEAVE NOW
+            </div>
+
+            <p className="text-sm font-bold text-amber-100 max-w-xl mx-auto leading-relaxed">
+              Your recommended departure time has arrived.
+            </p>
+
+            <p className="text-xs text-slate-300 mt-1 max-w-xl mx-auto">
+              Start your journey from {selectedOrigin} immediately to reach SIMSRH on schedule before your expected arrival ({displayArrivalTime || 'soon'}).
+            </p>
+          </div>
+        )}
+
+        {/* STATE 4: BEFORE_DEPARTURE (Normal countdown before departure time) */}
+        {departureState === DEPARTURE_STATES.BEFORE_DEPARTURE && (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-teal-300">
+                Recommended Departure Time
+              </span>
+              {minsUntilDeparture !== null && (
+                <span
+                  className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                    minsUntilDeparture > 0
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  }`}
+                >
+                  {minsUntilDeparture > 0 ? `In ~${minsUntilDeparture} mins` : 'Depart Soon'}
+                </span>
+              )}
+            </div>
+
+            <div className="text-4xl sm:text-6xl font-black text-white font-mono tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white via-sky-100 to-teal-200">
+              {displayDepartureTime || '10:45 AM'}
+            </div>
+
+            <p className="text-xs text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
+              {travelInfo.departure_alert || `🚗 Start from ${selectedOrigin} around ${displayDepartureTime} to arrive at SIMSRH Tumakuru ~${safetyBuffer} mins before your consultation at ${displayTurnWindow}.`}
+            </p>
+          </div>
+        )}
+
+        {/* STATE 5: ARRIVED_OR_TERMINAL (Patient already arrived or consultation closed) */}
+        {departureState === DEPARTURE_STATES.ARRIVED_OR_TERMINAL && (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Hospital Arrival Verified
+              </span>
+            </div>
+
+            <div className="text-3xl sm:text-5xl font-black text-emerald-300 font-mono tracking-tight mb-2">
+              ARRIVED AT SIMSRH
+            </div>
+
+            <p className="text-xs text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
+              Your arrival has been verified. Please wait in the OPD lounge for your token to be called.
+            </p>
+          </div>
+        )}
+
+        {/* Authoritative Arrival & Deadline Times Bar */}
+        {(displayArrivalTime || displayArrivalDeadline) && departureState !== DEPARTURE_STATES.ARRIVED_OR_TERMINAL && (
+          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-4 flex-wrap text-xs text-slate-300">
+            {displayArrivalTime && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-400">Expected Hospital Arrival:</span>
+                <span className="font-bold text-sky-200">{displayArrivalTime}</span>
+              </div>
+            )}
+            {displayArrivalDeadline && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-400">2-Min Arrival Deadline:</span>
+                <span className="font-bold text-rose-300">{displayArrivalDeadline}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MANUAL "I'M LEAVING NOW" ACTION BUTTON */}
+        <div className="mt-4 pt-4 border-t border-white/10 flex flex-col items-center justify-center gap-2">
+          {travelInfo.leaving_now ? (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-bold shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>
+                You are en route to SIMSRH
+                {travelInfo.leaving_now_at
+                  ? ` (Departed at ${new Date(travelInfo.leaving_now_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })})`
+                  : ''}
+              </span>
+            </div>
+          ) : !isPatientArrivedOrTerminal(travelInfo) ? (
+            <button
+              type="button"
+              id="btn-leaving-now"
+              onClick={handleConfirmLeavingNow}
+              disabled={isLeavingSubmitting}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer shadow-lg active:scale-95 disabled:opacity-50 ${
+                departureState === DEPARTURE_STATES.VERY_LATE || departureState === DEPARTURE_STATES.URGENT
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-rose-900/40 animate-pulse'
+                  : departureState === DEPARTURE_STATES.LEAVE_NOW
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-amber-900/40'
+                  : 'bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-400 hover:to-sky-400 text-slate-950 shadow-sky-900/40'
               }`}
             >
-              {minsUntilDeparture > 0 ? `In ~${minsUntilDeparture} mins` : 'Depart Immediately'}
-            </span>
+              {isLeavingSubmitting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Synchronizing Departure & GPS...</span>
+                </>
+              ) : (
+                <>
+                  <Car className="w-4 h-4" />
+                  <span>I'm Leaving Now</span>
+                </>
+              )}
+            </button>
+          ) : null}
+
+          {leavingError && (
+            <div className="text-[11px] text-rose-300 font-semibold mt-1">
+              {leavingError}
+            </div>
           )}
         </div>
 
-        <div className="text-4xl sm:text-6xl font-black text-white font-mono tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white via-sky-100 to-teal-200">
-          {travelInfo.recommended_departure_time || '10:45 AM'}
-        </div>
-
-        <p className="text-xs text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
-          {travelInfo.departure_alert || `🚗 Start from ${selectedOrigin} around ${travelInfo.recommended_departure_time} to arrive at SIMSRH Tumakuru ~${travelInfo.safety_buffer_min || 10} mins before your consultation.`}
-        </p>
       </div>
 
       {/* Grid Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center relative z-10">
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
           <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Transit Distance</span>
-          <span className="text-lg font-black text-white">{travelInfo.distance_km || 6.4} km</span>
+          <span className="text-lg font-black text-white">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.2} km</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
           <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Travel Duration</span>
-          <span className="text-lg font-black text-sky-300">{travelInfo.travel_time_min || 18} mins</span>
+          <span className="text-lg font-black text-sky-300">{travelDuration} mins</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
           <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">Safety Buffer</span>
-          <span className="text-lg font-black text-teal-300">+{travelInfo.safety_buffer_min || 10} mins</span>
+          <span className="text-lg font-black text-teal-300">+{safetyBuffer} mins</span>
         </div>
         <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
           <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">OPD Turn Window</span>
-          <span className="text-lg font-black text-white">{travelInfo.expected_consultation_time || '11:15 AM'}</span>
+          <span className="text-lg font-black text-white">{displayTurnWindow}</span>
         </div>
       </div>
 
@@ -435,7 +960,9 @@ export default function DepartureCard({ travelInfo: initialTravelInfo }) {
         <LiveRouteMap
           travelInfo={travelInfo}
           liveCoords={liveCoords}
-          isWatching={gpsStatus === 'watching'}
+          isExactGps={isExactGps}
+          isWatching={isExactGps && gpsStatus === 'watching'}
+          gpsStatus={gpsStatus}
         />
       </div>
 

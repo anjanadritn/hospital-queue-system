@@ -26,6 +26,7 @@ import LoadingState from '../components/LoadingState';
 import DepartureCard from '../components/DepartureCard';
 import HospitalModeCard from '../components/HospitalModeCard';
 import ConsultationOtpCard from '../components/ConsultationOtpCard';
+import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
 
 export default function QueueTracking() {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ export default function QueueTracking() {
   const [activeQueueId, setActiveQueueId] = useState(initialQueueId);
 
   const [queueData, setQueueData] = useState(null);
-  const [aiPrediction, setAiPrediction] = useState(null);
+  const [predictedConsultationDuration, setPredictedConsultationDuration] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -111,7 +112,7 @@ export default function QueueTracking() {
             priority: data.priority || 'normal',
             queue_position: data.position
           });
-          setAiPrediction(pred.predicted_consultation_duration_min || pred.predicted_wait_time);
+          setPredictedConsultationDuration(pred.predicted_consultation_duration_min || null);
         } catch (predErr) {
           console.warn('ML Prediction not available:', predErr);
         }
@@ -349,6 +350,11 @@ export default function QueueTracking() {
               </div>
             )}
 
+            {/* LATE-ARRIVAL STATUS WARNING CARD */}
+            {queueData.late_arrival_reordered && (
+              <LateArrivalWarningCard queueData={queueData} />
+            )}
+
             {/* MAIN QUEUE CARD */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-md relative overflow-hidden space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-3">
@@ -429,10 +435,12 @@ export default function QueueTracking() {
                     <span>Est. Queue Wait</span>
                   </span>
                   <span className="text-4xl font-extrabold text-purple-900">
-                    ~{aiPrediction || queueData.predicted_wait_time || (Math.max(1, queueData.position) * 12)}m
+                    ~{typeof queueData.predicted_wait_time === 'number'
+                      ? queueData.predicted_wait_time
+                      : (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)}m
                   </span>
                   <span className="text-[10px] text-purple-600 font-medium block mt-1">
-                    Random Forest: ~{queueData.predicted_duration || 12}m/visit
+                    Random Forest: ~{predictedConsultationDuration || queueData.predicted_duration || queueData.predicted_consultation_duration || 12}m/visit
                   </span>
                 </div>
 
@@ -464,12 +472,38 @@ export default function QueueTracking() {
             <HospitalModeCard queueData={queueData} onToggleArrived={handleToggleArrived} />
 
             {/* DEPARTURE CARD */}
-            <DepartureCard travelInfo={queueData.travel_info || {
-              patient_address: queueData.city || queueData.patient_address || 'Tumakuru',
-              origin_latitude: queueData.origin_latitude,
-              origin_longitude: queueData.origin_longitude,
-              is_approximate_location: queueData.is_approximate_location ?? true
-            }} />
+            <DepartureCard
+              travelInfo={{
+                ...(queueData.travel_info || {}),
+                queue_id: queueData.queue_id,
+                booking_id: queueData.booking_id,
+                status: queueData.status,
+                arrived_at_hospital: queueData.arrived_at_hospital,
+                verified_by_admin: queueData.verified_by_admin,
+                late_arrival_reordered: queueData.late_arrival_reordered,
+                leaving_now: queueData.leaving_now,
+                leaving_now_at: queueData.leaving_now_at,
+                leave_reminder_status: queueData.leave_reminder_status,
+                doctor_name: queueData.doctor_name,
+                consultation_slot: queueData.consultation_slot,
+                consultation_date: queueData.consultation_date,
+                patient_address: queueData.city || queueData.patient_address || 'Tumakuru',
+                origin_latitude: queueData.origin_latitude,
+                origin_longitude: queueData.origin_longitude,
+                is_approximate_location: queueData.is_approximate_location ?? true,
+                location_source: queueData.travel_info?.location_source || (queueData.is_approximate_location === false ? 'gps' : 'landmark_approximate'),
+                expected_hospital_arrival: queueData.expected_arrival_time || queueData.expected_hospital_arrival || queueData.travel_info?.expected_hospital_arrival,
+                expected_hospital_arrival_iso: queueData.expected_arrival_iso || queueData.expected_hospital_arrival_iso || queueData.travel_info?.expected_hospital_arrival_iso,
+                arrival_deadline_time: queueData.arrival_deadline_time || queueData.travel_info?.arrival_deadline_time,
+                arrival_deadline_iso: queueData.arrival_deadline_iso || queueData.travel_info?.arrival_deadline_iso,
+                expected_consultation_time: queueData.expected_consultation_time || queueData.travel_info?.expected_consultation_time,
+                expected_consultation_iso: queueData.expected_consultation_iso || queueData.travel_info?.expected_consultation_iso,
+                recommended_departure_time: queueData.recommended_departure_time || queueData.travel_info?.recommended_departure_time,
+                recommended_departure_iso: queueData.recommended_departure_iso || queueData.travel_info?.recommended_departure_iso,
+                departure_alert: queueData.departure_alert || queueData.travel_info?.departure_alert
+              }}
+              onRefreshQueue={() => fetchQueueStatus(queueData.queue_id)}
+            />
 
             {/* EMERGENCY ESCALATION CTA (Red) */}
             {queueData.status === 'waiting' && queueData.priority !== 'emergency' && (

@@ -29,9 +29,11 @@ import ErrorState from '../components/ErrorState';
 export default function DoctorQueuePrediction() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [queues, setQueues] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [selectedDoctorId, setSelectedDoctorId] = useState(user?.doctor_id || 'D001');
+  const rawUserDoc = user?.doctor_id || user?.user_id;
+  const initialDoctorId = typeof rawUserDoc === 'string' && rawUserDoc.startsWith('U_DOC_')
+    ? rawUserDoc.replace('U_DOC_', '')
+    : (user?.doctor_id || 'D001');
+  const [selectedDoctorId, setSelectedDoctorId] = useState(initialDoctorId);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -130,11 +132,7 @@ export default function DoctorQueuePrediction() {
     const filtered = queues.filter((q) => {
       if (!q) return false;
       if (selectedDoctorId === 'all') return true;
-      return (
-        q.doctor_id === selectedDoctorId ||
-        (department && q.department?.toLowerCase() === department?.toLowerCase()) ||
-        !q.doctor_id
-      );
+      return q.doctor_id === selectedDoctorId;
     });
 
     const activeStatuses = ['in_consultation', 'called', 'ready', 'waiting', 'arrived', 'missed'];

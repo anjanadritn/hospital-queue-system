@@ -7,6 +7,7 @@ from services.queue_service import (
     skip_patient_service,
     escalate_emergency,
     recalculate_queue_positions,
+    update_queue_status,
     IN_MEMORY_QUEUE,
 )
 from database.mongodb import get_db
@@ -177,3 +178,141 @@ def test_emergency_priority_maintained():
     # Normal patient 2 is pushed to position 3, waiting behind both emergency and normal 1
     assert status_n2["position"] == 3
     assert status_n2["predicted_wait_time"] == status_em["predicted_duration"] + status_n1["predicted_duration"]
+
+
+def test_position_one_zero_ahead_wait_time_vs_consultation_duration():
+    """
+    Regression test:
+    For a patient at position #1 with AHEAD IN LINE = 0:
+    1. predicted_duration (Random Forest prediction for THIS patient's visit) is separated
+       from predicted_wait_time (time until THIS patient's consultation STARTS).
+    2. When no doctor is currently consulting another patient, queue wait should be approximately 0
+       (or the existing small service-start buffer of 5 mins), NOT the patient's own consultation duration.
+    3. When another patient is currently in consultation, queue wait must represent the remaining
+       time of that current consultation.
+    """
+    doc_id = "TEST_DOC_POS1_REGRESSION"
+
+    # 1. Patient joins queue with zero patients ahead
+    p1, err1 = join_queue({
+        "patient_id": "PAT_POS1_001",
+        "doctor_id": doc_id,
+        "department": "Cardiology",
+        "priority": "normal",
+        "symptoms": ["Chest pain", "Shortness of breath"]
+    })
+    assert err1 is None
+    assert p1["position"] == 1
+
+    status_p1, _ = get_queue_status(p1["queue_id"])
+    assert status_p1["position"] == 1
+    # Ahead in line must be 0
+    ahead_in_line = max(0, status_p1["position"] - 1)
+    assert ahead_in_line == 0
+
+    # Predicted consultation duration is from Random Forest for THIS patient's visit (e.g. >= 10 mins)
+    predicted_consultation_duration = status_p1["predicted_duration"]
+    assert predicted_consultation_duration >= 10
+
+    # Estimated queue wait must be the small service-start buffer (5m), NOT the patient's own duration
+    assert status_p1["predicted_wait_time"] == 5
+    assert status_p1["predicted_wait_time"] != predicted_consultation_duration
+
+    # 2. Now introduce a patient currently in consultation with this doctor
+    # Patient 0 joins and starts consultation
+    p0, err0 = join_queue({
+        "patient_id": "PAT_POS1_CURRENT",
+        "doctor_id": doc_id,
+        "department": "Cardiology",
+        "priority": "normal",
+        "symptoms": ["Hypertension"]
+    })
+    assert err0 is None
+
+    # Move p0 into consultation
+    upd_res, upd_err = update_queue_status(p0["queue_id"], "in_consultation")
+    assert upd_err is None
+
+    # Check p1 status now that p0 is in consultation
+    status_p1_after, _ = get_queue_status(p1["queue_id"])
+    assert status_p1_after["position"] == 1
+
+    # Queue wait must represent the remaining time of that active consultation
+    expected_remaining = max(3, int(p0["predicted_duration"] * 0.5))
+    assert status_p1_after["predicted_wait_time"] == expected_remaining
+    # Must still NOT equal p1's own consultation duration
+    assert status_p1_after["predicted_duration"] == predicted_consultation_duration
+    assert status_p1_after["predicted_wait_time"] != status_p1_after["predicted_duration"]
+
+def test_sequential_token_generation_per_queue():
+    """
+    Regression Test:
+    Ensures that for a new queue, tokens are generated consistently and sequentially starting from 001.
+    Verifies that doctor queues are isolated and another doctor's bookings do NOT create gaps
+    (e.g., Doctor A getting 001, 002, 003, instead of skipping to 006 due to Doctor B's bookings).
+    """
+    db = get_db()
+    doc_a = "TEST_DOC_SEQ_A"
+    doc_b = "TEST_DOC_SEQ_B"
+    try:
+        db.queue.delete_many({"doctor_id": {"$in": [doc_a, doc_b]}})
+
+        # 1. Doctor A starts new queue: Patient 1 & 2 join
+        p_a1, err_a1 = join_queue({
+            "patient_id": "PAT_SEQ_A1",
+            "doctor_id": doc_a,
+            "department": "Cardiology",
+            "priority": "normal",
+            "symptoms": ["General Checkup"]
+        })
+        assert err_a1 is None
+        assert p_a1["queue_id"] == f"{doc_a}-Q001"
+
+        p_a2, err_a2 = join_queue({
+            "patient_id": "PAT_SEQ_A2",
+            "doctor_id": doc_a,
+            "department": "Cardiology",
+            "priority": "normal",
+            "symptoms": ["Checkup"]
+        })
+        assert err_a2 is None
+        assert p_a2["queue_id"] == f"{doc_a}-Q002"
+
+        # 2. Doctor B starts new queue: Patient 1 & 2 join
+        # New queue must start from 001 consistently, not inheriting Doctor A's count!
+        p_b1, err_b1 = join_queue({
+            "patient_id": "PAT_SEQ_B1",
+            "doctor_id": doc_b,
+            "department": "General Medicine",
+            "priority": "normal",
+            "symptoms": ["Fever"]
+        })
+        assert err_b1 is None
+        assert p_b1["queue_id"] == f"{doc_b}-Q001"
+
+        p_b2, err_b2 = join_queue({
+            "patient_id": "PAT_SEQ_B2",
+            "doctor_id": doc_b,
+            "department": "General Medicine",
+            "priority": "normal",
+            "symptoms": ["Cough"]
+        })
+        assert err_b2 is None
+        assert p_b2["queue_id"] == f"{doc_b}-Q002"
+
+        # 3. Doctor A receives a 3rd patient:
+        # Must be sequential (Q003), NOT skipping numbers (e.g. Q005 or Q006) due to Doctor B's bookings!
+        p_a3, err_a3 = join_queue({
+            "patient_id": "PAT_SEQ_A3",
+            "doctor_id": doc_a,
+            "department": "Cardiology",
+            "priority": "normal",
+            "symptoms": ["Chest Pain"]
+        })
+        assert err_a3 is None
+        assert p_a3["queue_id"] == f"{doc_a}-Q003"
+
+    finally:
+        db.queue.delete_many({"doctor_id": {"$in": [doc_a, doc_b]}})
+        db.appointments.delete_many({"doctor_id": {"$in": [doc_a, doc_b]}})
+

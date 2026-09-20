@@ -21,7 +21,9 @@ import {
   MapPin,
   Activity,
   Edit3,
-  HeartPulse
+  HeartPulse,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -109,9 +111,27 @@ export default function BookAppointment() {
   const [selectedDept, setSelectedDept] = useState('General Medicine');
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [consultationDate, setConsultationDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedSlot, setSelectedSlot] = useState('morning');
+  const [slotData, setSlotData] = useState(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [customSymptoms, setCustomSymptoms] = useState('');
   const [priority, setPriority] = useState('normal');
+
+  // Fetch slot availability whenever doctor or date changes
+  useEffect(() => {
+    if (consultationDate) {
+      setLoadingSlots(true);
+      hospitalApi.getSlotAvailability(selectedDoctorId || null, consultationDate)
+        .then((res) => {
+          setSlotData(res);
+        })
+        .catch((err) => {
+          console.error("Error fetching slot availability:", err);
+        })
+        .finally(() => setLoadingSlots(false));
+    }
+  }, [selectedDoctorId, consultationDate]);
 
   const [isReviewing, setIsReviewing] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -222,6 +242,10 @@ export default function BookAppointment() {
       setError('Please select a consulting specialist for your consultation.');
       return;
     }
+    if (!selectedSlot) {
+      setError('Please select a consultation slot (Morning or Afternoon/Evening).');
+      return;
+    }
     if (selectedSymptoms.length === 0 && !customSymptoms.trim()) {
       setError('Please select at least one primary symptom or describe your symptoms.');
       return;
@@ -273,6 +297,7 @@ export default function BookAppointment() {
         doctor_id: selectedDoctorId,
         department: selectedDept,
         consultation_date: consultationDate,
+        consultation_slot: selectedSlot,
         priority: priority,
         symptoms: selectedSymptoms,
         custom_symptoms: customSymptoms
@@ -431,10 +456,131 @@ export default function BookAppointment() {
               )}
             </div>
 
-            {/* STEP 3: SYMPTOM SELECTOR */}
+            {/* STEP 3: CONSULTATION SLOT SELECTION */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">3</span>
+                  <span>{t('choose_slot', 'Select Consultation Slot')}</span>
+                </label>
+                <span className="text-[11px] text-slate-500 font-semibold">
+                  {loadingSlots ? 'Updating capacity...' : `${slotData?.total_active_queue || 0} currently in queue`}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Morning Slot Card */}
+                {(() => {
+                  const mSlot = slotData?.slots?.morning;
+                  const isSelected = selectedSlot === 'morning';
+                  const remaining = mSlot ? mSlot.remaining_capacity : 40;
+                  const isFull = mSlot ? mSlot.is_full : false;
+                  return (
+                    <button
+                      key="slot-morning"
+                      type="button"
+                      disabled={isFull}
+                      onClick={() => setSelectedSlot('morning')}
+                      className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-amber-500/10 via-sky-500/10 to-teal-500/10 border-sky-500 ring-2 ring-sky-300 shadow-sm'
+                          : isFull
+                          ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
+                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Sun className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-amber-600'}`} />
+                            <span className="font-extrabold text-xs text-slate-900">Morning Slot</span>
+                          </div>
+                          <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
+                            isFull
+                              ? 'bg-rose-100 text-rose-700'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {isFull ? '● Full' : `● ${remaining} spots left`}
+                          </span>
+                        </div>
+                        <div className="text-xs font-bold text-sky-700 mt-1">09:00 AM – 01:00 PM</div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Ideal for morning outpatient checkups, early diagnostic blood work, and standard consultations.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">
+                        <span className="text-slate-500 font-medium">
+                          Booked: <strong className="text-slate-800">{mSlot ? mSlot.booked_count : 0}</strong> / {mSlot ? mSlot.max_capacity : 40}
+                        </span>
+                        <span className="text-sky-700 font-bold flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>4 Hours</span>
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })()}
+
+                {/* Afternoon/Evening Slot Card */}
+                {(() => {
+                  const eSlot = slotData?.slots?.evening;
+                  const isSelected = selectedSlot === 'evening';
+                  const remaining = eSlot ? eSlot.remaining_capacity : 50;
+                  const isFull = eSlot ? eSlot.is_full : false;
+                  return (
+                    <button
+                      key="slot-evening"
+                      type="button"
+                      disabled={isFull}
+                      onClick={() => setSelectedSlot('evening')}
+                      className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-sky-500/10 border-indigo-500 ring-2 ring-indigo-300 shadow-sm'
+                          : isFull
+                          ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
+                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Moon className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-indigo-500'}`} />
+                            <span className="font-extrabold text-xs text-slate-900">Afternoon / Evening Slot</span>
+                          </div>
+                          <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
+                            isFull
+                              ? 'bg-rose-100 text-rose-700'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {isFull ? '● Full' : `● ${remaining} spots left`}
+                          </span>
+                        </div>
+                        <div className="text-xs font-bold text-indigo-700 mt-1">02:00 PM – 09:00 PM</div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Extended hours for after-work visits, follow-up evaluations, and post-workday clinical appointments.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">
+                        <span className="text-slate-500 font-medium">
+                          Booked: <strong className="text-slate-800">{eSlot ? eSlot.booked_count : 0}</strong> / {eSlot ? eSlot.max_capacity : 50}
+                        </span>
+                        <span className="text-indigo-700 font-bold flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>7 Hours</span>
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* STEP 4: SYMPTOM SELECTOR */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">3</span>
+                <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">4</span>
                 <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                   {t('report_symptoms', 'Report Presenting Symptoms')}
                 </span>
@@ -447,11 +593,11 @@ export default function BookAppointment() {
               />
             </div>
 
-            {/* STEP 4: CLINICAL CONSULTATION DETAILS (Doctor Handover Information) */}
+            {/* STEP 5: CLINICAL CONSULTATION DETAILS (Doctor Handover Information) */}
             <div className="border-t border-slate-100 pt-6 space-y-5">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">4</span>
+                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">5</span>
                   <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                     {t('clinical_details', 'Clinical Consultation Details')}
                   </span>
@@ -800,6 +946,7 @@ export default function BookAppointment() {
                     <div className="text-xs font-bold text-sky-700">{selectedDept}</div>
                     <div className="space-y-1 text-slate-600 text-[11px] pt-1 border-t border-slate-100">
                       <div>Consultation Date: <strong className="text-slate-800">{consultationDate}</strong></div>
+                      <div>Consultation Slot: <strong className="text-sky-700">{selectedSlot === 'morning' ? 'Morning (09:00 AM – 01:00 PM)' : 'Afternoon/Evening (02:00 PM – 09:00 PM)'}</strong></div>
                       <div>Room: <strong className="text-emerald-700">{selectedDoctor?.room_number || 'Room 204'}</strong></div>
                       <div className="text-purple-700 font-semibold flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> AI Wait Time Model Active
@@ -851,16 +998,18 @@ export default function BookAppointment() {
             )}
           </form>
         ) : (
-          /* BOOKING SUCCESS VIEW WITH TOKEN & ARRIVAL OTP */
-          <div className="space-y-6">
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-emerald-200 shadow-md text-center space-y-6">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-                <CheckCircle2 className="w-9 h-9" />
-              </div>
-
+          /* ========================================================================= */
+          /* BOOKING CONFIRMATION & SMART ARRIVAL CARD                                  */
+          /* ========================================================================= */
+          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm text-center space-y-6">
+              
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 block mb-1">
-                  Consultation Confirmed & Token Allocated
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2">
+                  {t('booking_confirmed', 'Consultation Confirmed')}
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
                   {t('booking_reference', 'Booking Reference')}: <span className="font-mono text-sky-700">{bookingResult.booking_id}</span>
@@ -904,7 +1053,7 @@ export default function BookAppointment() {
               </div>
 
               {/* CLINICAL SUMMARY BADGES */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-left bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-left bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 text-xs">
                 <div>
                   <span className="text-slate-400 block font-bold text-[10px] uppercase">Specialist Doctor</span>
                   <span className="font-extrabold text-slate-900 text-sm">
@@ -920,6 +1069,19 @@ export default function BookAppointment() {
                     <span>{bookingResult.room_number || 'Room 204'}</span>
                   </span>
                   <div className="text-slate-500 text-[11px]">OPD Wing B</div>
+                </div>
+
+                <div>
+                  <span className="text-sky-700 block font-bold text-[10px] uppercase flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-sky-600" />
+                    <span>Slot Allocated</span>
+                  </span>
+                  <span className="font-extrabold text-sky-900 text-sm mt-0.5 block">
+                    {bookingResult.consultation_slot?.slot_name || (selectedSlot === 'morning' ? 'Morning Slot' : 'Afternoon/Evening')}
+                  </span>
+                  <div className="text-sky-600 text-[11px]">
+                    {bookingResult.consultation_slot?.display_time || (selectedSlot === 'morning' ? '09:00 AM – 01:00 PM' : '02:00 PM – 09:00 PM')}
+                  </div>
                 </div>
 
                 <div>

@@ -23,7 +23,9 @@ import {
   Phone,
   MapPin,
   ChevronRight,
-  X
+  X,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { hospitalApi } from '../../api/hospitalApi';
 import { useLanguage } from '../../context/LanguageContext';
@@ -43,6 +45,7 @@ export default function AdminDashboard() {
   });
 
   const [analytics, setAnalytics] = useState(null);
+  const [slotAnalytics, setSlotAnalytics] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
@@ -50,6 +53,26 @@ export default function AdminDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [bookingSearchQuery, setBookingSearchQuery] = useState('');
+  const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
+
+  const formatExactBookedTime = (isoString) => {
+    if (!isoString) return '—';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      return d.toLocaleString([], {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (e) {
+      return isoString;
+    }
+  };
 
   // Patient Records State (EMR)
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
@@ -147,14 +170,15 @@ export default function AdminDashboard() {
 
   const fetchAdminData = async () => {
     try {
-      const [analyticsData, docsData, deptsData, usersData, queueData, aptsData, patientsData] = await Promise.all([
+      const [analyticsData, docsData, deptsData, usersData, queueData, aptsData, patientsData, slotData] = await Promise.all([
         hospitalApi.getAnalytics().catch(() => null),
         hospitalApi.getDoctors().catch(() => []),
         hospitalApi.getDepartments().catch(() => []),
         hospitalApi.getAdminUsers().catch(() => []),
         hospitalApi.getAllQueues().catch(() => []),
         hospitalApi.getAdminAppointments().catch(() => []),
-        hospitalApi.adminSearchPatients(patientSearchQuery).catch(() => [])
+        hospitalApi.adminSearchPatients(patientSearchQuery).catch(() => []),
+        hospitalApi.getAdminSlotAnalytics().catch(() => null)
       ]);
 
       setAnalytics(analyticsData || {
@@ -166,6 +190,7 @@ export default function AdminDashboard() {
         active_doctors: 8,
         avg_predicted_wait: 14.5
       });
+      setSlotAnalytics(slotData);
       setDoctors(docsData || []);
       setDepartments(deptsData || []);
       setUsers(usersData || []);
@@ -466,6 +491,156 @@ export default function AdminDashboard() {
                   {analytics?.completed_consultations || 0}
                 </div>
                 <p className="text-xs text-emerald-800 font-medium">Consultations finished</p>
+              </div>
+            </div>
+
+            {/* OPD Consultation Slot Operational Demand & Capacity Breakdown */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-sky-600" />
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      Consultation Slot Operational Demand & Capacity
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Live database metrics separating slot demand from the active eligible queue
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded-full text-xs font-bold">
+                    Total Capacity: {slotAnalytics?.summary?.total_capacity || 90}
+                  </span>
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
+                    Total Booked: {slotAnalytics?.summary?.total_booked || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Morning Slot Card */}
+                {(() => {
+                  const m = slotAnalytics?.slots?.morning;
+                  const booked = m?.booked_count || 0;
+                  const capacity = m?.max_capacity || 40;
+                  const active = m?.active_queue_count || 0;
+                  const completed = m?.completed_count || 0;
+                  const remaining = m?.remaining_capacity || 40;
+                  const util = m?.utilization_pct || (booked > 0 ? Math.round((booked / capacity) * 100) : 0);
+                  const avgWait = m?.avg_wait_mins || 14;
+
+                  return (
+                    <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/5 via-sky-500/5 to-teal-500/5 border border-amber-200/80 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold shadow-2xs">
+                            <Sun className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-sm text-slate-900">Morning Consultation Slot</h4>
+                            <div className="text-xs font-bold text-sky-700">09:00 AM – 01:00 PM</div>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg text-xs font-extrabold">
+                          {util}% Booked
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div>
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                          <span>Capacity Utilization</span>
+                          <span>{booked} / {capacity} Bookings ({remaining} available)</span>
+                        </div>
+                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-500 to-teal-500 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, util)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 3 Metric Badges */}
+                      <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Active In Line</span>
+                          <span className="text-base font-black text-sky-900">{active}</span>
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Completed</span>
+                          <span className="text-base font-black text-emerald-700">{completed}</span>
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Avg Wait</span>
+                          <span className="text-base font-black text-purple-700">~{avgWait}m</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Afternoon/Evening Slot Card */}
+                {(() => {
+                  const e = slotAnalytics?.slots?.evening;
+                  const booked = e?.booked_count || 0;
+                  const capacity = e?.max_capacity || 50;
+                  const active = e?.active_queue_count || 0;
+                  const completed = e?.completed_count || 0;
+                  const remaining = e?.remaining_capacity || 50;
+                  const util = e?.utilization_pct || (booked > 0 ? Math.round((booked / capacity) * 100) : 0);
+                  const avgWait = e?.avg_wait_mins || 16;
+
+                  return (
+                    <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-sky-500/5 border border-indigo-200/80 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shadow-2xs">
+                            <Moon className="w-5 h-5 text-indigo-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-sm text-slate-900">Afternoon / Evening Slot</h4>
+                            <div className="text-xs font-bold text-indigo-700">02:00 PM – 09:00 PM</div>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 bg-indigo-100 text-indigo-900 rounded-lg text-xs font-extrabold">
+                          {util}% Booked
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div>
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                          <span>Capacity Utilization</span>
+                          <span>{booked} / {capacity} Bookings ({remaining} available)</span>
+                        </div>
+                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, util)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 3 Metric Badges */}
+                      <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Active In Line</span>
+                          <span className="text-base font-black text-indigo-900">{active}</span>
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Completed</span>
+                          <span className="text-base font-black text-emerald-700">{completed}</span>
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">Avg Wait</span>
+                          <span className="text-base font-black text-purple-700">~{avgWait}m</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -1181,76 +1356,243 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 4: APPOINTMENTS MONITOR */}
+        {/* TAB 4: APPOINTMENTS / BOOKINGS OPERATIONAL MONITOR */}
         {activeTab === 'appointments' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900">Advance Clinical Appointments Roster</h2>
-                <p className="text-xs text-slate-500">All advance consultations registered across SIMSRH clinics</p>
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-sky-600" />
+                  <span>Appointments & Bookings Monitor</span>
+                </h2>
+                <p className="text-xs text-slate-500">Live operational booking records across hospital clinics (Zero Patient PII / Clinical Data)</p>
               </div>
-              <span className="text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
-                {appointments.length} Total Bookings
-              </span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-extrabold text-sky-800 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">
+                  {appointments.length} Total Bookings
+                </span>
+                <button
+                  type="button"
+                  onClick={fetchDashboardData}
+                  disabled={refreshing}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  title="Refresh bookings"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Filter by token (e.g. Q001), doctor, dept, or booking ID..."
+                  value={bookingSearchQuery}
+                  onChange={(e) => setBookingSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500 font-medium">Status:</span>
+                <select
+                  value={bookingStatusFilter}
+                  onChange={(e) => setBookingStatusFilter(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="waiting">Waiting in Line</option>
+                  <option value="in_consultation">In Consultation</option>
+                  <option value="ready">Ready (Next Up)</option>
+                  <option value="called">Called</option>
+                  <option value="arrived">Arrived</option>
+                  <option value="booked">Booked</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="missed">Missed</option>
+                </select>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
-                    <th className="pb-3 px-3">Booking ID</th>
-                    <th className="pb-3 px-3">Token #</th>
-                    <th className="pb-3 px-3">Patient Name</th>
-                    <th className="pb-3 px-3">Doctor & Dept</th>
-                    <th className="pb-3 px-3">Date</th>
-                    <th className="pb-3 px-3">Symptoms</th>
-                    <th className="pb-3 px-3">Room</th>
-                    <th className="pb-3 px-3">Priority</th>
-                    <th className="pb-3 px-3">Status</th>
+                    <th className="pb-3 px-3">Token Number</th>
+                    <th className="pb-3 px-3">Doctor Name</th>
+                    <th className="pb-3 px-3">Department</th>
+                    <th className="pb-3 px-3">Consultation Date</th>
+                    <th className="pb-3 px-3">Consultation Slot</th>
+                    <th className="pb-3 px-3">Exact Booked Date/Time</th>
+                    <th className="pb-3 px-3">Current Queue Position</th>
+                    <th className="pb-3 px-3">Current Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                  {appointments.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="py-8 text-center text-slate-400">
-                        No appointments booked yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    appointments.map((apt) => (
-                      <tr key={apt.booking_id} className="hover:bg-slate-50 transition">
-                        <td className="py-3 px-3 font-mono font-bold text-sky-700">{apt.booking_id}</td>
-                        <td className="py-3 px-3 font-mono font-black text-slate-900">{apt.queue_id || '—'}</td>
-                        <td className="py-3 px-3 font-bold text-slate-900">
-                          {apt.patient_name || apt.name || apt.patient_id}
-                          <div className="text-[10px] text-slate-400 font-normal">
-                            📍 {apt.city || 'Tumakuru'}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-[11px]">
-                          <div className="font-bold text-slate-900">{apt.doctor_id}</div>
-                          <div className="text-sky-700 font-semibold">{apt.department}</div>
-                        </td>
-                        <td className="py-3 px-3 font-bold text-slate-800">{apt.consultation_date}</td>
-                        <td className="py-3 px-3 text-[11px] text-slate-600 max-w-[140px] truncate">
-                          {Array.isArray(apt.symptoms) ? apt.symptoms.join(', ') : 'General OPD'}
-                        </td>
-                        <td className="py-3 px-3 text-emerald-700 font-bold">{apt.room_number || 'Room 204'}</td>
-                        <td className="py-3 px-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                            apt.priority === 'emergency' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {apt.priority || 'normal'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            {apt.status || 'booked'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  {(() => {
+                    const q = bookingSearchQuery.trim().toLowerCase();
+                    const filtered = appointments.filter((apt) => {
+                      const matchesQuery = !q || (
+                        (apt.token_number || apt.queue_id || '').toLowerCase().includes(q) ||
+                        (apt.booking_id || '').toLowerCase().includes(q) ||
+                        (apt.doctor_name || apt.doctor_id || '').toLowerCase().includes(q) ||
+                        (apt.department || '').toLowerCase().includes(q) ||
+                        (apt.consultation_date || '').toLowerCase().includes(q)
+                      );
+                      const rawStatus = (apt.current_status || apt.status || '').toLowerCase();
+                      const matchesStatus = bookingStatusFilter === 'ALL' || rawStatus === bookingStatusFilter.toLowerCase();
+                      return matchesQuery && matchesStatus;
+                    });
+
+                    if (filtered.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan={8} className="py-10 text-center text-slate-400">
+                            No matching booking records found.
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return filtered.map((apt) => {
+                      const tokenNum = apt.token_number || apt.queue_id || '—';
+                      const docName = apt.doctor_name || apt.doctor_id || 'Dr. Assigned Specialist';
+                      const deptName = apt.department || 'General OPD';
+                      const consultDate = apt.consultation_date || 'Today';
+                      
+                      const slotObj = apt.consultation_slot || {};
+                      const slotName = slotObj.slot_name || (apt.slot_id === 'evening' ? 'Evening Slot' : 'Morning Slot');
+                      const slotTime = slotObj.display_time || (apt.slot_id === 'evening' ? '02:00 PM – 09:00 PM' : '09:00 AM – 01:00 PM');
+                      
+                      const bookedTime = formatExactBookedTime(apt.booked_at || apt.created_at);
+                      const currentPos = apt.current_queue_position ?? apt.position;
+                      const rawStatus = (apt.current_status || apt.status || 'booked').toLowerCase();
+
+                      // Status Badge Style
+                      const getStatusBadge = (st) => {
+                        switch (st) {
+                          case 'in_consultation':
+                            return 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
+                          case 'ready':
+                          case 'called':
+                            return 'bg-amber-100 text-amber-900 border-amber-300 font-extrabold animate-pulse';
+                          case 'waiting':
+                            return 'bg-sky-100 text-sky-800 border-sky-300 font-bold';
+                          case 'arrived':
+                            return 'bg-teal-100 text-teal-800 border-teal-300 font-bold';
+                          case 'completed':
+                            return 'bg-slate-100 text-slate-700 border-slate-200';
+                          case 'cancelled':
+                            return 'bg-rose-100 text-rose-800 border-rose-300';
+                          case 'missed':
+                            return 'bg-orange-100 text-orange-800 border-orange-300';
+                          case 'booked':
+                          default:
+                            return 'bg-blue-50 text-blue-700 border-blue-200';
+                        }
+                      };
+
+                      const getStatusText = (st) => {
+                        switch (st) {
+                          case 'in_consultation': return 'In Consultation';
+                          case 'ready': return 'Ready (Next Up)';
+                          case 'called': return 'Called';
+                          case 'waiting': return 'Waiting in Line';
+                          case 'arrived': return 'Arrived at Clinic';
+                          case 'completed': return 'Completed';
+                          case 'cancelled': return 'Cancelled';
+                          case 'missed': return 'Missed';
+                          case 'booked': default: return 'Booked';
+                        }
+                      };
+
+                      return (
+                        <tr key={apt.booking_id || tokenNum} className="hover:bg-slate-50 transition">
+                          {/* 1. Token number */}
+                          <td className="py-3.5 px-3">
+                            <div className="font-mono font-black text-slate-900 text-sm">
+                              {tokenNum !== '—' ? `Token #${tokenNum}` : '—'}
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                              ID: {apt.booking_id}
+                            </div>
+                          </td>
+
+                          {/* 2. Doctor name */}
+                          <td className="py-3.5 px-3">
+                            <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                              <Stethoscope className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                              <span>{docName}</span>
+                            </div>
+                            <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
+                              Chamber: {apt.room_number || 'Room 204'}
+                            </div>
+                          </td>
+
+                          {/* 3. Department */}
+                          <td className="py-3.5 px-3">
+                            <span className="px-2.5 py-1 bg-sky-50 text-sky-800 rounded-lg font-bold text-xs border border-sky-100 inline-block">
+                              {deptName}
+                            </span>
+                          </td>
+
+                          {/* 4. Consultation date */}
+                          <td className="py-3.5 px-3">
+                            <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span>{consultDate}</span>
+                            </div>
+                          </td>
+
+                          {/* 5. Consultation slot */}
+                          <td className="py-3.5 px-3">
+                            <div className="font-bold text-slate-900">
+                              {slotName}
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                              {slotTime}
+                            </div>
+                          </td>
+
+                          {/* 6. Exact booked date/time */}
+                          <td className="py-3.5 px-3">
+                            <div className="text-slate-700 font-mono text-[11px] font-medium flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span>{bookedTime}</span>
+                            </div>
+                          </td>
+
+                          {/* 7. Current queue position */}
+                          <td className="py-3.5 px-3">
+                            {['waiting', 'ready', 'called', 'in_consultation', 'arrived'].includes(rawStatus) && currentPos != null ? (
+                              <span className="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-full font-mono font-black text-xs inline-block">
+                                #{currentPos} in line
+                              </span>
+                            ) : rawStatus === 'completed' ? (
+                              <span className="text-slate-400 font-mono text-xs font-semibold">— (Finished)</span>
+                            ) : rawStatus === 'cancelled' || rawStatus === 'missed' ? (
+                              <span className="text-slate-400 font-mono text-xs font-semibold">—</span>
+                            ) : currentPos != null ? (
+                              <span className="font-mono text-slate-600 text-xs font-bold">#{currentPos}</span>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-xs">—</span>
+                            )}
+                          </td>
+
+                          {/* 8. Current status */}
+                          <td className="py-3.5 px-3">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider border inline-block ${getStatusBadge(rawStatus)}`}>
+                              {getStatusText(rawStatus)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()}
                 </tbody>
               </table>
             </div>

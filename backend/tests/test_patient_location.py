@@ -96,6 +96,7 @@ def test_book_appointment_stores_coordinates():
         "doctor_id": "TEST_DOC_LOC",
         "department": "Cardiology",
         "consultation_date": date.today().isoformat(),
+        "consultation_slot": "morning",
         "priority": "normal",
         "city": "Sira Gate",
         "origin_latitude": custom_lat,

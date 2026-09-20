@@ -18,6 +18,7 @@ export const getBrowserLocation = (options = {}) => {
       (position) => {
         const latitude = Number(position.coords.latitude.toFixed(6));
         const longitude = Number(position.coords.longitude.toFixed(6));
+        console.log('[locationService] Acquired fresh browser GPS:', { latitude, longitude, accuracy: position.coords.accuracy });
         resolve({
           success: true,
           latitude,
@@ -26,6 +27,7 @@ export const getBrowserLocation = (options = {}) => {
         });
       },
       (error) => {
+        console.warn('[locationService] Geolocation error:', { code: error.code, message: error.message });
         resolve({
           success: false,
           error: error.message || 'Location permission denied or unavailable.',

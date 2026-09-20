@@ -104,6 +104,13 @@ export const translations = {
     leave_home_by: 'Leave home by',
     missed_alert_title: 'Your Consultation was Marked Missed & Moved to Queue End',
     missed_alert_desc: 'You were called by the doctor but unavailable. Your token has been moved to the end of the active queue without cancellation. Please arrive at the chamber promptly.',
+    late_arrival_warning_title: 'Moved to end due to late arrival',
+    late_arrival_warning_subtitle: 'Arrived after the 2-minute grace period deadline',
+    your_token_label: 'Your token',
+    new_queue_position_label: 'New queue position',
+    queue_recalculated_notice: 'Your queue has been recalculated.',
+    expected_consultation_label: 'Expected consultation',
+    late_arrival_desc: "Your token was moved to the end of your doctor's queue because the 2-minute arrival deadline expired before hospital verification.",
 
     // Statuses & Priorities
     waiting: 'Waiting',
@@ -302,6 +309,13 @@ export const translations = {
     leave_home_by: 'ಮನೆಯಿಂದ ಹೊರಡುವ ಸಮಯ',
     missed_alert_title: 'ನಿಮ್ಮ ಸಮಾಲೋಚನೆ ತಪ್ಪಿದೆ ಮತ್ತು ಸರದಿಯ ಕೊನೆಗೆ ವರ್ಗಾಯಿಸಲಾಗಿದೆ',
     missed_alert_desc: 'ವೈದ್ಯರು ನಿಮ್ಮನ್ನು ಕರೆದಾಗ ನೀವು ಲಭ್ಯವಿರಲಿಲ್ಲ. ನಿಮ್ಮ ಟೋಕನ್ ರದ್ದಾಗಿಲ್ಲ, ಸರದಿಯ ಕೊನೆಗೆ ಇರಿಸಲಾಗಿದೆ. ತಕ್ಷಣ ಕೊಠಡಿಗೆ ಭೇಟಿ ನೀಡಿ.',
+    late_arrival_warning_title: 'ತಡವಾಗಿ ಬಂದ ಕಾರಣ ಸರದಿಯ ಕೊನೆಗೆ ಸ್ಥಳಾಂತರಿಸಲಾಗಿದೆ',
+    late_arrival_warning_subtitle: '೨ ನಿಮಿಷಗಳ ಸಮಯ ಮಿತಿಯ ನಂತರ ಬಂದ ಕಾರಣ',
+    your_token_label: 'ನಿಮ್ಮ ಟೋಕನ್',
+    new_queue_position_label: 'ಹೊಸ ಸರದಿ ಸ್ಥಾನ',
+    queue_recalculated_notice: 'ನಿಮ್ಮ ಸರದಿಯನ್ನು ಮರುಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗಿದೆ.',
+    expected_consultation_label: 'ನಿರೀಕ್ಷಿತ ಸಮಾಲೋಚನೆ',
+    late_arrival_desc: '೨ ನಿಮಿಷಗಳ ರಿಯಾಯಿತಿ ಅವಧಿ ಮುಗಿದ ಕಾರಣ ನಿಮ್ಮ ಟೋಕನ್ ಅನ್ನು ವೈದ್ಯರ ಸರದಿಯ ಕೊನೆಗೆ ಸ್ಥಳಾಂತರಿಸಲಾಗಿದೆ.',
 
     // Statuses & Priorities
     waiting: 'ಕಾಯುತ್ತಿದ್ದಾರೆ',
@@ -500,6 +514,13 @@ export const translations = {
     leave_home_by: 'घर से निकलने का समय',
     missed_alert_title: 'आपका परामर्श छूट गया और कतार के अंत में भेजा गया है',
     missed_alert_desc: 'डॉक्टर द्वारा बुलाए जाने पर आप उपलब्ध नहीं थे। आपका टोकन रद्द नहीं हुआ है, कतार के अंत में जोड़ा गया है। कृपया शीघ्र कक्ष में उपस्थित हों।',
+    late_arrival_warning_title: 'देरी से पहुंचने के कारण कतार के अंत में स्थानांतरित',
+    late_arrival_warning_subtitle: '२ मिनट की छूट समय सीमा समाप्त होने के बाद पहुंचने के कारण',
+    your_token_label: 'आपका टोकन',
+    new_queue_position_label: 'नई कतार स्थिति',
+    queue_recalculated_notice: 'आपकी कतार की पुनर्गणना की गई है।',
+    expected_consultation_label: 'अपेक्षित परामर्श',
+    late_arrival_desc: '२ मिनट की आगमन समय सीमा समाप्त होने के कारण आपका टोकन डॉक्टर की कतार के अंत में स्थानांतरित कर दिया गया है।',
 
     // Statuses & Priorities
     waiting: 'प्रतीक्षारत',

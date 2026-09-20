@@ -10,8 +10,10 @@ IN_MEMORY_BOOKINGS = []
 def generate_booking_id() -> str:
     try:
         db = get_db()
-        count = db.appointments.count_documents({}) + 1
-        return f"B{count:03d}"
+        import re
+        all_ids = db.appointments.distinct("booking_id")
+        max_num = max([int(m.group(1)) for bid in all_ids if (m := re.match(r"^B(\d+)$", str(bid)))] or [0])
+        return f"B{max_num + 1:03d}"
     except Exception:
         return f"B{len(IN_MEMORY_BOOKINGS) + 1:03d}"
 
@@ -46,6 +48,16 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
             return None, "Appointments can only be booked up to 2 days in advance."
     except ValueError:
         return None, "Invalid date format. Use YYYY-MM-DD"
+
+    # MANDATORY CONSULTATION SLOT VALIDATION
+    from services.slot_service import validate_and_normalize_slot
+    raw_slot = data.get("consultation_slot") or data.get("slot") or data.get("slot_id")
+    if not raw_slot:
+        return None, "consultation_slot is required. Please select either 'morning' or 'evening' slot."
+
+    slot_obj, slot_err = validate_and_normalize_slot(raw_slot, consultation_date=consultation_date_str)
+    if slot_err:
+        return None, slot_err
 
     booking_id = generate_booking_id()
     now_str = datetime.now(timezone.utc).isoformat()
@@ -122,15 +134,18 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "origin_longitude": origin_longitude,
         "is_approximate_location": is_approximate_location,
         "pdo": pdo,
-        "booking_id": booking_id
+        "booking_id": booking_id,
+        "consultation_date": consultation_date_str,
+        "consultation_slot": slot_obj,
+        "slot_id": slot_obj.get("slot_id", "morning")
     }
     queue_res, queue_err = join_queue(queue_payload)
 
     queue_id = queue_res.get("queue_id") if queue_res else None
     arrival_otp = queue_res.get("arrival_otp") if queue_res else "123456"
     queue_position = queue_res.get("position", 1) if queue_res else 1
-    wait_time = queue_res.get("predicted_wait_time", predicted_duration) if queue_res else predicted_duration
-    travel_info = queue_res.get("travel_info") if queue_res and queue_res.get("travel_info") else calculate_travel_metrics(patient_address=city, wait_time_min=predicted_duration, origin_coords=origin_coords)
+    wait_time = queue_res.get("predicted_wait_time", 5) if queue_res else 5
+    travel_info = queue_res.get("travel_info") if queue_res and queue_res.get("travel_info") else calculate_travel_metrics(patient_address=city, wait_time_min=wait_time, origin_coords=origin_coords)
 
     booking_doc = {
         "booking_id": booking_id,
@@ -154,11 +169,21 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "doctor_id": doctor_id,
         "department": department,
         "consultation_date": consultation_date_str,
+        "consultation_slot": slot_obj,
+        "slot_id": slot_obj.get("slot_id", "morning"),
+        "leaving_now": False,
+        "leaving_now_at": None,
+        "leave_reminder_status": "NOT_REQUIRED",
+        "leave_reminder_sent_at": None,
         "priority": "emergency" if priority == "emergency" else "normal",
         "symptoms": symptoms,
         "custom_symptoms": custom_symptoms,
         "predicted_consultation_duration": predicted_duration,
         "predicted_wait_time": wait_time,
+        "expected_consultation_time": queue_res.get("expected_consultation_time") if queue_res else None,
+        "expected_consultation_iso": queue_res.get("expected_consultation_iso") if queue_res else None,
+        "recommended_departure_time": queue_res.get("recommended_departure_time") or (travel_info.get("recommended_departure_time") if travel_info else None),
+        "recommended_departure_iso": queue_res.get("recommended_departure_iso") or (travel_info.get("recommended_departure_iso") if travel_info else None),
         "queue_position": queue_position,
         "arrival_otp": arrival_otp,
         "room_number": "Room 204",
@@ -170,6 +195,18 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
         db.appointments.insert_one(booking_doc)
+
+        # Trigger authoritative queue recalculation to ensure DB consistency across queue & appointments
+        try:
+            from services.queue_service import recalculate_queue_positions
+            recalculate_queue_positions(
+                doctor_id=doctor_id,
+                department=department,
+                consultation_date=consultation_date_str,
+                slot_id=slot_obj.get("slot_id")
+            )
+        except Exception:
+            pass
 
         # Update returning patient profile with latest vitals while preserving past records
         if patient_id or patient_phone:
@@ -248,6 +285,29 @@ def get_patient_appointments(patient_id: str) -> List[dict]:
         db = get_db()
         apts = list(db.appointments.find({"patient_id": patient_id}).sort("created_at", -1))
         if apts:
+            active_statuses = ["waiting", "arrived", "ready", "called", "OTP_GENERATED", "in_consultation"]
+            active_q_map = {
+                q.get("booking_id"): q
+                for q in db.queue.find({
+                    "patient_id": patient_id,
+                    "status": {"$in": active_statuses}
+                })
+                if q.get("booking_id")
+            }
+            for apt in apts:
+                b_id = apt.get("booking_id")
+                if b_id in active_q_map:
+                    live_q = active_q_map[b_id]
+                    if live_q.get("expected_consultation_time"):
+                        apt["expected_consultation_time"] = live_q["expected_consultation_time"]
+                        apt["expected_consultation_iso"] = live_q.get("expected_consultation_iso")
+                    if live_q.get("recommended_departure_time"):
+                        apt["recommended_departure_time"] = live_q["recommended_departure_time"]
+                        apt["recommended_departure_iso"] = live_q.get("recommended_departure_iso")
+                    if live_q.get("travel_info"):
+                        apt["travel_info"] = live_q["travel_info"]
+                    apt["queue_position"] = live_q.get("position", apt.get("queue_position", 1))
+                    apt["status"] = live_q.get("status", apt.get("status"))
             return serialize_docs(apts)
     except Exception:
         pass

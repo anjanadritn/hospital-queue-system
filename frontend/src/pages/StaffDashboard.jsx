@@ -80,7 +80,10 @@ export default function StaffDashboard() {
     }
   }, [user?.doctor_id]);
 
-  const doctorId = user?.doctor_id || user?.user_id || 'D001';
+  const rawDoctorId = user?.doctor_id || user?.user_id || 'D001';
+  const doctorId = typeof rawDoctorId === 'string' && rawDoctorId.startsWith('U_DOC_')
+    ? rawDoctorId.replace('U_DOC_', '')
+    : rawDoctorId;
   const doctorName = doctorProfile?.name || user?.name || 'Dr. Ananya Sharma';
   const department = doctorProfile?.department || user?.department || 'Cardiology';
   const roomNumber = doctorProfile?.consultation_room || user?.room_number || user?.consultation_room || 'Room 204';
@@ -204,14 +207,10 @@ export default function StaffDashboard() {
     }
   };
 
-  // Filter queues for this doctor's department or assignments
+  // Filter queues strictly for this doctor's queue
   const doctorQueues = queues.filter((q) => {
     if (!q) return false;
-    return (
-      q.doctor_id === doctorId ||
-      q.department?.toLowerCase() === department?.toLowerCase() ||
-      !q.doctor_id
-    );
+    return q.doctor_id === doctorId;
   });
 
   // Category Buckets
@@ -827,6 +826,15 @@ export default function StaffDashboard() {
                               </div>
 
                               <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                {item.slot_id && (
+                                  <span className={`px-2 py-0.5 border rounded-lg text-[10px] font-bold uppercase ${
+                                    item.slot_id === 'evening'
+                                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                  }`}>
+                                    {item.slot_id === 'evening' ? 'Evening' : 'Morning'}
+                                  </span>
+                                )}
                                 {isEmergency && (
                                   <span className="px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[10px] font-black uppercase">
                                     EMERGENCY
@@ -863,12 +871,25 @@ export default function StaffDashboard() {
                               </div>
                             </div>
 
-                            {/* Duration & Arrival Status */}
-                            <div className="flex items-center justify-between gap-2 pt-1">
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg font-bold text-[11px]">
+                            {/* Duration, Expected Start & Arrival Status */}
+                            <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-[11px]">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg font-bold text-[10px]">
                                 <Cpu className="w-3 h-3 text-purple-600 shrink-0" />
                                 <span>~{item.predicted_consultation_duration || 15}m RF</span>
                               </span>
+
+                              {item.expected_consultation_time && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded-lg font-bold text-[10px]">
+                                  <Clock className="w-3 h-3 text-sky-600 shrink-0" />
+                                  <span>Start: {item.expected_consultation_time}</span>
+                                </span>
+                              )}
+
+                              {item.leaving_now && (
+                                <span className="px-2 py-0.5 bg-teal-50 text-teal-800 border border-teal-200 rounded-lg font-bold text-[10px] inline-flex items-center gap-1">
+                                  <span>🚗 Left</span>
+                                </span>
+                              )}
 
                               {item.verified_by_admin || item.arrived_at_hospital ? (
                                 <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg font-bold text-[10px] inline-flex items-center gap-1 shrink-0">

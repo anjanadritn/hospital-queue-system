@@ -58,6 +58,7 @@ def test_patient_booking_after_login(client, patient_token):
         "doctor_id": "D001",
         "department": "Cardiology",
         "consultation_date": date.today().isoformat(),
+        "consultation_slot": "morning",
         "symptoms": ["Chest Pain"]
     }, headers={"Authorization": f"Bearer {patient_token}"})
     assert res.status_code == 201
@@ -106,7 +107,8 @@ def test_patient_cannot_use_another_patient_id(client, patient_token):
         "patient_id": "P999",
         "doctor_id": "D001",
         "department": "Cardiology",
-        "consultation_date": date.today().isoformat()
+        "consultation_date": date.today().isoformat(),
+        "consultation_slot": "morning"
     }, headers={"Authorization": f"Bearer {patient_token}"})
     assert res.status_code == 201
     # Backend forces patient_id to P001 from JWT

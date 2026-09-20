@@ -28,10 +28,24 @@ const OPENFREEMAP_STYLE = {
 
 const DEFAULT_HOSPITAL_COORDS = [77.096826, 13.376059]; // SIMSRH Lingapura Tumakuru [lon, lat]
 
+function calculateHaversineMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export default function LiveRouteMap({
   travelInfo,
   liveCoords = null,
+  isExactGps = false,
   isWatching = false,
+  gpsStatus = 'idle',
   onRecenter = null
 }) {
   const mapContainerRef = useRef(null);
@@ -45,7 +59,7 @@ export default function LiveRouteMap({
   const coordinates = routeGeometry?.coordinates;
 
   // Real GPS coordinates take precedence when active, otherwise fallback to stored origin
-  const hasLiveGps = Boolean(liveCoords && liveCoords.length === 2);
+  const hasLiveGps = Boolean(isExactGps && liveCoords && liveCoords.length === 2);
   const activeOriginCoords = hasLiveGps
     ? liveCoords
     : (travelInfo?.origin_coordinates || (coordinates && coordinates.length > 0 ? coordinates[0] : null));
@@ -137,12 +151,31 @@ export default function LiveRouteMap({
       }
 
       const hasRouteCoords = coordinates && Array.isArray(coordinates) && coordinates.length > 1;
+      let effectiveGeometry = routeGeometry;
+      let isStaleRoute = false;
 
-      if (hasRouteCoords) {
+      if (hasRouteCoords && hasLiveGps && activeOriginCoords) {
+        const startCoord = coordinates[0];
+        const distToOrigin = calculateHaversineMeters(
+          startCoord[1], startCoord[0],
+          activeOriginCoords[1], activeOriginCoords[0]
+        );
+        // If route starts > 350m away from current exact GPS (e.g. old Tumakuru route), do not draw stale route
+        if (distToOrigin > 350) {
+          console.log(`[LiveRouteMap] Stale route detected (starts ${Math.round(distToOrigin)}m away from GPS). Drawing direct route from active GPS.`);
+          isStaleRoute = true;
+          effectiveGeometry = {
+            type: 'LineString',
+            coordinates: [activeOriginCoords, hospitalCoords]
+          };
+        }
+      }
+
+      if (hasRouteCoords && !isStaleRoute) {
         const geojsonData = {
           type: 'Feature',
           properties: {},
-          geometry: routeGeometry
+          geometry: effectiveGeometry
         };
 
         if (map.getSource('live-route-source')) {
@@ -186,11 +219,11 @@ export default function LiveRouteMap({
           });
         }
       } else if (activeOriginCoords && hospitalCoords) {
-        // Graceful fallback: draw dashed straight line when ORS geometry is unavailable
+        // Draw route directly from active GPS to hospital
         const fallbackGeojson = {
           type: 'Feature',
           properties: {},
-          geometry: {
+          geometry: effectiveGeometry && isStaleRoute ? effectiveGeometry : {
             type: 'LineString',
             coordinates: [activeOriginCoords, hospitalCoords]
           }
@@ -210,9 +243,9 @@ export default function LiveRouteMap({
             source: 'live-route-source',
             paint: {
               'line-color': '#38bdf8',
-              'line-width': 3,
+              'line-width': 3.5,
               'line-dasharray': [2, 2],
-              'line-opacity': 0.7
+              'line-opacity': 0.85
             }
           });
         }
@@ -259,7 +292,7 @@ export default function LiveRouteMap({
 
       const popupTitle = hasLiveGps ? 'You (Live GPS)' : `Landmark: ${originName}`;
       const popupBadge = hasLiveGps
-        ? '<span style="color:#059669;font-size:10px;font-weight:700;">Exact GPS Active</span>'
+        ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
         : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Landmark</span>';
 
       const popup = new maplibregl.Popup({ offset: 20, closeButton: false })
@@ -299,7 +332,7 @@ export default function LiveRouteMap({
       if (patientMarkerRef.current.getPopup()) {
         const popupTitle = hasLiveGps ? 'You (Live GPS)' : `Landmark: ${originName}`;
         const popupBadge = hasLiveGps
-          ? '<span style="color:#059669;font-size:10px;font-weight:700;">Exact GPS Active</span>'
+          ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
           : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Landmark</span>';
         patientMarkerRef.current.getPopup().setHTML(`<div style="font-size:11px;font-weight:700;color:#0f172a;padding:2px 4px;">${popupTitle}<br/>${popupBadge}</div>`);
       }
@@ -346,23 +379,28 @@ export default function LiveRouteMap({
     if (!map) return;
 
     try {
+      const bounds = new maplibregl.LngLatBounds();
+
+      if (hospitalCoords && Array.isArray(hospitalCoords) && hospitalCoords.length === 2) {
+        bounds.extend(hospitalCoords);
+      }
+
+      if (activeOriginCoords && Array.isArray(activeOriginCoords) && activeOriginCoords.length === 2) {
+        bounds.extend(activeOriginCoords);
+      }
+
       if (coordinates && Array.isArray(coordinates) && coordinates.length > 1) {
-        const bounds = coordinates.reduce((b, coord) => {
-          return b.extend(coord);
-        }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-
-        map.fitBounds(bounds, {
-          padding: { top: 50, bottom: 50, left: 50, right: 50 },
-          maxZoom: 14,
-          duration: 800
+        coordinates.forEach((coord) => {
+          if (Array.isArray(coord) && coord.length === 2) {
+            bounds.extend(coord);
+          }
         });
-      } else if (activeOriginCoords && hospitalCoords) {
-        const bounds = new maplibregl.LngLatBounds(activeOriginCoords, activeOriginCoords)
-          .extend(hospitalCoords);
+      }
 
+      if (!bounds.isEmpty()) {
         map.fitBounds(bounds, {
           padding: { top: 60, bottom: 60, left: 60, right: 60 },
-          maxZoom: 14,
+          maxZoom: 15,
           duration: 800
         });
       }
@@ -430,7 +468,12 @@ export default function LiveRouteMap({
         {hasLiveGps ? (
           <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>GPS Tracking Active</span>
+            <span>✓ Exact GPS Active</span>
+          </span>
+        ) : (gpsStatus === 'denied' || gpsStatus === 'unavailable') ? (
+          <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
+            <AlertTriangle className="w-3 h-3 text-rose-400" />
+            <span>GPS unavailable — Using approximate location</span>
           </span>
         ) : (
           <span className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
