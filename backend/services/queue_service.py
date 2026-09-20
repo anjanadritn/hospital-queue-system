@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone, timedelta
 try:
     from zoneinfo import ZoneInfo
@@ -40,7 +41,6 @@ def generate_queue_id(doctor_id: Optional[str] = None) -> str:
     """
     try:
         db = get_db()
-        import re
         clean_doc = str(doctor_id).strip() if doctor_id else None
         if clean_doc and clean_doc.startswith("U_DOC_"):
             clean_doc = clean_doc.replace("U_DOC_", "")
