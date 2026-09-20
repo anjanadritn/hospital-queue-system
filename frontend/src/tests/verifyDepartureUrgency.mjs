@@ -164,6 +164,56 @@ const basePatient = {
   );
 }
 
+// Test 9: Verification of 3-state dynamic arrival rules & 197.6km / 144min route
+{
+  console.log('\nTest 9: 3-State Dynamic Arrival Calculation (197.6 km, 144 min)');
+
+  // Subtest 9A: Not departed + recommended departure passed (Consultation: 12:08 PM, travel: 144 min, buffer: 10 min -> Rec departure: 09:34 AM, Now: 11:45 AM)
+  const testNowMs = parseIsoOrTime(null, '11:45 AM', '2026-09-20');
+  const longRoutePatient = {
+    expected_consultation_time: '12:08 PM',
+    expected_consultation_iso: '2026-09-20T12:08:00+05:30',
+    recommended_departure_time: '09:34 AM',
+    recommended_departure_iso: '2026-09-20T09:34:00+05:30',
+    distance_km: 197.6,
+    travel_time_min: 144,
+    safety_buffer_min: 10,
+    leaving_now: false,
+    consultation_date: '2026-09-20'
+  };
+
+  const state9A = getDepartureState(longRoutePatient, testNowMs);
+  assert(state9A === DEPARTURE_STATES.LEAVE_NOW, `State at 11:45 AM with 144min route is LEAVE_NOW (got: ${state9A})`);
+
+  // Subtest 9B: Departed -> departure time + travel duration (Departed at 11:30 AM + 144 min = 01:54 PM arrival)
+  const departedPatient = {
+    ...longRoutePatient,
+    leaving_now: true,
+    leaving_now_at: '2026-09-20T11:30:00+05:30'
+  };
+  const timeBeforeArrival = parseIsoOrTime(null, '01:30 PM', '2026-09-20');
+  const timeAfterArrival = parseIsoOrTime(null, '01:55 PM', '2026-09-20');
+  const timeAfterDeadline = parseIsoOrTime(null, '01:57 PM', '2026-09-20');
+
+  assert(getDepartureState(departedPatient, timeBeforeArrival) === DEPARTURE_STATES.LEAVE_NOW, 'Departed patient en route evaluates to LEAVE_NOW before 01:54 PM');
+  assert(getDepartureState(departedPatient, timeAfterArrival) === DEPARTURE_STATES.URGENT, 'Departed patient past 01:54 PM arrival evaluates to URGENT');
+  assert(getDepartureState(departedPatient, timeAfterDeadline) === DEPARTURE_STATES.VERY_LATE, 'Departed patient past 01:56 PM deadline evaluates to VERY_LATE');
+
+  // Subtest 9C: On schedule -> recommended departure + travel duration (Rec: 02:00 PM, travel: 30m, Now: 01:00 PM)
+  const onSchedulePatient = {
+    expected_consultation_time: '02:40 PM',
+    expected_consultation_iso: '2026-09-20T14:40:00+05:30',
+    recommended_departure_time: '02:00 PM',
+    recommended_departure_iso: '2026-09-20T14:00:00+05:30',
+    travel_time_min: 30,
+    safety_buffer_min: 10,
+    leaving_now: false,
+    consultation_date: '2026-09-20'
+  };
+  const timeBeforeDep = parseIsoOrTime(null, '01:00 PM', '2026-09-20');
+  assert(getDepartureState(onSchedulePatient, timeBeforeDep) === DEPARTURE_STATES.BEFORE_DEPARTURE, 'On-schedule patient before 02:00 PM is BEFORE_DEPARTURE');
+}
+
 console.log(`\n========================================`);
 console.log(`TOTAL: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
 console.log(`========================================\n`);

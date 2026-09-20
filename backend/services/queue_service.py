@@ -129,14 +129,28 @@ def get_patient_arrival_deadline(entry: dict) -> Optional[datetime]:
         except Exception:
             pass
 
-    # 3. From expected_consultation_iso - safety_buffer_min + 2 minutes
+    # 3. From expected_consultation_iso, safety buffer, and travel duration
     exp_consult_iso = entry.get("expected_consultation_iso") or entry.get("travel_info", {}).get("expected_consultation_iso")
     if exp_consult_iso:
         try:
             consult_dt = datetime.fromisoformat(str(exp_consult_iso).replace("Z", "+00:00"))
             consult_dt = consult_dt if consult_dt.tzinfo else consult_dt.replace(tzinfo=HOSPITAL_TZ)
             buffer_min = int(entry.get("safety_buffer_min") or entry.get("travel_info", {}).get("safety_buffer_min") or SAFETY_BUFFER_MIN)
-            arrival_dt = consult_dt - timedelta(minutes=buffer_min)
+            travel_min = int(entry.get("travel_time_min") or entry.get("travel_info", {}).get("travel_time_min") or 15)
+            rec_dep = consult_dt - timedelta(minutes=travel_min + buffer_min)
+            now_h = datetime.now(HOSPITAL_TZ)
+            if entry.get("leaving_now"):
+                dep_t = now_h
+                if entry.get("leaving_now_at"):
+                    try:
+                        dep_t = datetime.fromisoformat(str(entry["leaving_now_at"]).replace("Z", "+00:00")).astimezone(HOSPITAL_TZ)
+                    except Exception:
+                        pass
+                arrival_dt = dep_t + timedelta(minutes=travel_min)
+            elif now_h >= rec_dep:
+                arrival_dt = now_h + timedelta(minutes=travel_min)
+            else:
+                arrival_dt = rec_dep + timedelta(minutes=travel_min)
             return arrival_dt + timedelta(minutes=2)
         except Exception:
             pass
@@ -656,12 +670,37 @@ def recalculate_queue_positions(
                 except Exception:
                     joined_dt = now_hospital
 
+            leaving_now = bool(entry.get("leaving_now"))
+            leaving_now_at = entry.get("leaving_now_at")
+
             if existing_travel and isinstance(existing_travel, dict) and ("travel_time_minutes" in existing_travel or "travel_time_min" in existing_travel):
                 travel_time_min = int(existing_travel.get("travel_time_minutes") or existing_travel.get("travel_time_min") or 15)
                 safety_buffer_min = int(existing_travel.get("safety_buffer_min") or SAFETY_BUFFER_MIN)
-                raw_arrival_dt = expected_dt - timedelta(minutes=safety_buffer_min)
-                arrival_dt = max(joined_dt, raw_arrival_dt)
-                departure_dt = arrival_dt - timedelta(minutes=travel_time_min)
+                patient_addr = existing_travel.get("patient_address") or entry.get("city") or "Current Location"
+
+                rec_departure_dt = expected_dt - timedelta(minutes=travel_time_min + safety_buffer_min)
+
+                if leaving_now:
+                    dep_time = now_hospital
+                    if leaving_now_at:
+                        try:
+                            pdt = datetime.fromisoformat(str(leaving_now_at).replace("Z", "+00:00"))
+                            dep_time = pdt if pdt.tzinfo else pdt.replace(tzinfo=HOSPITAL_TZ)
+                            dep_time = dep_time.astimezone(HOSPITAL_TZ)
+                        except Exception:
+                            dep_time = now_hospital
+                    arrival_dt = dep_time + timedelta(minutes=travel_time_min)
+                    departure_dt = dep_time
+                    departure_alert = f"🚗 En route to SIMSRH from {patient_addr}. Expected arrival around {arrival_dt.strftime('%I:%M %p')}."
+                elif now_hospital >= rec_departure_dt:
+                    arrival_dt = now_hospital + timedelta(minutes=travel_time_min)
+                    departure_dt = rec_departure_dt
+                    departure_alert = f"🚗 Depart immediately from {patient_addr} (estimated travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')}."
+                else:
+                    arrival_dt = rec_departure_dt + timedelta(minutes=travel_time_min)
+                    departure_dt = rec_departure_dt
+                    departure_alert = f"🚗 Start from {patient_addr} around {departure_dt.strftime('%I:%M %p')} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {expected_time_str}."
+
                 arrival_deadline_dt = arrival_dt + timedelta(minutes=2)
                 recommended_departure_str = departure_dt.strftime("%I:%M %p")
                 recommended_departure_iso = departure_dt.isoformat()
@@ -669,8 +708,6 @@ def recalculate_queue_positions(
                 expected_arrival_iso = arrival_dt.isoformat()
                 arrival_deadline_str = arrival_deadline_dt.strftime("%I:%M %p")
                 arrival_deadline_iso = arrival_deadline_dt.isoformat()
-                patient_addr = existing_travel.get("patient_address") or entry.get("city") or "Current Location"
-                departure_alert = f"🚗 Start from {patient_addr} around {recommended_departure_str} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {expected_time_str}."
                 travel_info = {
                     **existing_travel,
                     "travel_time_min": travel_time_min,
@@ -684,7 +721,9 @@ def recalculate_queue_positions(
                     "expected_hospital_arrival_iso": expected_arrival_iso,
                     "arrival_deadline_time": arrival_deadline_str,
                     "arrival_deadline_iso": arrival_deadline_iso,
-                    "departure_alert": departure_alert
+                    "departure_alert": departure_alert,
+                    "leaving_now": leaving_now,
+                    "leaving_now_at": leaving_now_at
                 }
             else:
                 city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
@@ -699,7 +738,9 @@ def recalculate_queue_positions(
                     wait_time_min=predicted_wait,
                     expected_consultation_iso=expected_time_iso,
                     origin_coords=entry_coords,
-                    safety_buffer_min=SAFETY_BUFFER_MIN
+                    safety_buffer_min=SAFETY_BUFFER_MIN,
+                    leaving_now=leaving_now,
+                    leaving_now_at=leaving_now_at
                 )
                 recommended_departure_str = travel_info.get("recommended_departure_time")
                 recommended_departure_iso = travel_info.get("recommended_departure_iso")

@@ -144,21 +144,34 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
     setCurrentTravelInfo(prev => {
       if (!prev) return initialTravelInfo;
-      // When live GPS is active with valid coordinates, NEVER overwrite GPS coordinates,
-      // distance, travel duration, or route geometry with the fallback landmark
-      if (isExactGps && liveCoords && liveCoords.length === 2) {
+      // When live GPS is active or route metrics were calculated in prev,
+      // NEVER overwrite GPS coordinates, distance, travel duration, route geometry,
+      // or dynamic arrival/deadline times with stale values from polling
+      const hasLiveMetrics = Boolean(
+        (isExactGps && liveCoords && liveCoords.length === 2) ||
+        (prev.location_source === 'gps') ||
+        (prev.distance_km != null && prev.distance_km !== initialTravelInfo.distance_km)
+      );
+
+      if (hasLiveMetrics) {
         return {
           ...initialTravelInfo,
-          origin_latitude: prev.origin_latitude || liveCoords[1],
-          origin_longitude: prev.origin_longitude || liveCoords[0],
-          origin_coordinates: prev.origin_coordinates || liveCoords,
-          distance_km: prev.distance_km,
-          travel_time_min: prev.travel_time_min,
-          travel_time_minutes: prev.travel_time_minutes || prev.travel_time_min,
-          route_geometry: prev.route_geometry,
-          patient_address: 'Current GPS Location',
-          is_approximate_location: false,
-          location_source: 'gps',
+          origin_latitude: prev.origin_latitude || (liveCoords ? liveCoords[1] : null) || initialTravelInfo.origin_latitude,
+          origin_longitude: prev.origin_longitude || (liveCoords ? liveCoords[0] : null) || initialTravelInfo.origin_longitude,
+          origin_coordinates: prev.origin_coordinates || liveCoords || initialTravelInfo.origin_coordinates,
+          distance_km: prev.distance_km != null ? prev.distance_km : initialTravelInfo.distance_km,
+          travel_time_min: prev.travel_time_min != null ? prev.travel_time_min : initialTravelInfo.travel_time_min,
+          travel_time_minutes: prev.travel_time_minutes != null ? prev.travel_time_minutes : (prev.travel_time_min || initialTravelInfo.travel_time_minutes),
+          route_geometry: prev.route_geometry || initialTravelInfo.route_geometry,
+          patient_address: prev.patient_address || initialTravelInfo.patient_address || 'Current GPS Location',
+          is_approximate_location: prev.is_approximate_location != null ? prev.is_approximate_location : false,
+          location_source: prev.location_source || 'gps',
+          expected_hospital_arrival: prev.expected_hospital_arrival || initialTravelInfo.expected_hospital_arrival,
+          expected_hospital_arrival_iso: prev.expected_hospital_arrival_iso || initialTravelInfo.expected_hospital_arrival_iso,
+          expected_arrival_time: prev.expected_arrival_time || prev.expected_hospital_arrival || initialTravelInfo.expected_arrival_time,
+          expected_arrival_iso: prev.expected_arrival_iso || prev.expected_hospital_arrival_iso || initialTravelInfo.expected_arrival_iso,
+          arrival_deadline_time: prev.arrival_deadline_time || initialTravelInfo.arrival_deadline_time,
+          arrival_deadline_iso: prev.arrival_deadline_iso || initialTravelInfo.arrival_deadline_iso,
           recommended_departure_time: prev.recommended_departure_time || initialTravelInfo.recommended_departure_time,
           recommended_departure_iso: prev.recommended_departure_iso || initialTravelInfo.recommended_departure_iso,
           departure_alert: prev.departure_alert || initialTravelInfo.departure_alert
@@ -262,11 +275,14 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
           const activeInfo = currentTravelInfo || initialTravelInfo;
           hospitalApi.calculateTravelDeparture({
+            queue_id: activeInfo?.queue_id || activeInfo?.booking_id,
             origin: 'Current GPS Location',
             origin_latitude: lat,
             origin_longitude: lon,
             expected_consultation_iso: activeInfo?.expected_consultation_iso,
-            safety_buffer_min: activeInfo?.safety_buffer_min || 10
+            safety_buffer_min: activeInfo?.safety_buffer_min || 10,
+            leaving_now: activeInfo?.leaving_now,
+            leaving_now_at: activeInfo?.leaving_now_at
           }).then((res) => {
             if (res && res.recommended_departure_time) {
               setCurrentTravelInfo({
@@ -310,15 +326,6 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
   if (!currentTravelInfo && !initialTravelInfo) return null;
   const travelInfo = currentTravelInfo || initialTravelInfo;
 
-  // Authoritative dynamic departure state from CURRENT browser/server time
-  const departureState = getDepartureState(travelInfo, currentTime);
-
-  // Current doctor-specific expected consultation time (OPD Turn Window)
-  const displayTurnWindow =
-    travelInfo?.expected_consultation_time ||
-    initialTravelInfo?.expected_consultation_time ||
-    '11:15 AM';
-
   const travelDuration = Number(
     travelInfo?.travel_time_min ||
     travelInfo?.travel_time_minutes ||
@@ -333,15 +340,24 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     10
   );
 
-  // Recommended Departure Time
-  let displayDepartureTime = travelInfo?.recommended_departure_time || initialTravelInfo?.recommended_departure_time;
+  // Current doctor-specific expected consultation time (OPD Turn Window)
+  const displayTurnWindow =
+    travelInfo?.expected_consultation_time ||
+    initialTravelInfo?.expected_consultation_time ||
+    '11:15 AM';
+
   const consultIso = travelInfo?.expected_consultation_iso || initialTravelInfo?.expected_consultation_iso;
+  const baseDate = travelInfo?.consultation_date || initialTravelInfo?.consultation_date;
+
+  // 1. Recommended Departure Time
+  let displayDepartureTime = travelInfo?.recommended_departure_time || initialTravelInfo?.recommended_departure_time;
+  let depMs = null;
   if (consultIso) {
     try {
       const consultMs = new Date(consultIso).getTime();
       if (!isNaN(consultMs)) {
         const offsetMin = travelDuration + safetyBuffer;
-        const depMs = consultMs - (offsetMin * 60 * 1000);
+        depMs = consultMs - (offsetMin * 60 * 1000);
         const depDate = new Date(depMs);
         displayDepartureTime = depDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
       }
@@ -350,47 +366,70 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     }
   }
 
-  // Expected Hospital Arrival Time
-  let displayArrivalTime =
-    travelInfo?.expected_hospital_arrival ||
-    travelInfo?.expected_arrival_time ||
-    initialTravelInfo?.expected_hospital_arrival ||
-    initialTravelInfo?.expected_arrival_time;
-
-  if (!displayArrivalTime && (travelInfo?.expected_hospital_arrival_iso || travelInfo?.expected_arrival_iso)) {
-    try {
-      const dt = new Date(travelInfo.expected_hospital_arrival_iso || travelInfo.expected_arrival_iso);
-      displayArrivalTime = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch {}
-  }
-
-  // 2-Minute Grace Arrival Deadline Time
-  let displayArrivalDeadline =
-    travelInfo?.arrival_deadline_time ||
-    initialTravelInfo?.arrival_deadline_time;
-
-  if (!displayArrivalDeadline && travelInfo?.arrival_deadline_iso) {
-    try {
-      const dt = new Date(travelInfo.arrival_deadline_iso);
-      displayArrivalDeadline = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch {}
-  }
-
-  // If deadline time string still missing, derive it as expected arrival + 2 mins
-  if (!displayArrivalDeadline && displayArrivalTime) {
-    const arrMs = parseIsoOrTime(
-      travelInfo?.expected_hospital_arrival_iso || travelInfo?.expected_arrival_iso,
-      displayArrivalTime,
-      travelInfo?.consultation_date
+  if (!depMs) {
+    depMs = parseIsoOrTime(
+      travelInfo?.recommended_departure_iso || initialTravelInfo?.recommended_departure_iso,
+      displayDepartureTime,
+      baseDate
     );
-    if (arrMs) {
-      displayArrivalDeadline = new Date(arrMs + 2 * 60 * 1000).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    }
   }
+
+  // 2. Dynamic Hospital Arrival & Deadline Calculation:
+  // - Departed (leaving_now == true) -> departure time + live travel duration
+  // - Not departed + recommended departure passed (currentTime >= depMs) -> currentTime + live travel duration
+  // - On schedule (currentTime < depMs) -> recommended departure + live travel duration
+  const isDeparted = Boolean(travelInfo?.leaving_now || initialTravelInfo?.leaving_now);
+  const leavingNowAtMs = parseIsoOrTime(
+    travelInfo?.leaving_now_at || initialTravelInfo?.leaving_now_at,
+    null,
+    baseDate
+  );
+
+  let arrivalMs = null;
+  if (isDeparted) {
+    const startMs = leavingNowAtMs || currentTime;
+    arrivalMs = startMs + (travelDuration * 60 * 1000);
+  } else if (depMs && currentTime >= depMs) {
+    arrivalMs = currentTime + (travelDuration * 60 * 1000);
+  } else if (depMs) {
+    arrivalMs = depMs + (travelDuration * 60 * 1000);
+  } else {
+    const parsedArrival = parseIsoOrTime(
+      travelInfo?.expected_hospital_arrival_iso || travelInfo?.expected_arrival_iso,
+      travelInfo?.expected_hospital_arrival || travelInfo?.expected_arrival_time,
+      baseDate
+    );
+    arrivalMs = parsedArrival || (currentTime + travelDuration * 60 * 1000);
+  }
+
+  const deadlineMs = arrivalMs + (2 * 60 * 1000);
+
+  const displayArrivalTime = new Date(arrivalMs).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  const displayArrivalDeadline = new Date(deadlineMs).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  // Authoritative dynamic departure state from CURRENT browser/server time and dynamic travel metrics
+  const evaluatedTravelInfo = {
+    ...travelInfo,
+    expected_hospital_arrival: displayArrivalTime,
+    expected_hospital_arrival_iso: new Date(arrivalMs).toISOString(),
+    expected_arrival_time: displayArrivalTime,
+    expected_arrival_iso: new Date(arrivalMs).toISOString(),
+    arrival_deadline_time: displayArrivalDeadline,
+    arrival_deadline_iso: new Date(deadlineMs).toISOString(),
+    recommended_departure_time: displayDepartureTime,
+    recommended_departure_iso: depMs ? new Date(depMs).toISOString() : (travelInfo?.recommended_departure_iso || initialTravelInfo?.recommended_departure_iso)
+  };
+
+  const departureState = getDepartureState(evaluatedTravelInfo, currentTime);
 
   // Manual origin change (user chooses landmark from dropdown)
   const handleOriginChange = async (origin) => {
@@ -456,11 +495,14 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
         const activeInfo = currentTravelInfo || initialTravelInfo;
         console.log(`[Live GPS] Calling route calculation with exact coordinates: origin_latitude=${lat}, origin_longitude=${lon}`);
         const res = await hospitalApi.calculateTravelDeparture({
+          queue_id: activeInfo?.queue_id || activeInfo?.booking_id,
           origin: 'Current GPS Location',
           origin_latitude: lat,
           origin_longitude: lon,
           expected_consultation_iso: activeInfo?.expected_consultation_iso,
-          safety_buffer_min: activeInfo?.safety_buffer_min || 10
+          safety_buffer_min: activeInfo?.safety_buffer_min || 10,
+          leaving_now: activeInfo?.leaving_now,
+          leaving_now_at: activeInfo?.leaving_now_at
         });
         console.log('[Live GPS] Route calculation response:', res);
         if (res && res.recommended_departure_time) {

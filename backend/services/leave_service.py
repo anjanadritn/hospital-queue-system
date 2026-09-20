@@ -114,7 +114,9 @@ def confirm_leaving_now(queue_id: str, origin_coords: Optional[list] = None) -> 
             patient_address=patient_address,
             wait_time_min=wait_time,
             origin_coords=coords,
-            safety_buffer_min=SAFETY_BUFFER_MIN
+            safety_buffer_min=SAFETY_BUFFER_MIN,
+            leaving_now=True,
+            leaving_now_at=now_str
         )
 
         arrival_time_str = travel_metrics.get("expected_hospital_arrival") or (now + timedelta(minutes=travel_metrics.get("travel_time_min", 15))).strftime("%I:%M %p")

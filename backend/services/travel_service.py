@@ -37,7 +37,9 @@ def calculate_travel_metrics(
     expected_consultation_iso: str = None,
     safety_buffer_min: int = 10,
     wait_time_min: int = None,
-    origin_coords: Optional[List[float]] = None
+    origin_coords: Optional[List[float]] = None,
+    leaving_now: bool = False,
+    leaving_now_at: Optional[str] = None
 ) -> Dict:
     """
     Smart Patient Arrival & Recommended Departure Time Engine:
@@ -136,9 +138,33 @@ def calculate_travel_metrics(
     else:
         consultation_dt = now + timedelta(minutes=35)
 
-    raw_arrival_dt = consultation_dt - timedelta(minutes=safety_buffer_min)
-    arrival_dt = max(now, raw_arrival_dt)
-    departure_dt = arrival_dt - timedelta(minutes=travel_time_min)
+    rec_departure_dt = consultation_dt - timedelta(minutes=travel_time_min + safety_buffer_min)
+
+    # Dynamic Arrival Logic:
+    # 1. Departed -> Departure Time + Live Travel Duration
+    # 2. Not Departed & Recommended Departure Passed -> Current Time + Live Travel Duration
+    # 3. On Schedule -> Recommended Departure + Live Travel Duration (Consultation - Safety Buffer)
+    if leaving_now:
+        dep_time = now
+        if leaving_now_at:
+            try:
+                pdt = datetime.fromisoformat(str(leaving_now_at).replace("Z", "+00:00"))
+                dep_time = pdt if pdt.tzinfo else pdt.replace(tzinfo=HOSPITAL_TZ)
+                dep_time = dep_time.astimezone(HOSPITAL_TZ)
+            except Exception:
+                dep_time = now
+        arrival_dt = dep_time + timedelta(minutes=travel_time_min)
+        departure_dt = dep_time
+        alert_msg = f"🚗 En route to SIMSRH from {patient_address or 'your location'}. Expected arrival around {arrival_dt.strftime('%I:%M %p')}."
+    elif now >= rec_departure_dt:
+        arrival_dt = now + timedelta(minutes=travel_time_min)
+        departure_dt = rec_departure_dt
+        alert_msg = f"🚗 Depart immediately from {patient_address or 'your location'} (estimated travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')}."
+    else:
+        arrival_dt = rec_departure_dt + timedelta(minutes=travel_time_min)
+        departure_dt = rec_departure_dt
+        alert_msg = f"🚗 Start from {patient_address or 'your location'} around {departure_dt.strftime('%I:%M %p')} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {consultation_dt.strftime('%I:%M %p')}."
+
     arrival_deadline_dt = arrival_dt + timedelta(minutes=2)
 
     consultation_str = consultation_dt.strftime("%I:%M %p")
@@ -170,7 +196,9 @@ def calculate_travel_metrics(
         "arrival_deadline_iso": arrival_deadline_dt.isoformat(),
         "recommended_departure_time": departure_str,
         "recommended_departure_iso": departure_dt.isoformat(),
-        "departure_alert": f"🚗 Start from {patient_address} around {departure_str} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {consultation_str}.",
+        "departure_alert": alert_msg,
         "route_geometry": route_geometry,
-        "source": source
+        "source": source,
+        "leaving_now": leaving_now,
+        "leaving_now_at": leaving_now_at
     }

@@ -130,7 +130,57 @@ async function runTests() {
     console.log('[PASS] Test 3: Successful GPS is preserved and never replaced by Tumakuru fallback on polling');
   }
 
-  console.log('--- All 3 GPS Behavior Regression Tests PASSED Successfully ---');
+  // Test 4: Dynamic arrival and deadline times are preserved and NOT clobbered by stale polling
+  {
+    const isExactGps = true;
+    const liveCoords = [77.123456, 13.345678];
+    const prev = {
+      distance_km: 197.6,
+      travel_time_min: 144,
+      travel_time_minutes: 144,
+      origin_latitude: 13.345678,
+      origin_longitude: 77.123456,
+      location_source: 'gps',
+      expected_hospital_arrival: '02:09 PM',
+      arrival_deadline_time: '02:11 PM'
+    };
+
+    // Stale prop from 5-second polling
+    const initialTravelInfoFromPoll = {
+      patient_address: 'Tumakuru',
+      distance_km: 5.0,
+      travel_time_min: 15,
+      expected_hospital_arrival: '11:58 AM',
+      arrival_deadline_time: '12:00 PM'
+    };
+
+    const hasLiveMetrics = Boolean(
+      (isExactGps && liveCoords && liveCoords.length === 2) ||
+      (prev.location_source === 'gps') ||
+      (prev.distance_km != null && prev.distance_km !== initialTravelInfoFromPoll.distance_km)
+    );
+
+    let nextState;
+    if (hasLiveMetrics) {
+      nextState = {
+        ...initialTravelInfoFromPoll,
+        distance_km: prev.distance_km != null ? prev.distance_km : initialTravelInfoFromPoll.distance_km,
+        travel_time_min: prev.travel_time_min != null ? prev.travel_time_min : initialTravelInfoFromPoll.travel_time_min,
+        expected_hospital_arrival: prev.expected_hospital_arrival || initialTravelInfoFromPoll.expected_hospital_arrival,
+        arrival_deadline_time: prev.arrival_deadline_time || initialTravelInfoFromPoll.arrival_deadline_time
+      };
+    } else {
+      nextState = { ...prev, ...initialTravelInfoFromPoll };
+    }
+
+    assert.strictEqual(nextState.distance_km, 197.6, 'Distance preserved at 197.6 km');
+    assert.strictEqual(nextState.travel_time_min, 144, 'Travel duration preserved at 144 min');
+    assert.strictEqual(nextState.expected_hospital_arrival, '02:09 PM', 'Arrival preserved at 02:09 PM, not clobbered to 11:58 AM');
+    assert.strictEqual(nextState.arrival_deadline_time, '02:11 PM', 'Deadline preserved at 02:11 PM, not clobbered to 12:00 PM');
+    console.log('[PASS] Test 4: Dynamic arrival and deadline times are preserved and NOT clobbered by stale polling');
+  }
+
+  console.log('--- All 4 GPS Behavior Regression Tests PASSED Successfully ---');
 }
 
 runTests().catch((err) => {

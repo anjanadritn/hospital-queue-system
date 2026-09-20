@@ -290,6 +290,8 @@ def travel_calculate_route():
     origin = data.get("origin") or data.get("patient_address") or "Tumkur City"
     expected_iso = data.get("expected_consultation_iso")
     buffer_min = data.get("safety_buffer_min", 10)
+    leaving_now = bool(data.get("leaving_now", False))
+    leaving_now_at = data.get("leaving_now_at")
 
     origin_coords = None
     lat = data.get("origin_latitude") if data.get("origin_latitude") is not None else data.get("latitude")
@@ -306,9 +308,37 @@ def travel_calculate_route():
         patient_address=origin,
         expected_consultation_iso=expected_iso,
         safety_buffer_min=int(buffer_min),
-        origin_coords=origin_coords
+        origin_coords=origin_coords,
+        leaving_now=leaving_now,
+        leaving_now_at=leaving_now_at
     )
     metrics["landmarks"] = list(TUMKUR_LANDMARKS.keys())
+
+    # Optionally persist latest live GPS travel metrics if queue_id or booking_id is supplied
+    queue_id = data.get("queue_id") or data.get("booking_id")
+    if queue_id:
+        try:
+            db = get_db()
+            db.queue.update_one(
+                {"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]},
+                {"$set": {
+                    "origin_latitude": lat,
+                    "origin_longitude": lon,
+                    "distance_km": metrics.get("distance_km"),
+                    "travel_time_min": metrics.get("travel_time_min"),
+                    "travel_time_minutes": metrics.get("travel_time_min"),
+                    "expected_arrival_time": metrics.get("expected_hospital_arrival"),
+                    "expected_arrival_iso": metrics.get("expected_hospital_arrival_iso"),
+                    "arrival_deadline_time": metrics.get("arrival_deadline_time"),
+                    "arrival_deadline_iso": metrics.get("arrival_deadline_iso"),
+                    "recommended_departure_time": metrics.get("recommended_departure_time"),
+                    "recommended_departure_iso": metrics.get("recommended_departure_iso"),
+                    "travel_info": metrics
+                }}
+            )
+        except Exception:
+            pass
+
     return jsonify(metrics), 200
 
 @queue_bp.route("/queue/public", methods=["GET"])

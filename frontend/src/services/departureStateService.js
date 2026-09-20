@@ -130,9 +130,22 @@ export function getDepartureState(travelInfo, nowMs = Date.now()) {
     15
   );
 
-  // Derive arrival if missing
-  if (!arrMs && depMs) {
-    arrMs = depMs + (travelDurationMin * 60 * 1000);
+  const isDeparted = Boolean(travelInfo.leaving_now);
+  const leavingNowAtMs = parseIsoOrTime(travelInfo.leaving_now_at, null, baseDate);
+
+  // Derive arrival if missing using 3-state operational rules:
+  // - Departed -> departure time + live travel duration
+  // - Not departed + recommended departure passed -> current time + live travel duration
+  // - On schedule -> recommended departure + live travel duration
+  if (!arrMs) {
+    if (isDeparted) {
+      const startMs = leavingNowAtMs || nowMs;
+      arrMs = startMs + (travelDurationMin * 60 * 1000);
+    } else if (depMs && nowMs >= depMs) {
+      arrMs = nowMs + (travelDurationMin * 60 * 1000);
+    } else if (depMs) {
+      arrMs = depMs + (travelDurationMin * 60 * 1000);
+    }
   }
 
   // Derive deadline if missing (arrival + 2 mins)
