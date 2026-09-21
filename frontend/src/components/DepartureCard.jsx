@@ -41,14 +41,41 @@ function calculateHaversineMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+export function resolvePresetFromCandidate(candidate) {
+  if (!candidate) return null;
+  const cand = String(candidate).trim();
+  if (TUMKUR_PRESETS[cand]) {
+    const p = TUMKUR_PRESETS[cand];
+    return {
+      name: cand,
+      ...p,
+      latitude: p.latitude ?? p.lat,
+      longitude: p.longitude ?? p.lon,
+      lat: p.latitude ?? p.lat,
+      lon: p.longitude ?? p.lon,
+      coords: p.coords || [p.longitude ?? p.lon, p.latitude ?? p.lat]
+    };
+  }
+  const candLower = cand.toLowerCase();
+  for (const [name, p] of Object.entries(TUMKUR_PRESETS)) {
+    const nameLower = name.toLowerCase();
+    if (nameLower === candLower || candLower.includes(nameLower) || nameLower.includes(candLower)) {
+      return {
+        name,
+        ...p,
+        latitude: p.latitude ?? p.lat,
+        longitude: p.longitude ?? p.lon,
+        lat: p.latitude ?? p.lat,
+        lon: p.longitude ?? p.lon,
+        coords: p.coords || [p.longitude ?? p.lon, p.latitude ?? p.lat]
+      };
+    }
+  }
+  return null;
+}
+
 export default function DepartureCard({ travelInfo: initialTravelInfo, onRefreshQueue }) {
   const { t } = useLanguage();
-  const [currentTravelInfo, setCurrentTravelInfo] = useState(initialTravelInfo);
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const [isLeavingSubmitting, setIsLeavingSubmitting] = useState(false);
-  const [leavingError, setLeavingError] = useState(null);
-  const [lastGpsReading, setLastGpsReading] = useState(null);
-  const [gpsErrorMessage, setGpsErrorMessage] = useState(null);
 
   // 1. Explicit Origin Mode: 'gps' | 'preset'
   const [originMode, setOriginMode] = useState(() => {
@@ -57,6 +84,11 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     }
     if (initialTravelInfo?.origin_mode === 'gps') {
       return 'gps';
+    }
+    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
+    const matchedPreset = resolvePresetFromCandidate(candidate);
+    if (matchedPreset) {
+      return 'preset';
     }
     const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
     const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
@@ -71,18 +103,15 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     if (initialTravelInfo?.origin_mode === 'preset' && initialTravelInfo?.origin_label) {
       return initialTravelInfo.origin_label;
     }
+    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
+    const matched = resolvePresetFromCandidate(candidate);
+    if (matched) {
+      return matched.name;
+    }
     const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
     const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
     if (initialTravelInfo?.origin_mode === 'gps' || (isDeviceGps && !isApprox && initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude)) {
       return 'Current GPS Location';
-    }
-    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
-    if (candidate && TUMKUR_PRESETS[candidate]) {
-      return candidate;
-    }
-    if (candidate) {
-      const found = Object.keys(TUMKUR_PRESETS).find(k => k.toLowerCase() === candidate.toLowerCase());
-      if (found) return found;
     }
     return candidate || 'Tumkur Bus Stand';
   });
@@ -94,29 +123,71 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
       !(initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate) &&
       initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude
     );
+    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
+    const matched = resolvePresetFromCandidate(candidate);
+    if (matched) {
+      return matched;
+    }
     if (isGpsMode && initialTravelInfo?.origin_mode !== 'preset') {
       return null;
     }
-    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
-    if (candidate && TUMKUR_PRESETS[candidate]) {
-      return { name: candidate, ...TUMKUR_PRESETS[candidate] };
-    }
-    if (candidate) {
-      const foundKey = Object.keys(TUMKUR_PRESETS).find(k => k.toLowerCase() === candidate.toLowerCase());
-      if (foundKey) {
-        return { name: foundKey, ...TUMKUR_PRESETS[foundKey] };
-      }
-    }
     if (initialTravelInfo?.origin_lat && initialTravelInfo?.origin_lng) {
+      const lat = Number(initialTravelInfo.origin_lat);
+      const lon = Number(initialTravelInfo.origin_lng);
       return {
         name: candidate || 'Selected Location',
-        coords: [Number(initialTravelInfo.origin_lng), Number(initialTravelInfo.origin_lat)],
-        lat: Number(initialTravelInfo.origin_lat),
-        lon: Number(initialTravelInfo.origin_lng)
+        coords: [lon, lat],
+        lat,
+        lon,
+        latitude: lat,
+        longitude: lon,
+        distance_km: initialTravelInfo?.distance_km,
+        travel_time_min: initialTravelInfo?.travel_time_min
       };
     }
-    return TUMKUR_PRESETS['Tumkur Bus Stand'] ? { name: 'Tumkur Bus Stand', ...TUMKUR_PRESETS['Tumkur Bus Stand'] } : null;
+    return resolvePresetFromCandidate('Tumkur Bus Stand');
   });
+
+  // Initialize currentTravelInfo: if starting in preset mode, use preset fallback metrics immediately
+  const [currentTravelInfo, setCurrentTravelInfo] = useState(() => {
+    if (!initialTravelInfo) return null;
+    const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
+    const matched = resolvePresetFromCandidate(candidate) || (initialTravelInfo?.origin_mode === 'preset' ? resolvePresetFromCandidate('Tumkur Bus Stand') : null);
+    if (matched) {
+      const pLat = matched.latitude ?? matched.lat;
+      const pLng = matched.longitude ?? matched.lon;
+      const isMismatch = (
+        initialTravelInfo.origin_mode !== 'preset' ||
+        Number(initialTravelInfo.origin_latitude) !== Number(pLat) ||
+        Number(initialTravelInfo.origin_longitude) !== Number(pLng)
+      );
+      if (isMismatch) {
+        return {
+          ...initialTravelInfo,
+          origin_mode: 'preset',
+          origin_label: matched.name,
+          patient_address: matched.name,
+          location_address: matched.name,
+          origin_latitude: pLat,
+          origin_longitude: pLng,
+          origin_coordinates: matched.coords,
+          distance_km: matched.distance_km,
+          travel_time_min: matched.travel_time_min,
+          travel_time_minutes: matched.travel_time_min,
+          location_source: 'preset',
+          is_approximate_location: false,
+          is_approximate: false
+        };
+      }
+    }
+    return initialTravelInfo;
+  });
+
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [isLeavingSubmitting, setIsLeavingSubmitting] = useState(false);
+  const [leavingError, setLeavingError] = useState(null);
+  const [lastGpsReading, setLastGpsReading] = useState(null);
+  const [gpsErrorMessage, setGpsErrorMessage] = useState(null);
 
   // 4. Browser GPS State (hardware/browser reading independent of user route mode)
   const [browserGps, setBrowserGps] = useState(() => {
@@ -139,13 +210,8 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     );
     if (isPreset) {
       const candidate = initialTravelInfo?.origin_label || initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city;
-      if (candidate && TUMKUR_PRESETS[candidate]) {
-        return TUMKUR_PRESETS[candidate].coords;
-      }
-      if (candidate) {
-        const foundKey = Object.keys(TUMKUR_PRESETS).find(k => k.toLowerCase() === candidate.toLowerCase());
-        if (foundKey) return TUMKUR_PRESETS[foundKey].coords;
-      }
+      const matched = resolvePresetFromCandidate(candidate);
+      if (matched?.coords) return matched.coords;
       if (initialTravelInfo?.origin_lat && initialTravelInfo?.origin_lng) {
         return [Number(initialTravelInfo.origin_lng), Number(initialTravelInfo.origin_lat)];
       }
@@ -197,6 +263,83 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     return () => clearInterval(timer);
   }, []);
 
+  // Helper to dispatch calculateTravelDeparture for a selected preset
+  const calculatePresetRoute = useCallback(async (preset, activeInfoOverride = null) => {
+    if (!preset) return;
+    const pLat = preset.latitude ?? preset.lat;
+    const pLng = preset.longitude ?? preset.lon;
+    const pName = preset.name;
+    const pCoords = preset.coords || [pLng, pLat];
+
+    const activeInfo = activeInfoOverride || currentTravelInfo || initialTravelInfo;
+    const qId = activeInfo?.queue_id || activeInfo?.booking_id;
+
+    setCalculating(true);
+    try {
+      const payload = {
+        queue_id: qId,
+        origin_mode: 'preset',
+        origin_label: pName,
+        origin: pName,
+        origin_lat: pLat,
+        origin_lng: pLng,
+        origin_latitude: pLat,
+        origin_longitude: pLng,
+        location_source: 'preset',
+        is_approximate: false,
+        expected_consultation_iso: activeInfo?.expected_consultation_iso,
+        safety_buffer_min: activeInfo?.safety_buffer_min || 10,
+        leaving_now: activeInfo?.leaving_now,
+        leaving_now_at: activeInfo?.leaving_now_at
+      };
+
+      const res = await hospitalApi.calculateTravelDeparture(payload);
+      if (res && res.recommended_departure_time) {
+        setCurrentTravelInfo(prev => ({
+          ...prev,
+          ...res,
+          origin_mode: 'preset',
+          origin_label: pName,
+          patient_address: pName,
+          location_address: pName,
+          origin_latitude: pLat,
+          origin_longitude: pLng,
+          origin_coordinates: pCoords,
+          distance_km: res.distance_km,
+          travel_time_min: res.travel_time_min,
+          travel_time_minutes: res.travel_time_minutes || res.travel_time_min,
+          route_geometry: res.route_geometry,
+          location_source: 'preset',
+          is_approximate_location: false,
+          is_approximate: false
+        }));
+        onRefreshQueue?.();
+      }
+    } catch (e) {
+      console.warn('Could not calculate preset route from backend:', e);
+    } finally {
+      setCalculating(false);
+    }
+  }, [currentTravelInfo, initialTravelInfo, onRefreshQueue]);
+
+  // On mount: if preset is active and coordinates don't match the backend ORS route, calculate preset route!
+  const hasTriggeredMountPresetRef = useRef(false);
+  useEffect(() => {
+    if (originMode === 'preset' && selectedPreset && !hasTriggeredMountPresetRef.current) {
+      const pLat = selectedPreset.latitude ?? selectedPreset.lat;
+      const pLng = selectedPreset.longitude ?? selectedPreset.lon;
+      const isMismatch = (
+        currentTravelInfo?.origin_mode !== 'preset' ||
+        Number(currentTravelInfo?.origin_latitude) !== Number(pLat) ||
+        Number(currentTravelInfo?.origin_longitude) !== Number(pLng)
+      );
+      if (isMismatch) {
+        hasTriggeredMountPresetRef.current = true;
+        calculatePresetRoute(selectedPreset);
+      }
+    }
+  }, [originMode, selectedPreset, calculatePresetRoute, currentTravelInfo?.origin_mode, currentTravelInfo?.origin_latitude, currentTravelInfo?.origin_longitude]);
+
   // Sync state when parent travelInfo prop changes (e.g. 5-second queue polling)
   useEffect(() => {
     if (!initialTravelInfo) return;
@@ -206,6 +349,12 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
       // If user selected a preset/manual origin:
       if (originModeRef.current === 'preset') {
+        const activePreset = selectedPresetRef.current;
+        const pLat = activePreset ? (activePreset.latitude ?? activePreset.lat) : prev.origin_latitude;
+        const pLng = activePreset ? (activePreset.longitude ?? activePreset.lon) : prev.origin_longitude;
+        const pCoords = activePreset ? (activePreset.coords || [pLng, pLat]) : prev.origin_coordinates;
+        const pName = selectedOriginRef.current;
+
         return {
           ...prev,
           // Update queue status from queue poll
@@ -223,13 +372,13 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           arrived_at_hospital: initialTravelInfo.arrived_at_hospital !== undefined ? initialTravelInfo.arrived_at_hospital : prev.arrived_at_hospital,
           verified_by_admin: initialTravelInfo.verified_by_admin !== undefined ? initialTravelInfo.verified_by_admin : prev.verified_by_admin,
           // PRESERVE PRESET ROUTE METRICS
-          patient_address: selectedOriginRef.current,
-          location_address: selectedOriginRef.current,
-          origin_latitude: prev.origin_latitude,
-          origin_longitude: prev.origin_longitude,
-          origin_coordinates: prev.origin_coordinates,
+          patient_address: pName,
+          location_address: pName,
+          origin_latitude: pLat,
+          origin_longitude: pLng,
+          origin_coordinates: pCoords,
           origin_mode: 'preset',
-          origin_label: selectedOriginRef.current,
+          origin_label: pName,
           distance_km: prev.distance_km,
           travel_time_min: prev.travel_time_min,
           travel_time_minutes: prev.travel_time_minutes || prev.travel_time_min,
@@ -558,58 +707,49 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
       return;
     }
 
-    const preset = TUMKUR_PRESETS[origin];
-    setOriginMode('preset');
-    setSelectedOrigin(origin);
-    setSelectedPreset(preset ? { name: origin, ...preset } : null);
-    if (preset) {
-      setLiveCoords(preset.coords);
-    }
-    lastRecalcPosRef.current = null;
-    setCalculating(true);
+    const preset = resolvePresetFromCandidate(origin) || TUMKUR_PRESETS[origin];
+    if (!preset) return;
 
-    try {
-      const activeInfo = currentTravelInfo || initialTravelInfo;
-      const payload = {
-        queue_id: activeInfo?.queue_id || activeInfo?.booking_id,
-        origin_mode: 'preset',
-        origin_label: origin,
-        origin: origin,
-        origin_lat: preset ? preset.lat : null,
-        origin_lng: preset ? preset.lon : null,
-        origin_latitude: preset ? preset.lat : null,
-        origin_longitude: preset ? preset.lon : null,
-        location_source: 'preset',
-        is_approximate: false,
-        expected_consultation_iso: activeInfo?.expected_consultation_iso,
-        safety_buffer_min: activeInfo?.safety_buffer_min || 10
-      };
-      const res = await hospitalApi.calculateTravelDeparture(payload);
-      if (res && res.recommended_departure_time) {
-        setCurrentTravelInfo(prev => ({
-          ...prev,
-          ...res,
-          origin_mode: 'preset',
-          origin_label: origin,
-          patient_address: origin,
-          location_address: origin,
-          origin_latitude: preset ? preset.lat : res.origin_latitude,
-          origin_longitude: preset ? preset.lon : res.origin_longitude,
-          origin_coordinates: preset ? preset.coords : res.origin_coordinates,
-          distance_km: res.distance_km,
-          travel_time_min: res.travel_time_min,
-          travel_time_minutes: res.travel_time_minutes || res.travel_time_min,
-          route_geometry: res.route_geometry,
-          location_source: 'preset',
-          is_approximate_location: false,
-          is_approximate: false
-        }));
-      }
-    } catch (e) {
-      console.warn('Could not recalculate departure time from backend:', e);
-    } finally {
-      setCalculating(false);
-    }
+    const pLat = preset.latitude ?? preset.lat;
+    const pLng = preset.longitude ?? preset.lon;
+    const pCoords = preset.coords || [pLng, pLat];
+    const pName = preset.name || origin;
+
+    const presetObj = {
+      name: pName,
+      ...preset,
+      latitude: pLat,
+      longitude: pLng,
+      lat: pLat,
+      lon: pLng,
+      coords: pCoords
+    };
+
+    setOriginMode('preset');
+    setSelectedOrigin(pName);
+    setSelectedPreset(presetObj);
+    setLiveCoords(pCoords);
+    lastRecalcPosRef.current = null;
+
+    // Immediately update local state with preset fallback metrics so stale metrics never persist
+    setCurrentTravelInfo(prev => ({
+      ...prev,
+      origin_mode: 'preset',
+      origin_label: pName,
+      patient_address: pName,
+      location_address: pName,
+      origin_latitude: pLat,
+      origin_longitude: pLng,
+      origin_coordinates: pCoords,
+      distance_km: preset.distance_km != null ? preset.distance_km : prev?.distance_km,
+      travel_time_min: preset.travel_time_min != null ? preset.travel_time_min : prev?.travel_time_min,
+      travel_time_minutes: preset.travel_time_min != null ? preset.travel_time_min : prev?.travel_time_minutes,
+      location_source: 'preset',
+      is_approximate_location: false,
+      is_approximate: false
+    }));
+
+    await calculatePresetRoute(presetObj);
   };
 
   // Explicit switch / refresh to Live GPS
@@ -771,8 +911,8 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
     try {
       // 1. Determine whether device GPS should be captured:
-      // Only capture device GPS if location_source is explicitly device_gps/gps and NOT map_selected or manual
-      const isDeviceGpsBooking = (activeInfo?.location_source === 'device_gps' || activeInfo?.location_source === 'gps');
+      // Only capture device GPS if originMode is 'gps' AND location_source is device_gps/gps
+      const isDeviceGpsBooking = originModeRef.current === 'gps' && (activeInfo?.location_source === 'device_gps' || activeInfo?.location_source === 'gps');
       let coords = null;
 
       if (isDeviceGpsBooking) {
@@ -804,9 +944,14 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           coords = liveCoords;
         }
       } else {
-        // Patient location was selected on map or entered manually:
+        // Preset mode or map selected:
         // NEVER substitute the booker's browser GPS for the patient's selected location!
-        if (liveCoords && liveCoords.length === 2) {
+        const activePreset = selectedPresetRef.current;
+        if (activePreset?.coords) {
+          coords = activePreset.coords;
+        } else if (activePreset?.latitude != null && activePreset?.longitude != null) {
+          coords = [Number(activePreset.longitude), Number(activePreset.latitude)];
+        } else if (liveCoords && liveCoords.length === 2) {
           coords = liveCoords;
         } else if (activeInfo?.origin_latitude != null && activeInfo?.origin_longitude != null) {
           coords = [Number(activeInfo.origin_longitude), Number(activeInfo.origin_latitude)];
@@ -991,8 +1136,8 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
         </div>
       )}
 
-      {/* Route & GPS Metrics Info Pill */}
-      {(lastGpsReading || browserGps.coords || (originMode === 'gps' && liveCoords)) && (
+      {/* Route & GPS Metrics Info Pill (Requirement 8) */}
+      {(lastGpsReading || browserGps.coords || (originMode === 'gps' && liveCoords) || originMode === 'preset') && (
         <div className="mb-4 px-3.5 py-2 rounded-2xl bg-sky-950/80 border border-sky-400/40 text-[11px] font-mono text-sky-200 flex items-center justify-between flex-wrap gap-2 shadow-inner">
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${originMode === 'gps' && isExactGps ? 'bg-emerald-400 animate-pulse' : 'bg-sky-400'} shrink-0`} />
@@ -1004,12 +1149,14 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
                 </>
               ) : (
                 <>
-                  <span>Origin: <strong className="text-sky-300">{selectedOrigin}</strong></span>
-                  {browserGps.coords && (
-                    <span className="text-slate-400 ml-1.5 font-sans text-[10px]">
-                      (GPS: {browserGps.coords[1].toFixed(4)}°N, {browserGps.coords[0].toFixed(4)}°E)
-                    </span>
-                  )}
+                  <span>Selected Origin: <strong className="text-sky-300">{selectedOrigin}</strong></span>
+                  <span className="text-sky-200/90 ml-2 font-sans text-[10px]">
+                    Selected Coordinates: <strong className="text-white font-mono">
+                      {selectedPreset?.latitude != null && selectedPreset?.longitude != null
+                        ? `${selectedPreset.latitude.toFixed(4)}°N, ${selectedPreset.longitude.toFixed(4)}°E`
+                        : (liveCoords ? `${liveCoords[1].toFixed(4)}°N, ${liveCoords[0].toFixed(4)}°E` : 'N/A')}
+                    </strong>
+                  </span>
                 </>
               )}
             </span>
