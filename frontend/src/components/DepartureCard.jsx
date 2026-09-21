@@ -61,37 +61,36 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
   // Exact GPS state: only true if verified from real browser GPS reading
   const [isExactGps, setIsExactGps] = useState(() => {
+    const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
+    const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
     return Boolean(
-      initialTravelInfo?.location_source === 'gps' &&
-      initialTravelInfo?.is_approximate_location === false &&
+      isDeviceGps &&
+      !isApprox &&
       initialTravelInfo?.origin_latitude &&
       initialTravelInfo?.origin_longitude
     );
   });
 
   const [selectedOrigin, setSelectedOrigin] = useState(() => {
+    const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
+    const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
     if (
-      initialTravelInfo?.location_source === 'gps' &&
+      isDeviceGps &&
       initialTravelInfo?.origin_latitude &&
       initialTravelInfo?.origin_longitude &&
-      initialTravelInfo?.is_approximate_location === false
+      !isApprox
     ) {
       return 'Current GPS Location';
     }
-    return initialTravelInfo?.patient_address || initialTravelInfo?.city || 'Tumakuru';
+    return initialTravelInfo?.location_address || initialTravelInfo?.patient_address || initialTravelInfo?.city || 'Tumakuru';
   });
 
   const [calculating, setCalculating] = useState(false);
   const [minsUntilDeparture, setMinsUntilDeparture] = useState(null);
 
-  // Live GPS tracking state: [lon, lat]
+  // Coordinates: [lon, lat] for patient origin (from device GPS or map selection)
   const [liveCoords, setLiveCoords] = useState(() => {
-    if (
-      initialTravelInfo?.location_source === 'gps' &&
-      initialTravelInfo?.origin_latitude &&
-      initialTravelInfo?.origin_longitude &&
-      initialTravelInfo?.is_approximate_location === false
-    ) {
+    if (initialTravelInfo?.origin_latitude && initialTravelInfo?.origin_longitude) {
       return [
         Number(initialTravelInfo.origin_longitude),
         Number(initialTravelInfo.origin_latitude)
@@ -101,11 +100,13 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
   });
 
   const [gpsStatus, setGpsStatus] = useState(() => {
+    const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
+    const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
     if (
-      initialTravelInfo?.location_source === 'gps' &&
+      isDeviceGps &&
       initialTravelInfo?.origin_latitude &&
       initialTravelInfo?.origin_longitude &&
-      initialTravelInfo?.is_approximate_location === false
+      !isApprox
     ) {
       return 'watching';
     }
@@ -113,19 +114,21 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
   });
 
   const [liveTrackingActive, setLiveTrackingActive] = useState(() => {
+    const isDeviceGps = initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps';
+    const isApprox = initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate;
     return Boolean(
-      initialTravelInfo?.location_source === 'gps' &&
+      isDeviceGps &&
       initialTravelInfo?.origin_latitude &&
       initialTravelInfo?.origin_longitude &&
-      initialTravelInfo?.is_approximate_location === false
+      !isApprox
     );
   });
 
   const lastRecalcPosRef = useRef(
-    initialTravelInfo?.location_source === 'gps' &&
+    (initialTravelInfo?.location_source === 'gps' || initialTravelInfo?.location_source === 'device_gps') &&
     initialTravelInfo?.origin_latitude &&
     initialTravelInfo?.origin_longitude &&
-    initialTravelInfo?.is_approximate_location === false
+    !(initialTravelInfo?.is_approximate_location ?? initialTravelInfo?.is_approximate)
       ? { lat: Number(initialTravelInfo.origin_latitude), lon: Number(initialTravelInfo.origin_longitude) }
       : null
   );
@@ -146,12 +149,19 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
     setCurrentTravelInfo(prev => {
       if (!prev) return initialTravelInfo;
-      // When live GPS is active or route metrics were calculated in prev,
-      // NEVER overwrite GPS coordinates, distance, travel duration, route geometry,
-      // or dynamic arrival/deadline times with stale values from polling
+      const isDeviceGps = Boolean(
+        (prev.location_source === 'gps' || prev.location_source === 'device_gps') &&
+        (isExactGps && liveCoords && liveCoords.length === 2)
+      );
+      const isMapSelected = Boolean(
+        prev.location_source === 'map_selected' &&
+        prev.origin_latitude &&
+        prev.origin_longitude
+      );
+
       const hasLiveMetrics = Boolean(
-        (isExactGps && liveCoords && liveCoords.length === 2) ||
-        (prev.location_source === 'gps') ||
+        isDeviceGps ||
+        isMapSelected ||
         (prev.distance_km != null && prev.distance_km !== initialTravelInfo.distance_km)
       );
 
@@ -165,9 +175,11 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           travel_time_min: prev.travel_time_min != null ? prev.travel_time_min : initialTravelInfo.travel_time_min,
           travel_time_minutes: prev.travel_time_minutes != null ? prev.travel_time_minutes : (prev.travel_time_min || initialTravelInfo.travel_time_minutes),
           route_geometry: prev.route_geometry || initialTravelInfo.route_geometry,
-          patient_address: prev.patient_address || initialTravelInfo.patient_address || 'Current GPS Location',
-          is_approximate_location: prev.is_approximate_location != null ? prev.is_approximate_location : false,
-          location_source: prev.location_source || 'gps',
+          patient_address: prev.patient_address || initialTravelInfo.patient_address || initialTravelInfo.location_address || 'Current GPS Location',
+          location_address: prev.location_address || initialTravelInfo.location_address || initialTravelInfo.patient_address,
+          is_approximate_location: prev.is_approximate_location != null ? prev.is_approximate_location : (initialTravelInfo.is_approximate ?? initialTravelInfo.is_approximate_location ?? false),
+          is_approximate: prev.is_approximate != null ? prev.is_approximate : (initialTravelInfo.is_approximate ?? initialTravelInfo.is_approximate_location ?? false),
+          location_source: prev.location_source || initialTravelInfo.location_source || 'gps',
           expected_hospital_arrival: prev.expected_hospital_arrival || initialTravelInfo.expected_hospital_arrival,
           expected_hospital_arrival_iso: prev.expected_hospital_arrival_iso || initialTravelInfo.expected_hospital_arrival_iso,
           expected_arrival_time: prev.expected_arrival_time || prev.expected_hospital_arrival || initialTravelInfo.expected_arrival_time,
@@ -186,11 +198,13 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     });
 
     if (!isExactGps) {
+      const isDeviceGps = initialTravelInfo.location_source === 'gps' || initialTravelInfo.location_source === 'device_gps';
+      const isApprox = initialTravelInfo.is_approximate_location ?? initialTravelInfo.is_approximate;
       if (
-        initialTravelInfo.location_source === 'gps' &&
+        isDeviceGps &&
         initialTravelInfo.origin_latitude &&
         initialTravelInfo.origin_longitude &&
-        initialTravelInfo.is_approximate_location === false
+        !isApprox
       ) {
         setSelectedOrigin(initialTravelInfo.patient_address || 'Current GPS Location');
         const coords = [Number(initialTravelInfo.origin_longitude), Number(initialTravelInfo.origin_latitude)];
@@ -201,17 +215,25 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           lat: Number(initialTravelInfo.origin_latitude),
           lon: Number(initialTravelInfo.origin_longitude)
         };
-      } else if (initialTravelInfo.patient_address) {
-        setSelectedOrigin(initialTravelInfo.patient_address);
+      } else if (initialTravelInfo.location_source === 'map_selected' && initialTravelInfo.origin_latitude && initialTravelInfo.origin_longitude) {
+        setSelectedOrigin(initialTravelInfo.location_address || initialTravelInfo.patient_address || 'Patient Location (Map Selected)');
+        const coords = [Number(initialTravelInfo.origin_longitude), Number(initialTravelInfo.origin_latitude)];
+        setLiveCoords(coords);
+        setIsExactGps(false);
+        setGpsStatus('idle');
+      } else if (initialTravelInfo.location_address || initialTravelInfo.patient_address) {
+        setSelectedOrigin(initialTravelInfo.location_address || initialTravelInfo.patient_address);
       }
     }
 
-    if (!initialTravelInfo.recommended_departure_time && !isExactGps && (initialTravelInfo.patient_address || initialTravelInfo.origin_latitude)) {
-      const orig = initialTravelInfo.patient_address || initialTravelInfo.city || 'Tumakuru';
+    if (!initialTravelInfo.recommended_departure_time && !isExactGps && (initialTravelInfo.patient_address || initialTravelInfo.location_address || initialTravelInfo.origin_latitude)) {
+      const orig = initialTravelInfo.location_address || initialTravelInfo.patient_address || initialTravelInfo.city || 'Tumakuru';
       hospitalApi.calculateTravelDeparture({
         origin: orig,
         origin_latitude: initialTravelInfo.origin_latitude,
         origin_longitude: initialTravelInfo.origin_longitude,
+        location_source: initialTravelInfo.location_source,
+        is_approximate: initialTravelInfo.is_approximate ?? initialTravelInfo.is_approximate_location,
         expected_consultation_iso: initialTravelInfo.expected_consultation_iso,
         safety_buffer_min: 10
       }).then((res) => {
@@ -561,34 +583,47 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
     }
 
     try {
-      // 1. Capture fresh browser GPS reading (high accuracy, no cache)
+      // 1. Determine whether device GPS should be captured:
+      // Only capture device GPS if location_source is explicitly device_gps/gps and NOT map_selected or manual
+      const isDeviceGpsBooking = (activeInfo?.location_source === 'device_gps' || activeInfo?.location_source === 'gps');
       let coords = null;
-      try {
-        const loc = await getBrowserLocation({
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        });
-        if (loc && loc.success) {
-          const lat = Number(loc.latitude.toFixed(6));
-          const lon = Number(loc.longitude.toFixed(6));
-          coords = [lon, lat];
-          setLiveCoords(coords);
-          setIsExactGps(true);
-          setGpsStatus('watching');
-          setLiveTrackingActive(true);
-          setSelectedOrigin('Current GPS Location');
-          setLastGpsReading({ lat, lon, accuracy: loc.accuracy ? Math.round(loc.accuracy) : null, timestamp: new Date().toLocaleTimeString() });
-          lastRecalcPosRef.current = { lat, lon };
-          lastRecalcTimeRef.current = Date.now();
-        }
-      } catch (locErr) {
-        console.warn('Could not capture fresh GPS for departure, using recorded coordinates:', locErr);
-      }
 
-      // If no fresh GPS, use currently active exact GPS coordinates if available
-      if (!coords && liveCoords && isExactGps) {
-        coords = liveCoords;
+      if (isDeviceGpsBooking) {
+        try {
+          const loc = await getBrowserLocation({
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+          if (loc && loc.success) {
+            const lat = Number(loc.latitude.toFixed(6));
+            const lon = Number(loc.longitude.toFixed(6));
+            coords = [lon, lat];
+            setLiveCoords(coords);
+            setIsExactGps(true);
+            setGpsStatus('watching');
+            setLiveTrackingActive(true);
+            setSelectedOrigin('Current GPS Location');
+            setLastGpsReading({ lat, lon, accuracy: loc.accuracy ? Math.round(loc.accuracy) : null, timestamp: new Date().toLocaleTimeString() });
+            lastRecalcPosRef.current = { lat, lon };
+            lastRecalcTimeRef.current = Date.now();
+          }
+        } catch (locErr) {
+          console.warn('Could not capture fresh GPS for departure, using recorded coordinates:', locErr);
+        }
+
+        // If no fresh GPS, use currently active exact GPS coordinates if available
+        if (!coords && liveCoords && isExactGps) {
+          coords = liveCoords;
+        }
+      } else {
+        // Patient location was selected on map or entered manually:
+        // NEVER substitute the booker's browser GPS for the patient's selected location!
+        if (liveCoords && liveCoords.length === 2) {
+          coords = liveCoords;
+        } else if (activeInfo?.origin_latitude != null && activeInfo?.origin_longitude != null) {
+          coords = [Number(activeInfo.origin_longitude), Number(activeInfo.origin_latitude)];
+        }
       }
 
       console.log(`[Leaving Now] Confirming departure for ${queueId} with coords:`, coords);
@@ -645,7 +680,17 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold text-base text-white tracking-tight">{t('when_to_leave', 'Smart Patient Departure Engine')}</h3>
-              {isExactGps && liveCoords ? (
+              {travelInfo?.is_approximate || travelInfo?.is_approximate_location || travelInfo?.location_source === 'manual' ? (
+                <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 text-amber-400" />
+                  <span>{t('approximate_notice', 'Approximate location — travel time may vary.')}</span>
+                </span>
+              ) : travelInfo?.location_source === 'map_selected' ? (
+                <span className="text-[10px] font-bold bg-sky-500/20 text-sky-300 px-2.5 py-0.5 rounded-full border border-sky-500/30 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-sky-400" />
+                  <span>{t('location_source_map', 'Map Selected')}</span>
+                </span>
+              ) : isExactGps && liveCoords ? (
                 <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   <span>✓ {t('live_gps_active', 'Exact GPS Active')}</span>
@@ -717,6 +762,27 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
           </div>
         </div>
       </div>
+
+      {/* Explicit Approximate Location Notice as required */}
+      {(travelInfo?.is_approximate || travelInfo?.is_approximate_location || travelInfo?.location_source === 'manual') && (
+        <div className="mb-4 px-3.5 py-2.5 rounded-2xl bg-amber-950/80 border border-amber-500/50 text-xs text-amber-200 flex items-center gap-2.5 shadow-inner">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="font-semibold">{t('approximate_notice', 'Approximate location — travel time may vary.')}</span>
+        </div>
+      )}
+
+      {/* Map Selected Location Notice */}
+      {travelInfo?.location_source === 'map_selected' && (
+        <div className="mb-4 px-3.5 py-2 rounded-2xl bg-sky-950/80 border border-sky-400/40 text-xs text-sky-200 flex items-center justify-between flex-wrap gap-2 shadow-inner">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-sky-400 shrink-0" />
+            <span>{t('patient_location', 'Patient Location')}: <strong className="text-white">{travelInfo?.location_address || travelInfo?.patient_address || selectedOrigin}</strong></span>
+          </div>
+          <span className="text-[10px] font-bold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md border border-sky-400/30">
+            {t('location_source_map', 'Map Selected')}
+          </span>
+        </div>
+      )}
 
       {/* Temporary Debug GPS Pill / Log Console */}
       {(lastGpsReading || (isExactGps && liveCoords)) && (
@@ -968,47 +1034,51 @@ export default function DepartureCard({ travelInfo: initialTravelInfo, onRefresh
 
       </div>
 
-      {/* Grid Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center relative z-10">
-        <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('route_metrics', 'Transit Distance')}</span>
-          <span className="text-lg font-black text-white">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.2} {t('km_short', 'km')}</span>
+      {/* Grid Metrics - ONLY for pre-arrival patients */}
+      {departureState !== DEPARTURE_STATES.ARRIVED_OR_TERMINAL && !isPatientArrivedOrTerminal(travelInfo) && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center relative z-10">
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+            <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('route_metrics', 'Transit Distance')}</span>
+            <span className="text-lg font-black text-white">{travelInfo.distance_km != null ? travelInfo.distance_km : 0.2} {t('km_short', 'km')}</span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+            <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('live_travel_duration', 'Travel Duration')}</span>
+            <span className="text-lg font-black text-sky-300">{travelDuration} {t('mins_short', 'mins')}</span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+            <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('safety_buffer_included', 'Safety Buffer')}</span>
+            <span className="text-lg font-black text-teal-300">+{safetyBuffer} {t('mins_short', 'mins')}</span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+            <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('expected_consultation_label', 'OPD Turn Window')}</span>
+            <span className="text-lg font-black text-white">{displayTurnWindow}</span>
+          </div>
         </div>
-        <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('live_travel_duration', 'Travel Duration')}</span>
-          <span className="text-lg font-black text-sky-300">{travelDuration} {t('mins_short', 'mins')}</span>
-        </div>
-        <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('safety_buffer_included', 'Safety Buffer')}</span>
-          <span className="text-lg font-black text-teal-300">+{safetyBuffer} {t('mins_short', 'mins')}</span>
-        </div>
-        <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-          <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-0.5">{t('expected_consultation_label', 'OPD Turn Window')}</span>
-          <span className="text-lg font-black text-white">{displayTurnWindow}</span>
-        </div>
-      </div>
+      )}
 
-      {/* Interactive Live Transit Route Map (MapLibre + OpenFreeMap + Throttled Live GPS) */}
-      <div className="mt-6 pt-5 border-t border-white/10 relative z-10">
-        <div className="flex items-center justify-between mb-3 px-1">
-          <div className="flex items-center gap-2">
-            <Navigation className="w-4 h-4 text-sky-400" />
-            <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-              {t('when_to_leave', 'Live Road Route Navigation')}
+      {/* Interactive Live Transit Route Map (MapLibre + OpenFreeMap + Throttled Live GPS) - ONLY for pre-arrival */}
+      {departureState !== DEPARTURE_STATES.ARRIVED_OR_TERMINAL && !isPatientArrivedOrTerminal(travelInfo) && (
+        <div className="mt-6 pt-5 border-t border-white/10 relative z-10">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-2">
+              <Navigation className="w-4 h-4 text-sky-400" />
+              <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                {t('when_to_leave', 'Live Road Route Navigation')}
+              </span>
+            </div>
+            <span className="text-[10px] text-sky-300/80 font-medium">
+              OpenRouteService • OpenFreeMap
             </span>
           </div>
-          <span className="text-[10px] text-sky-300/80 font-medium">
-            OpenRouteService • OpenFreeMap
-          </span>
+          <LiveRouteMap
+            travelInfo={travelInfo}
+            liveCoords={liveCoords}
+            isExactGps={isExactGps}
+            isWatching={isExactGps && gpsStatus === 'watching'}
+            gpsStatus={gpsStatus}
+          />
         </div>
-        <LiveRouteMap
-          travelInfo={travelInfo}
-          liveCoords={liveCoords}
-          isExactGps={isExactGps}
-          isWatching={isExactGps && gpsStatus === 'watching'}
-          gpsStatus={gpsStatus}
-        />
-      </div>
+      )}
 
     </div>
   );

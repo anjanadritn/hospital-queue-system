@@ -23,13 +23,15 @@ import {
   Edit3,
   HeartPulse,
   Sun,
-  Moon
+  Moon,
+  Users
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import SymptomSelector from '../components/SymptomSelector';
 import DepartureCard from '../components/DepartureCard';
+import PatientLocationSelector from '../components/PatientLocationSelector';
 
 export default function BookAppointment() {
   const navigate = useNavigate();
@@ -57,6 +59,43 @@ export default function BookAppointment() {
   const [gpsMessage, setGpsMessage] = useState('');
   const [pdo, setPdo] = useState('');
 
+  // Family / Dependent vs Self Booking State
+  const [bookingFor, setBookingFor] = useState('myself'); // 'myself' | 'family_member'
+  const [relation, setRelation] = useState('self');
+  const [locationSource, setLocationSource] = useState('device_gps');
+  const [locationAddress, setLocationAddress] = useState('');
+
+  const handleBookingForChange = (target) => {
+    setBookingFor(target);
+    if (target === 'myself') {
+      setRelation('self');
+      if (user) {
+        setPatientName(user.name || user.full_name || 'Patient');
+        setPatientPhone(user.phone || '');
+        if (user.age) setAge(user.age);
+        if (user.gender) setGender(user.gender);
+        if (user.city || user.address) setCity(user.city || user.address);
+        if (user.height_cm) setHeightCm(user.height_cm);
+        if (user.weight_kg) setWeightKg(user.weight_kg);
+      }
+      setLocationSource(originLatitude && originLongitude ? 'device_gps' : 'manual');
+    } else {
+      setRelation('Mother');
+      // For family member, do not pre-fill user profile; let booker enter patient vitals
+      setPatientName('');
+      setAge('');
+      setHeightCm('');
+      setWeightKg('');
+      // NEVER silently use booker's GPS for family member!
+      setOriginLatitude(null);
+      setOriginLongitude(null);
+      setIsApproximateLocation(false);
+      setLocationSource('map_selected');
+      setLocationAddress('');
+      setCity('');
+    }
+  };
+
   const handleRequestLocation = () => {
     if (!navigator.geolocation) {
       setGpsStatus('unavailable');
@@ -75,10 +114,12 @@ export default function BookAppointment() {
         setOriginLatitude(lat);
         setOriginLongitude(lon);
         setIsApproximateLocation(false);
+        setLocationSource('device_gps');
         setGpsStatus('granted');
         setGpsMessage(`Precise GPS captured: ${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E`);
         if (!city || city === 'Tumakuru') {
           setCity('Current GPS Location');
+          setLocationAddress(`Current Device GPS (${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E)`);
         }
       },
       (geoError) => {
@@ -101,12 +142,12 @@ export default function BookAppointment() {
     );
   };
 
-  // Proactively ask patient for browser location permission on load
+  // Proactively ask patient for browser location permission on load ONLY if booking for myself
   useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
+    if (bookingFor === 'myself' && typeof window !== 'undefined' && navigator.geolocation) {
       handleRequestLocation();
     }
-  }, []);
+  }, [bookingFor]);
 
   const [selectedDept, setSelectedDept] = useState('General Medicine');
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
@@ -289,10 +330,18 @@ export default function BookAppointment() {
         height_cm: heightCm ? Number(heightCm) : null,
         weight_kg: weightKg ? Number(weightKg) : null,
         city: city || 'Tumakuru',
-        patient_address: city || 'Tumakuru',
+        patient_address: locationAddress || city || 'Tumakuru',
         origin_latitude: originLatitude,
         origin_longitude: originLongitude,
+        latitude: originLatitude,
+        longitude: originLongitude,
         is_approximate_location: isApproximateLocation,
+        is_approximate: isApproximateLocation,
+        location_source: locationSource,
+        location_address: locationAddress || city || 'Tumakuru',
+        display_address: locationAddress || city || 'Tumakuru',
+        booking_for: bookingFor,
+        relation: relation,
         pdo: pdo,
         doctor_id: selectedDoctorId,
         department: selectedDept,
@@ -612,6 +661,75 @@ export default function BookAppointment() {
                 </div>
               )}
 
+              {/* STEP 5.1: WHO IS THIS APPOINTMENT FOR? */}
+              <div className="space-y-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-sky-600" />
+                    <span>{t('who_is_appointment_for', 'Who is this appointment for?')}</span>
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {bookingFor === 'myself' ? 'Self Consultation' : 'Family Member / Dependent'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleBookingForChange('myself')}
+                    className={`p-3.5 rounded-xl border text-center transition cursor-pointer flex items-center justify-center gap-2 ${
+                      bookingFor === 'myself'
+                        ? 'bg-sky-50 border-sky-500 text-sky-900 ring-2 ring-sky-200 font-black shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <User className="w-4 h-4 text-sky-600" />
+                    <span>{t('myself', 'Myself')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleBookingForChange('family_member')}
+                    className={`p-3.5 rounded-xl border text-center transition cursor-pointer flex items-center justify-center gap-2 ${
+                      bookingFor === 'family_member'
+                        ? 'bg-sky-50 border-sky-500 text-sky-900 ring-2 ring-sky-200 font-black shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Users className="w-4 h-4 text-sky-600" />
+                    <span>{t('family_member_dependent', 'Family member / dependent')}</span>
+                  </button>
+                </div>
+
+                {bookingFor === 'family_member' && (
+                  <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+                    <div className="text-xs text-slate-600 font-semibold">
+                      <span>{t('patient_relation', 'Relationship to Patient')}:</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {['Mother', 'Father', 'Spouse', 'Child', 'Other'].map((relOption) => (
+                        <button
+                          key={relOption}
+                          type="button"
+                          onClick={() => setRelation(relOption)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                            relation === relOption
+                              ? 'bg-sky-600 text-white shadow-xs'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {relOption === 'Mother' ? t('relation_mother', 'Mother')
+                            : relOption === 'Father' ? t('relation_father', 'Father')
+                            : relOption === 'Spouse' ? t('relation_spouse', 'Spouse')
+                            : relOption === 'Child' ? t('relation_child', 'Child')
+                            : t('relation_other', 'Other')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Priority Toggle */}
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -647,7 +765,9 @@ export default function BookAppointment() {
               {/* Row 1: Name, Phone, Age, Gender */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('full_name', 'Patient Full Name')} *</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                    {bookingFor === 'family_member' ? `${relation || 'Patient'} Full Name *` : `${t('full_name', 'Patient Full Name')} *`}
+                  </label>
                   <input
                     type="text"
                     required
@@ -745,8 +865,8 @@ export default function BookAppointment() {
                 </div>
               </div>
 
-              {/* Row 3: Phone, Email, Origin, PDO */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {/* Row 3: Contact Phone, Email, Reference */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">{t('contact_phone_label', 'Contact Phone')} *</label>
                   <div className="relative">
@@ -777,77 +897,6 @@ export default function BookAppointment() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-600">
-                      {t('village_city_label', 'Village / City Origin *')}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleRequestLocation}
-                      disabled={gpsStatus === 'requesting'}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 border border-sky-200 rounded-lg transition shadow-2xs cursor-pointer disabled:opacity-50"
-                    >
-                      {gpsStatus === 'requesting' ? (
-                        <>
-                          <Loader2 className="w-3 h-3 animate-spin text-sky-600" />
-                          <span>{t('detecting_gps', 'Detecting GPS...')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Navigation className="w-3 h-3 text-sky-600" />
-                          <span>{t('use_gps_location', 'Use Current Location (GPS)')}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="relative">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
-                    <input
-                      type="text"
-                      required
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="e.g. Tumakuru, Batawadi, Gubbi"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
-                    />
-                  </div>
-
-                  {/* Location Accuracy Status Feedback */}
-                  {gpsStatus === 'granted' && originLatitude && originLongitude && (
-                    <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-[11px] text-emerald-800 animate-in fade-in duration-200">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>
-                          <strong>Exact GPS Captured:</strong> {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E
-                        </span>
-                      </div>
-                      <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 bg-emerald-200/60 rounded text-emerald-900">
-                        Exact Route
-                      </span>
-                    </div>
-                  )}
-
-                  {(gpsStatus === 'denied' || gpsStatus === 'unavailable') && (
-                    <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-[11px] text-amber-800 animate-in fade-in duration-200">
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-semibold">{gpsMessage}</div>
-                        <div className="text-[10px] text-amber-700 mt-0.5">
-                          Routing and departure time will use the approximate landmark <strong>"{city}"</strong>.
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {gpsStatus === 'idle' && (
-                    <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
-                      <span>💡 Allow GPS for accurate road distance and travel time calculation, or keep landmark name above.</span>
-                    </div>
-                  )}
-                </div>
-
-                <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">PDO / Reference</label>
                   <input
                     type="text"
@@ -858,6 +907,36 @@ export default function BookAppointment() {
                   />
                 </div>
               </div>
+
+              {/* STEP 5.2: PATIENT LOCATION SELECTION */}
+              <PatientLocationSelector
+                value={{
+                  location_source: locationSource,
+                  origin_latitude: originLatitude,
+                  origin_longitude: originLongitude,
+                  patient_address: locationAddress || city,
+                  location_address: locationAddress || city,
+                  city: city,
+                  is_approximate_location: isApproximateLocation
+                }}
+                onChange={(locData) => {
+                  setLocationSource(locData.location_source);
+                  setOriginLatitude(locData.origin_latitude);
+                  setOriginLongitude(locData.origin_longitude);
+                  setIsApproximateLocation(locData.is_approximate_location);
+                  setLocationAddress(locData.location_address || locData.patient_address || '');
+                  setCity(locData.city || 'Tumakuru');
+                  if (locData.location_source === 'device_gps') {
+                    setGpsStatus('granted');
+                    setGpsMessage(`Precise GPS captured: ${locData.origin_latitude?.toFixed(4)}° N, ${locData.origin_longitude?.toFixed(4)}° E`);
+                  } else {
+                    setGpsStatus('idle');
+                    setGpsMessage('');
+                  }
+                }}
+                bookingFor={bookingFor}
+                relation={relation}
+              />
             </div>
 
             {/* STEP 5: REVIEW DETAILS BEFORE CONFIRMATION */}
@@ -878,24 +957,34 @@ export default function BookAppointment() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   {/* Summary 1: Patient Information */}
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-sky-600" /> {t('patient_info', 'Patient Information')}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-sky-600" /> {t('patient_info', 'Patient Information')}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-sky-100 text-sky-800">
+                        {bookingFor === 'myself' ? 'Self' : `${relation || 'Family'}`}
+                      </span>
+                    </div>
                     <div className="text-sm font-black text-slate-900">{patientName}</div>
                     <div className="space-y-1 text-slate-600 text-[11px]">
                       <div>Demographics: <strong className="text-slate-800">{age} yrs • {gender}</strong></div>
                       <div>Phone: <strong className="text-slate-800 font-mono">{patientPhone}</strong></div>
                       <div>
-                        Origin: <strong className="text-slate-800">📍 {city}</strong>
-                        {originLatitude && originLongitude ? (
+                        Origin: <strong className="text-slate-800">📍 {locationAddress || city}</strong>
+                        {locationSource === 'map_selected' && originLatitude && originLongitude ? (
+                          <div className="mt-0.5 text-[10px] text-sky-700 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-sky-600 shrink-0" />
+                            <span>Map Selected: {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E</span>
+                          </div>
+                        ) : locationSource === 'device_gps' && originLatitude && originLongitude ? (
                           <div className="mt-0.5 text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                            <span>GPS: {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E (Exact)</span>
+                            <span>Device GPS: {originLatitude.toFixed(4)}° N, {originLongitude.toFixed(4)}° E</span>
                           </div>
                         ) : (
                           <div className="mt-0.5 text-[10px] text-amber-700 font-medium flex items-center gap-1">
                             <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
-                            <span>Approximate landmark location</span>
+                            <span>Approximate location — travel time may vary</span>
                           </div>
                         )}
                       </div>

@@ -673,124 +673,186 @@ def recalculate_queue_positions(
             cumulative_wait += predicted_dur
             accumulated_dt += timedelta(minutes=predicted_dur)
 
-            new_status = current_status
-            if current_status in ["waiting", "ready"]:
-                new_status = "ready" if idx == 1 else "waiting"
-            elif current_status in ["missed", "missed_consultation"]:
-                new_status = "missed"
+            is_arrived = bool(
+                entry.get("arrived_at_hospital") or
+                entry.get("verified_by_admin") or
+                current_status == "arrived"
+            )
 
-            # Dynamic travel and departure calculation based on real wait time
-            existing_travel = entry.get("travel_info")
-            joined_str = entry.get("original_joined_at") or entry.get("joined_at")
-            joined_dt = now_hospital
-            if joined_str:
-                try:
-                    jdt = datetime.fromisoformat(str(joined_str).replace("Z", "+00:00"))
-                    joined_dt = jdt if jdt.tzinfo else jdt.replace(tzinfo=HOSPITAL_TZ)
-                    joined_dt = joined_dt.astimezone(HOSPITAL_TZ)
-                except Exception:
-                    joined_dt = now_hospital
+            # 30-minute target indicator (treat 30 mins as operational target, not a guaranteed consultation time)
+            target_30_status = "on_track" if predicted_wait <= 30 else "exceeds_target"
+            target_30_label = "On track" if predicted_wait <= 30 else "Queue exceeds 30-minute target"
 
-            leaving_now = bool(entry.get("leaving_now"))
-            leaving_now_at = entry.get("leaving_now_at")
+            if is_arrived:
+                # 1. Treat patient as physically present at SIMSRH
+                # 2. Do NOT continue showing old pre-arrival consultation time
+                # 4. Generate fresh expected consultation time based on current time + predicted wait
+                fresh_consult_dt = now_hospital + timedelta(minutes=predicted_wait)
+                expected_time_str = fresh_consult_dt.strftime("%I:%M %p")
+                expected_time_iso = fresh_consult_dt.isoformat()
 
-            if existing_travel and isinstance(existing_travel, dict) and ("travel_time_minutes" in existing_travel or "travel_time_min" in existing_travel):
-                travel_time_min = int(existing_travel.get("travel_time_minutes") or existing_travel.get("travel_time_min") or 15)
-                safety_buffer_min = int(existing_travel.get("safety_buffer_min") or SAFETY_BUFFER_MIN)
-                patient_addr = existing_travel.get("patient_address") or entry.get("city") or "Current Location"
+                # 5. Remove/replace travel-focused information after arrival verification:
+                # GPS route, distance, Leave Now, departure time, travel duration
+                recommended_departure_str = None
+                recommended_departure_iso = None
+                expected_arrival_str = None
+                expected_arrival_iso = None
+                arrival_deadline_str = None
+                arrival_deadline_iso = None
 
-                rec_departure_dt = expected_dt - timedelta(minutes=travel_time_min + safety_buffer_min)
+                new_status = "arrived" if current_status in ["waiting", "ready", "arrived", "OTP_GENERATED"] else current_status
 
-                if leaving_now:
-                    dep_time = now_hospital
-                    if leaving_now_at:
-                        try:
-                            pdt = datetime.fromisoformat(str(leaving_now_at).replace("Z", "+00:00"))
-                            dep_time = pdt if pdt.tzinfo else pdt.replace(tzinfo=HOSPITAL_TZ)
-                            dep_time = dep_time.astimezone(HOSPITAL_TZ)
-                        except Exception:
-                            dep_time = now_hospital
-                    arrival_dt = dep_time + timedelta(minutes=travel_time_min)
-                    departure_dt = dep_time
-                    departure_alert = f"🚗 En route to SIMSRH from {patient_addr}. Expected arrival around {arrival_dt.strftime('%I:%M %p')}."
-                elif now_hospital >= rec_departure_dt:
-                    arrival_dt = now_hospital + timedelta(minutes=travel_time_min)
-                    departure_dt = rec_departure_dt
-                    departure_alert = f"🚗 Depart immediately from {patient_addr} (estimated travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')}."
-                else:
-                    arrival_dt = rec_departure_dt + timedelta(minutes=travel_time_min)
-                    departure_dt = rec_departure_dt
-                    departure_alert = f"🚗 Start from {patient_addr} around {departure_dt.strftime('%I:%M %p')} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {expected_time_str}."
-
-                arrival_deadline_dt = arrival_dt + timedelta(minutes=2)
-                recommended_departure_str = departure_dt.strftime("%I:%M %p")
-                recommended_departure_iso = departure_dt.isoformat()
-                expected_arrival_str = arrival_dt.strftime("%I:%M %p")
-                expected_arrival_iso = arrival_dt.isoformat()
-                arrival_deadline_str = arrival_deadline_dt.strftime("%I:%M %p")
-                arrival_deadline_iso = arrival_deadline_dt.isoformat()
                 travel_info = {
-                    **existing_travel,
-                    "travel_time_min": travel_time_min,
-                    "travel_time_minutes": travel_time_min,
-                    "safety_buffer_min": safety_buffer_min,
-                    "recommended_departure_time": recommended_departure_str,
-                    "recommended_departure_iso": recommended_departure_iso,
+                    "arrived_at_hospital": True,
+                    "verified_by_admin": bool(entry.get("verified_by_admin", True)),
+                    "status": new_status,
+                    "is_arrived": True,
+                    "arrival_verified": True,
                     "expected_consultation_time": expected_time_str,
                     "expected_consultation_iso": expected_time_iso,
-                    "expected_hospital_arrival": expected_arrival_str,
-                    "expected_hospital_arrival_iso": expected_arrival_iso,
-                    "arrival_deadline_time": arrival_deadline_str,
-                    "arrival_deadline_iso": arrival_deadline_iso,
-                    "departure_alert": departure_alert,
-                    "leaving_now": leaving_now,
-                    "leaving_now_at": leaving_now_at
+                    "predicted_wait_time": predicted_wait,
+                    "target_30_status": target_30_status,
+                    "target_30_label": target_30_label,
+                    "doctor_name": entry.get("doctor_name"),
+                    "room_number": entry.get("room_number", "Room 101"),
+                    "patient_address": entry.get("patient_address") or entry.get("city") or "SIMSRH OPD"
                 }
             else:
-                city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
-                entry_coords = None
-                if entry.get("origin_latitude") is not None and entry.get("origin_longitude") is not None:
+                new_status = current_status
+                if current_status in ["waiting", "ready"]:
+                    new_status = "ready" if idx == 1 else "waiting"
+                elif current_status in ["missed", "missed_consultation"]:
+                    new_status = "missed"
+
+                # Dynamic travel and departure calculation based on real wait time
+                existing_travel = entry.get("travel_info")
+                joined_str = entry.get("original_joined_at") or entry.get("joined_at")
+                joined_dt = now_hospital
+                if joined_str:
                     try:
-                        entry_coords = [float(entry["origin_longitude"]), float(entry["origin_latitude"])]
-                    except (ValueError, TypeError):
-                        entry_coords = None
-                travel_info = calculate_travel_metrics(
-                    patient_address=city,
-                    wait_time_min=predicted_wait,
-                    expected_consultation_iso=expected_time_iso,
-                    origin_coords=entry_coords,
-                    safety_buffer_min=SAFETY_BUFFER_MIN,
-                    leaving_now=leaving_now,
-                    leaving_now_at=leaving_now_at
-                )
-                recommended_departure_str = travel_info.get("recommended_departure_time")
-                recommended_departure_iso = travel_info.get("recommended_departure_iso")
-                expected_arrival_str = travel_info.get("expected_hospital_arrival")
-                expected_arrival_iso = travel_info.get("expected_hospital_arrival_iso")
-                arrival_deadline_str = travel_info.get("arrival_deadline_time")
-                arrival_deadline_iso = travel_info.get("arrival_deadline_iso")
+                        jdt = datetime.fromisoformat(str(joined_str).replace("Z", "+00:00"))
+                        joined_dt = jdt if jdt.tzinfo else jdt.replace(tzinfo=HOSPITAL_TZ)
+                        joined_dt = joined_dt.astimezone(HOSPITAL_TZ)
+                    except Exception:
+                        joined_dt = now_hospital
+
+                leaving_now = bool(entry.get("leaving_now"))
+                leaving_now_at = entry.get("leaving_now_at")
+
+                if existing_travel and isinstance(existing_travel, dict) and ("travel_time_minutes" in existing_travel or "travel_time_min" in existing_travel):
+                    travel_time_min = int(existing_travel.get("travel_time_minutes") or existing_travel.get("travel_time_min") or 15)
+                    safety_buffer_min = int(existing_travel.get("safety_buffer_min") or SAFETY_BUFFER_MIN)
+                    patient_addr = existing_travel.get("patient_address") or entry.get("city") or "Current Location"
+
+                    rec_departure_dt = expected_dt - timedelta(minutes=travel_time_min + safety_buffer_min)
+
+                    if leaving_now:
+                        dep_time = now_hospital
+                        if leaving_now_at:
+                            try:
+                                pdt = datetime.fromisoformat(str(leaving_now_at).replace("Z", "+00:00"))
+                                dep_time = pdt if pdt.tzinfo else pdt.replace(tzinfo=HOSPITAL_TZ)
+                                dep_time = dep_time.astimezone(HOSPITAL_TZ)
+                            except Exception:
+                                dep_time = now_hospital
+                        arrival_dt = dep_time + timedelta(minutes=travel_time_min)
+                        departure_dt = dep_time
+                        departure_alert = f"🚗 En route to SIMSRH from {patient_addr}. Expected arrival around {arrival_dt.strftime('%I:%M %p')}."
+                    elif now_hospital >= rec_departure_dt:
+                        arrival_dt = now_hospital + timedelta(minutes=travel_time_min)
+                        departure_dt = rec_departure_dt
+                        departure_alert = f"🚗 Depart immediately from {patient_addr} (recommended departure was {departure_dt.strftime('%I:%M %p')}, estimated travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')} for your consultation at {expected_time_str}."
+                    else:
+                        arrival_dt = rec_departure_dt + timedelta(minutes=travel_time_min)
+                        departure_dt = rec_departure_dt
+                        departure_alert = f"🚗 Start from {patient_addr} around {departure_dt.strftime('%I:%M %p')} to arrive at SIMSRH ~{safety_buffer_min} mins before your consultation at {expected_time_str}."
+
+                    arrival_deadline_dt = arrival_dt + timedelta(minutes=2)
+                    recommended_departure_str = departure_dt.strftime("%I:%M %p")
+                    recommended_departure_iso = departure_dt.isoformat()
+                    expected_arrival_str = arrival_dt.strftime("%I:%M %p")
+                    expected_arrival_iso = arrival_dt.isoformat()
+                    arrival_deadline_str = arrival_deadline_dt.strftime("%I:%M %p")
+                    arrival_deadline_iso = arrival_deadline_dt.isoformat()
+                    travel_info = {
+                        **existing_travel,
+                        "travel_time_min": travel_time_min,
+                        "travel_time_minutes": travel_time_min,
+                        "safety_buffer_min": safety_buffer_min,
+                        "recommended_departure_time": recommended_departure_str,
+                        "recommended_departure_iso": recommended_departure_iso,
+                        "expected_consultation_time": expected_time_str,
+                        "expected_consultation_iso": expected_time_iso,
+                        "expected_hospital_arrival": expected_arrival_str,
+                        "expected_hospital_arrival_iso": expected_arrival_iso,
+                        "arrival_deadline_time": arrival_deadline_str,
+                        "arrival_deadline_iso": arrival_deadline_iso,
+                        "departure_alert": departure_alert,
+                        "leaving_now": leaving_now,
+                        "leaving_now_at": leaving_now_at
+                    }
+                else:
+                    city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
+                    entry_coords = None
+                    if entry.get("origin_latitude") is not None and entry.get("origin_longitude") is not None:
+                        try:
+                            entry_coords = [float(entry["origin_longitude"]), float(entry["origin_latitude"])]
+                        except (ValueError, TypeError):
+                            entry_coords = None
+                    loc_source = entry.get("location_source")
+                    is_approx = entry.get("is_approximate") if entry.get("is_approximate") is not None else entry.get("is_approximate_location")
+                    loc_addr = entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or city
+                    travel_info = calculate_travel_metrics(
+                        patient_address=loc_addr,
+                        wait_time_min=predicted_wait,
+                        expected_consultation_iso=expected_time_iso,
+                        origin_coords=entry_coords,
+                        safety_buffer_min=SAFETY_BUFFER_MIN,
+                        leaving_now=leaving_now,
+                        leaving_now_at=leaving_now_at,
+                        location_source=loc_source,
+                        is_approximate=is_approx,
+                        location_address=loc_addr
+                    )
+                    recommended_departure_str = travel_info.get("recommended_departure_time")
+                    recommended_departure_iso = travel_info.get("recommended_departure_iso")
+                    expected_arrival_str = travel_info.get("expected_hospital_arrival")
+                    expected_arrival_iso = travel_info.get("expected_hospital_arrival_iso")
+                    arrival_deadline_str = travel_info.get("arrival_deadline_time")
+                    arrival_deadline_iso = travel_info.get("arrival_deadline_iso")
+
+            db_update = {
+                "position": idx,
+                "is_late": bool(entry.get("late_arrival_reordered")),
+                "total_active_queue": total_active_count,
+                "predicted_duration": predicted_dur,
+                "predicted_wait_time": predicted_wait,
+                "expected_consultation_time": expected_time_str,
+                "expected_consultation_iso": expected_time_iso,
+                "expected_arrival_time": expected_arrival_str,
+                "expected_arrival_iso": expected_arrival_iso,
+                "arrival_deadline_time": arrival_deadline_str,
+                "arrival_deadline_iso": arrival_deadline_iso,
+                "recommended_departure_time": recommended_departure_str,
+                "recommended_departure_iso": recommended_departure_iso,
+                "target_30_status": target_30_status,
+                "target_30_label": target_30_label,
+                "is_next": (idx == 1),
+                "is_current": False,
+                "status": new_status,
+                "travel_info": travel_info
+            }
+            if is_arrived:
+                db_update["arrived_at_hospital"] = True
+                db_update["verified_by_admin"] = bool(entry.get("verified_by_admin", True))
+                db_update["leaving_now"] = False
+                db_update["leaving_now_at"] = None
+                db_update["departure_alert"] = None
+                db_update["leave_reminder_status"] = "ARRIVED"
 
             db.queue.update_one(
                 {"queue_id": entry["queue_id"]},
-                {"$set": {
-                    "position": idx,
-                    "is_late": bool(entry.get("late_arrival_reordered")),
-                    "total_active_queue": total_active_count,
-                    "predicted_duration": predicted_dur,
-                    "predicted_wait_time": predicted_wait,
-                    "expected_consultation_time": expected_time_str,
-                    "expected_consultation_iso": expected_time_iso,
-                    "expected_arrival_time": expected_arrival_str,
-                    "expected_arrival_iso": expected_arrival_iso,
-                    "arrival_deadline_time": arrival_deadline_str,
-                    "arrival_deadline_iso": arrival_deadline_iso,
-                    "recommended_departure_time": recommended_departure_str,
-                    "recommended_departure_iso": recommended_departure_iso,
-                    "is_next": (idx == 1),
-                    "is_current": False,
-                    "status": new_status,
-                    "travel_info": travel_info
-                }}
+                {"$set": db_update}
             )
 
             # Sync position and timings to appointments collection if linked
@@ -811,6 +873,8 @@ def recalculate_queue_positions(
                             "arrival_deadline_iso": arrival_deadline_iso,
                             "recommended_departure_time": recommended_departure_str,
                             "recommended_departure_iso": recommended_departure_iso,
+                            "target_30_status": target_30_status,
+                            "target_30_label": target_30_label,
                             "status": new_status,
                             "travel_info": travel_info
                         }}
@@ -958,17 +1022,61 @@ def recalculate_queue_positions(
         cumulative_wait += predicted_dur
         accumulated_dt += timedelta(minutes=predicted_dur)
 
+        is_arrived = bool(
+            entry.get("arrived_at_hospital") or
+            entry.get("verified_by_admin") or
+            current_status == "arrived"
+        )
+        target_30_status = "on_track" if predicted_wait <= 30 else "exceeds_target"
+        target_30_label = "On track" if predicted_wait <= 30 else "Queue exceeds 30-minute target"
+
+        if is_arrived:
+            fresh_consult_dt = now + timedelta(minutes=predicted_wait)
+            expected_time_str = fresh_consult_dt.strftime("%I:%M %p")
+            expected_time_iso = fresh_consult_dt.isoformat()
+            new_status = "arrived" if current_status in ["waiting", "ready", "arrived", "OTP_GENERATED"] else current_status
+            entry["arrived_at_hospital"] = True
+            entry["verified_by_admin"] = bool(entry.get("verified_by_admin", True))
+            entry["leaving_now"] = False
+            entry["leaving_now_at"] = None
+            entry["departure_alert"] = None
+            entry["recommended_departure_time"] = None
+            entry["recommended_departure_iso"] = None
+            entry["expected_arrival_time"] = None
+            entry["expected_arrival_iso"] = None
+            entry["arrival_deadline_time"] = None
+            entry["arrival_deadline_iso"] = None
+            entry["travel_info"] = {
+                "arrived_at_hospital": True,
+                "verified_by_admin": bool(entry.get("verified_by_admin", True)),
+                "status": new_status,
+                "is_arrived": True,
+                "arrival_verified": True,
+                "expected_consultation_time": expected_time_str,
+                "expected_consultation_iso": expected_time_iso,
+                "predicted_wait_time": predicted_wait,
+                "target_30_status": target_30_status,
+                "target_30_label": target_30_label,
+                "doctor_name": entry.get("doctor_name"),
+                "room_number": entry.get("room_number", "Room 101")
+            }
+        else:
+            new_status = current_status
+            if idx == 1 and current_status in ["waiting", "ready"]:
+                new_status = "ready"
+            elif current_status in ["missed", "missed_consultation"]:
+                new_status = "missed"
+
         entry["position"] = idx
         entry["predicted_duration"] = predicted_dur
         entry["predicted_wait_time"] = predicted_wait
         entry["expected_consultation_time"] = expected_time_str
         entry["expected_consultation_iso"] = expected_time_iso
+        entry["target_30_status"] = target_30_status
+        entry["target_30_label"] = target_30_label
         entry["is_next"] = (idx == 1)
         entry["is_current"] = False
-        if idx == 1 and current_status in ["waiting", "ready"]:
-            entry["status"] = "ready"
-        elif current_status in ["missed", "missed_consultation"]:
-            entry["status"] = "missed"
+        entry["status"] = new_status
 
 def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     patient_id = str(data.get("patient_id", "P001")).strip()
@@ -1040,8 +1148,22 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     is_approximate_location = (origin_latitude is None or origin_longitude is None) or bool(data.get("is_approximate_location", False))
     origin_coords = [origin_longitude, origin_latitude] if (origin_latitude is not None and origin_longitude is not None) else None
 
-    # Initial Travel Metrics based on City / Landmark / GPS
-    travel_info = calculate_travel_metrics(patient_address=city, wait_time_min=predicted_dur, origin_coords=origin_coords)
+    booking_for = str(data.get("booking_for") or "myself").strip().lower()
+    relation = str(data.get("relation") or ("self" if booking_for == "myself" else "Family Member")).strip()
+    location_source = str(data.get("location_source") or ("device_gps" if (origin_latitude and not is_approximate_location) else ("manual" if is_approximate_location else "gps"))).strip()
+    location_address = str(data.get("location_address") or data.get("display_address") or data.get("patient_address") or city).strip()
+    location_captured_at = str(data.get("location_captured_at") or now_str).strip()
+    is_approximate = (origin_latitude is None or origin_longitude is None) or bool(data.get("is_approximate") or data.get("is_approximate_location", False)) or (location_source == "manual")
+
+    # Initial Travel Metrics based on City / Landmark / Patient Coords
+    travel_info = calculate_travel_metrics(
+        patient_address=location_address or city,
+        wait_time_min=predicted_dur,
+        origin_coords=origin_coords,
+        location_source=location_source,
+        is_approximate=is_approximate,
+        location_address=location_address
+    )
 
     # Generate 6-digit Hospital Arrival Verification OTP
     otp_doc, _ = generate_consultation_otp(queue_id, patient_id, doctor_id)
@@ -1082,7 +1204,16 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "patient_address": str(data.get("patient_address") or city).strip(),
         "origin_latitude": origin_latitude,
         "origin_longitude": origin_longitude,
-        "is_approximate_location": is_approximate_location,
+        "latitude": origin_latitude,
+        "longitude": origin_longitude,
+        "is_approximate_location": is_approximate,
+        "is_approximate": is_approximate,
+        "location_source": location_source,
+        "location_address": location_address,
+        "display_address": location_address,
+        "location_captured_at": location_captured_at,
+        "booking_for": booking_for,
+        "relation": relation,
         "pdo": pdo,
         "doctor_id": doctor_id,
         "department": department,

@@ -438,7 +438,7 @@ def test_18_admin_booking_details_operational_roster(client, admin_token):
         "doctor_id": "TEST_DOC_ADM_1",
         "department": "Cardiology",
         "slot_id": "evening",
-        "consultation_date": "2026-09-19",
+        "consultation_date": date.today().isoformat(),
         "symptoms": ["Secret Severe Palpitations"],
         "custom_symptoms": "Confidential acute shortness of breath",
         "patient_address": "Secret Lane 404, Tumakuru"
@@ -465,7 +465,7 @@ def test_18_admin_booking_details_operational_roster(client, admin_token):
     assert target_booking["token_number"] == q_id
     assert target_booking["doctor_name"] is not None
     assert target_booking["department"] == "Cardiology"
-    assert target_booking["consultation_date"] == "2026-09-19"
+    assert target_booking["consultation_date"] == date.today().isoformat()
     assert "consultation_slot" in target_booking
     assert target_booking["consultation_slot"]["slot_id"] == "evening"
     assert "display_time" in target_booking["consultation_slot"]

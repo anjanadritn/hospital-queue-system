@@ -113,6 +113,13 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     origin_coords = [origin_longitude, origin_latitude] if (origin_latitude is not None and origin_longitude is not None) else None
     patient_address = str(data.get("patient_address") or city).strip()
 
+    booking_for = str(data.get("booking_for") or "myself").strip().lower()
+    relation = str(data.get("relation") or ("self" if booking_for == "myself" else "Family Member")).strip()
+    location_source = str(data.get("location_source") or ("device_gps" if (origin_latitude and not is_approximate_location) else ("manual" if is_approximate_location else "gps"))).strip()
+    location_address = str(data.get("location_address") or data.get("display_address") or patient_address or city).strip()
+    location_captured_at = str(data.get("location_captured_at") or now_str).strip()
+    is_approximate = (origin_latitude is None or origin_longitude is None) or bool(data.get("is_approximate") or data.get("is_approximate_location", False)) or (location_source == "manual")
+
     queue_payload = {
         "patient_id": patient_id,
         "patient_name": patient_name,
@@ -132,7 +139,13 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "patient_address": patient_address,
         "origin_latitude": origin_latitude,
         "origin_longitude": origin_longitude,
-        "is_approximate_location": is_approximate_location,
+        "is_approximate_location": is_approximate,
+        "is_approximate": is_approximate,
+        "location_source": location_source,
+        "location_address": location_address,
+        "location_captured_at": location_captured_at,
+        "booking_for": booking_for,
+        "relation": relation,
         "pdo": pdo,
         "booking_id": booking_id,
         "consultation_date": consultation_date_str,
@@ -146,7 +159,14 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     arrival_otp = queue_res.get("arrival_otp") if queue_res else "123456"
     queue_position = queue_res.get("position", 1) if queue_res else 1
     wait_time = queue_res.get("predicted_wait_time", 5) if queue_res else 5
-    travel_info = queue_res.get("travel_info") if queue_res and queue_res.get("travel_info") else calculate_travel_metrics(patient_address=city, wait_time_min=wait_time, origin_coords=origin_coords)
+    travel_info = queue_res.get("travel_info") if queue_res and queue_res.get("travel_info") else calculate_travel_metrics(
+        patient_address=location_address,
+        wait_time_min=wait_time,
+        origin_coords=origin_coords,
+        location_source=location_source,
+        is_approximate=is_approximate,
+        location_address=location_address
+    )
 
     booking_doc = {
         "booking_id": booking_id,
@@ -165,7 +185,16 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "patient_address": patient_address,
         "origin_latitude": origin_latitude,
         "origin_longitude": origin_longitude,
-        "is_approximate_location": is_approximate_location,
+        "latitude": origin_latitude,
+        "longitude": origin_longitude,
+        "is_approximate_location": is_approximate,
+        "is_approximate": is_approximate,
+        "location_source": location_source,
+        "location_address": location_address,
+        "display_address": location_address,
+        "location_captured_at": location_captured_at,
+        "booking_for": booking_for,
+        "relation": relation,
         "pdo": pdo,
         "doctor_id": doctor_id,
         "department": department,
@@ -209,8 +238,9 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         except Exception:
             pass
 
-        # Update returning patient profile with latest vitals while preserving past records
-        if patient_id or patient_phone:
+        # Update returning patient profile with latest vitals ONLY if booking for myself,
+        # preventing family member appointment details from overwriting the user's permanent profile.
+        if booking_for == "myself" and (patient_id or patient_phone):
             try:
                 from services.patient_service import sync_or_update_patient_profile
                 sync_profile_data = {

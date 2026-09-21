@@ -26,6 +26,7 @@ import StatusBadge from '../components/StatusBadge';
 import LoadingState from '../components/LoadingState';
 import DepartureCard from '../components/DepartureCard';
 import HospitalModeCard from '../components/HospitalModeCard';
+import ArrivalVerifiedCard from '../components/ArrivalVerifiedCard';
 import ConsultationOtpCard from '../components/ConsultationOtpCard';
 import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
 
@@ -480,8 +481,8 @@ export default function QueueTracking() {
                 </div>
               </div>
 
-              {/* METRICS DISPLAY WITH COLOR SYSTEM */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* METRICS DISPLAY WITH COLOR SYSTEM (Responsive on Mobile) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 {/* Position (Blue) */}
                 <div className="bg-sky-50/80 border border-sky-200/70 rounded-2xl p-5 text-center">
@@ -517,6 +518,34 @@ export default function QueueTracking() {
                   </span>
                 </div>
 
+                {/* Fresh Expected Consultation Time & 30-min Target Status */}
+                <div className={`p-5 rounded-2xl border text-center flex flex-col justify-between ${
+                  (queueData.predicted_wait_time ?? (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)) <= 30
+                    ? 'bg-emerald-50/80 border-emerald-200/80'
+                    : 'bg-amber-50/80 border-amber-200/80'
+                }`}>
+                  <div>
+                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center justify-center gap-1 mb-1">
+                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{Boolean(queueData.verified_by_admin || queueData.arrived_at_hospital || queueData.status === 'arrived') ? t('fresh_expected_consultation', 'Fresh Start Time') : t('expected_consultation_label', 'Expected Start')}</span>
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                      {queueData.expected_consultation_time || queueData.travel_info?.expected_consultation_time || 'Approaching'}
+                    </span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-slate-200/60">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      (queueData.predicted_wait_time ?? (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)) <= 30
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-amber-100 text-amber-900 border border-amber-300'
+                    }`}>
+                      {(queueData.predicted_wait_time ?? (queueData.position === 1 ? 5 : (queueData.position - 1) * 12)) <= 30
+                        ? `✓ ${t('target_30_on_track', 'On track')}`
+                        : `⚠️ ${t('target_30_exceeded', 'Queue exceeds 30-minute target')}`}
+                    </span>
+                  </div>
+                </div>
+
               </div>
 
               {/* Symptoms chips */}
@@ -541,45 +570,58 @@ export default function QueueTracking() {
               )}
             </div>
 
-            {/* HOSPITAL MODE CARD */}
-            <HospitalModeCard queueData={queueData} onToggleArrived={handleToggleArrived} />
+            {/* POST-ARRIVAL OR PRE-ARRIVAL VIEW */}
+            {Boolean(queueData.verified_by_admin || queueData.arrived_at_hospital || queueData.status === 'arrived') ? (
+              /* ARRIVAL VERIFIED CARD: Shows Token, Position, Patients Ahead, Est Wait, Fresh Consultation, 30-min target */
+              <ArrivalVerifiedCard
+                queueData={queueData}
+                onRefresh={() => fetchQueueStatus(queueData.queue_id)}
+                refreshing={loading}
+              />
+            ) : (
+              /* PRE-ARRIVAL: Hospital Mode Toggle & Smart Departure Engine with GPS */
+              <>
+                {/* HOSPITAL MODE CARD */}
+                <HospitalModeCard queueData={queueData} onToggleArrived={handleToggleArrived} />
 
-            {/* DEPARTURE CARD */}
-            <DepartureCard
-              travelInfo={{
-                ...(queueData.travel_info || {}),
-                queue_id: queueData.queue_id,
-                booking_id: queueData.booking_id,
-                status: queueData.status,
-                arrived_at_hospital: queueData.arrived_at_hospital,
-                verified_by_admin: queueData.verified_by_admin,
-                late_arrival_reordered: queueData.late_arrival_reordered,
-                leaving_now: queueData.leaving_now,
-                leaving_now_at: queueData.leaving_now_at,
-                leave_reminder_status: queueData.leave_reminder_status,
-                doctor_name: queueData.doctor_name,
-                consultation_slot: queueData.consultation_slot,
-                consultation_date: queueData.consultation_date,
-                patient_address: queueData.patient_address || queueData.city || 'Tumakuru',
-                origin_latitude: queueData.origin_latitude,
-                origin_longitude: queueData.origin_longitude,
-                is_approximate_location: queueData.is_approximate_location ?? (queueData.travel_info?.is_approximate_location ?? true),
-                location_source: queueData.travel_info?.location_source || (queueData.is_approximate_location === false ? 'gps' : 'landmark_approximate'),
-                distance_km: queueData.distance_km != null ? queueData.distance_km : queueData.travel_info?.distance_km,
-                travel_time_min: queueData.travel_time_min != null ? queueData.travel_time_min : (queueData.travel_info?.travel_time_min || queueData.travel_info?.travel_time_minutes),
-                travel_time_minutes: queueData.travel_time_minutes != null ? queueData.travel_time_minutes : (queueData.travel_info?.travel_time_minutes || queueData.travel_info?.travel_time_min),
-                expected_hospital_arrival: queueData.expected_arrival_time || queueData.expected_hospital_arrival || queueData.travel_info?.expected_hospital_arrival,
-                expected_hospital_arrival_iso: queueData.expected_arrival_iso || queueData.expected_hospital_arrival_iso || queueData.travel_info?.expected_hospital_arrival_iso,
-                arrival_deadline_time: queueData.arrival_deadline_time || queueData.travel_info?.arrival_deadline_time,
-                arrival_deadline_iso: queueData.arrival_deadline_iso || queueData.travel_info?.arrival_deadline_iso,
-                expected_consultation_time: queueData.expected_consultation_time || queueData.travel_info?.expected_consultation_time,
-                expected_consultation_iso: queueData.expected_consultation_iso || queueData.travel_info?.expected_consultation_iso,
-                recommended_departure_time: queueData.recommended_departure_time || queueData.travel_info?.recommended_departure_time,
-                recommended_departure_iso: queueData.recommended_departure_iso || queueData.travel_info?.recommended_departure_iso,
-                departure_alert: queueData.departure_alert || queueData.travel_info?.departure_alert
-              }}
-              onRefreshQueue={() => fetchQueueStatus(queueData.queue_id)}
-            />
+                {/* DEPARTURE CARD */}
+                <DepartureCard
+                  travelInfo={{
+                    ...(queueData.travel_info || {}),
+                    queue_id: queueData.queue_id,
+                    booking_id: queueData.booking_id,
+                    status: queueData.status,
+                    arrived_at_hospital: queueData.arrived_at_hospital,
+                    verified_by_admin: queueData.verified_by_admin,
+                    late_arrival_reordered: queueData.late_arrival_reordered,
+                    leaving_now: queueData.leaving_now,
+                    leaving_now_at: queueData.leaving_now_at,
+                    leave_reminder_status: queueData.leave_reminder_status,
+                    doctor_name: queueData.doctor_name,
+                    consultation_slot: queueData.consultation_slot,
+                    consultation_date: queueData.consultation_date,
+                    patient_address: queueData.patient_address || queueData.city || 'Tumakuru',
+                    origin_latitude: queueData.origin_latitude,
+                    origin_longitude: queueData.origin_longitude,
+                    is_approximate_location: queueData.is_approximate_location ?? (queueData.travel_info?.is_approximate_location ?? true),
+                    location_source: queueData.travel_info?.location_source || (queueData.is_approximate_location === false ? 'gps' : 'landmark_approximate'),
+                    distance_km: queueData.distance_km != null ? queueData.distance_km : queueData.travel_info?.distance_km,
+                    travel_time_min: queueData.travel_time_min != null ? queueData.travel_time_min : (queueData.travel_info?.travel_time_min || queueData.travel_info?.travel_time_minutes),
+                    travel_time_minutes: queueData.travel_time_minutes != null ? queueData.travel_time_minutes : (queueData.travel_info?.travel_time_minutes || queueData.travel_info?.travel_time_min),
+                    expected_hospital_arrival: queueData.expected_arrival_time || queueData.expected_hospital_arrival || queueData.travel_info?.expected_hospital_arrival,
+                    expected_hospital_arrival_iso: queueData.expected_arrival_iso || queueData.expected_hospital_arrival_iso || queueData.travel_info?.expected_hospital_arrival_iso,
+                    arrival_deadline_time: queueData.arrival_deadline_time || queueData.travel_info?.arrival_deadline_time,
+                    arrival_deadline_iso: queueData.arrival_deadline_iso || queueData.travel_info?.arrival_deadline_iso,
+                    expected_consultation_time: queueData.expected_consultation_time || queueData.travel_info?.expected_consultation_time,
+                    expected_consultation_iso: queueData.expected_consultation_iso || queueData.travel_info?.expected_consultation_iso,
+                    recommended_departure_time: queueData.recommended_departure_time || queueData.travel_info?.recommended_departure_time,
+                    recommended_departure_iso: queueData.recommended_departure_iso || queueData.travel_info?.recommended_departure_iso,
+                    departure_alert: queueData.departure_alert || queueData.travel_info?.departure_alert
+                  }}
+                  onRefreshQueue={() => fetchQueueStatus(queueData.queue_id)}
+                />
+              </>
+            )}
 
             {/* EMERGENCY ESCALATION CTA (Red) */}
             {queueData.status === 'waiting' && queueData.priority !== 'emergency' && (

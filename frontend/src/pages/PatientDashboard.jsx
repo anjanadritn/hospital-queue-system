@@ -291,31 +291,31 @@ export default function PatientDashboard() {
   const handleJoinQueue = async (appointment) => {
     setJoining(true);
     try {
-      // 1. Request fresh browser GPS position
-      let originLat = null;
-      let originLon = null;
-      let isApprox = true;
-      let patientAddress = appointment.patient_address || appointment.city || user.city || user.address || 'Tumakuru';
+      let originLat = appointment.origin_latitude ?? null;
+      let originLon = appointment.origin_longitude ?? null;
+      let isApprox = appointment.is_approximate ?? appointment.is_approximate_location ?? true;
+      let locationSource = appointment.location_source || (originLat != null ? 'device_gps' : 'manual');
+      let locationAddress = appointment.location_address || appointment.patient_address || appointment.city || 'Tumakuru';
+      let patientAddress = locationAddress;
       let city = appointment.city || appointment.patient_address || user.city || user.address || 'Tumakuru';
 
-      const freshGps = await getBrowserLocation({ timeout: 8000, maximumAge: 0 });
+      // Only query browser GPS if booking is for 'myself' or explicitly set as 'device_gps',
+      // NEVER when booked for family with map_selected or manual location!
+      const shouldQueryDeviceGps = (
+        appointment.booking_for === 'myself' ||
+        appointment.location_source === 'device_gps' ||
+        (!appointment.booking_for && !appointment.location_source)
+      );
 
-      if (freshGps.success && freshGps.latitude != null && freshGps.longitude != null) {
-        originLat = freshGps.latitude;
-        originLon = freshGps.longitude;
-        isApprox = false;
-        patientAddress = appointment.patient_address || appointment.city || 'Current GPS Location';
-      } else {
-        // GPS denied or unavailable: preserve existing stored GPS if available
-        if (appointment.origin_latitude != null && appointment.origin_longitude != null) {
-          originLat = appointment.origin_latitude;
-          originLon = appointment.origin_longitude;
-          isApprox = appointment.is_approximate_location ?? false;
-        } else {
-          // Preserve landmark fallback
-          originLat = null;
-          originLon = null;
-          isApprox = true;
+      if (shouldQueryDeviceGps) {
+        const freshGps = await getBrowserLocation({ timeout: 8000, maximumAge: 0 });
+
+        if (freshGps.success && freshGps.latitude != null && freshGps.longitude != null) {
+          originLat = freshGps.latitude;
+          originLon = freshGps.longitude;
+          isApprox = false;
+          locationSource = 'device_gps';
+          patientAddress = appointment.location_address || appointment.patient_address || 'Current GPS Location';
         }
       }
 
@@ -328,9 +328,15 @@ export default function PatientDashboard() {
         custom_symptoms: appointment.custom_symptoms || '',
         city: city,
         patient_address: patientAddress,
+        location_address: locationAddress,
         origin_latitude: originLat,
         origin_longitude: originLon,
-        is_approximate_location: isApprox
+        location_source: locationSource,
+        is_approximate: isApprox,
+        is_approximate_location: isApprox,
+        booking_for: appointment.booking_for || 'myself',
+        relation: appointment.relation || null,
+        patient_name: appointment.patient_name || user.name
       });
       const queueId = res.queue_id || res.data?.queue_id;
       if (queueId) {
@@ -848,6 +854,43 @@ export default function PatientDashboard() {
                     </div>
                   </div>
 
+                  {nextAppointment.booking_for === 'family' && (
+                    <div className="mb-6 p-4 bg-sky-50/80 rounded-2xl border border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-medium">{t('appointment_for', 'Appointment for')}:</span>
+                            <span className="font-extrabold text-slate-900">{nextAppointment.patient_name || 'Family Member'}</span>
+                            {nextAppointment.relation && (
+                              <span className="px-2 py-0.5 rounded-full bg-sky-200/80 text-sky-800 text-[10px] font-bold">
+                                {nextAppointment.relation}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                            <span>{nextAppointment.location_address || nextAppointment.patient_address || nextAppointment.city}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {nextAppointment.is_approximate ? (
+                          <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200">
+                            {t('approximate_notice', 'Approximate location — travel time may vary.')}
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 text-[11px] font-bold border border-sky-200">
+                            {nextAppointment.location_source === 'map_selected' ? t('location_source_map', 'Map Selected') : t('device_gps_confirmed', 'Device Location')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
                       <span className="text-[11px] font-bold text-slate-400 uppercase block mb-1">{t('specialist_and_opd', 'Specialist & Specialty')}</span>
@@ -930,6 +973,12 @@ export default function PatientDashboard() {
                     expected_consultation_iso: activeQueue?.expected_consultation_iso || activeQueue?.travel_info?.expected_consultation_iso,
                     recommended_departure_time: activeQueue?.recommended_departure_time || activeQueue?.travel_info?.recommended_departure_time,
                     recommended_departure_iso: activeQueue?.recommended_departure_iso || activeQueue?.travel_info?.recommended_departure_iso,
+                    location_source: activeQueue?.location_source || activeQueue?.travel_info?.location_source || nextAppointment?.location_source,
+                    location_address: activeQueue?.location_address || activeQueue?.travel_info?.location_address || nextAppointment?.location_address,
+                    is_approximate: activeQueue?.is_approximate ?? activeQueue?.travel_info?.is_approximate ?? nextAppointment?.is_approximate,
+                    is_approximate_location: activeQueue?.is_approximate_location ?? activeQueue?.travel_info?.is_approximate_location ?? nextAppointment?.is_approximate,
+                    booking_for: activeQueue?.booking_for || nextAppointment?.booking_for,
+                    relation: activeQueue?.relation || nextAppointment?.relation,
                     leaving_now: true
                   }} />
                 )}
@@ -1325,9 +1374,9 @@ export default function PatientDashboard() {
                     <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                       <th className="pb-3 px-3">{t('booking_id', 'Booking ID')}</th>
                       <th className="pb-3 px-3">{t('token', 'Token #')}</th>
+                      <th className="pb-3 px-3">{t('patient_and_origin', 'Patient & Origin')}</th>
                       <th className="pb-3 px-3">{t('doctor_and_dept', 'Doctor & Dept')}</th>
                       <th className="pb-3 px-3">{t('date', 'Date')}</th>
-                      <th className="pb-3 px-3">{t('symptoms', 'Symptoms')}</th>
                       <th className="pb-3 px-3">{t('priority', 'Priority')}</th>
                       <th className="pb-3 px-3">{t('status', 'Status')}</th>
                     </tr>
@@ -1338,13 +1387,24 @@ export default function PatientDashboard() {
                         <td className="py-3 px-3 font-mono font-bold text-sky-700">{apt.booking_id}</td>
                         <td className="py-3 px-3 font-mono font-black text-slate-900">{apt.queue_id || '—'}</td>
                         <td className="py-3 px-3 text-[11px]">
+                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                            <span>{apt.patient_name || user?.name || 'Patient'}</span>
+                            {apt.booking_for === 'family' && apt.relation && (
+                              <span className="px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 text-[10px] font-bold">
+                                {apt.relation}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-slate-500 flex items-center gap-1 mt-0.5 max-w-[170px] truncate" title={apt.location_address || apt.patient_address || apt.city}>
+                            <MapPin className="w-3 h-3 text-sky-500 shrink-0" />
+                            <span>{apt.location_address || apt.patient_address || apt.city || 'Tumakuru'}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-[11px]">
                           <div className="font-bold text-slate-900">{apt.doctor_id}</div>
                           <div className="text-sky-700 font-semibold">{apt.department}</div>
                         </td>
                         <td className="py-3 px-3 font-bold text-slate-800">{apt.consultation_date}</td>
-                        <td className="py-3 px-3 text-[11px] text-slate-600 max-w-[140px] truncate">
-                          {Array.isArray(apt.symptoms) ? apt.symptoms.join(', ') : 'General OPD'}
-                        </td>
                         <td className="py-3 px-3">
                           <StatusBadge status={apt.priority || 'normal'} type="priority" />
                         </td>

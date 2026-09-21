@@ -63,12 +63,12 @@ export default function LiveRouteMap({
   const hasLiveGps = Boolean(isExactGps && liveCoords && liveCoords.length === 2);
   const activeOriginCoords = hasLiveGps
     ? liveCoords
-    : (travelInfo?.origin_coordinates || (coordinates && coordinates.length > 0 ? coordinates[0] : null));
+    : (travelInfo?.origin_coordinates || (coordinates && coordinates.length > 0 ? coordinates[0] : (travelInfo?.origin_latitude && travelInfo?.origin_longitude ? [Number(travelInfo.origin_longitude), Number(travelInfo.origin_latitude)] : null)));
 
   const hospitalCoords = travelInfo?.hospital_coordinates || DEFAULT_HOSPITAL_COORDS;
   const originName = hasLiveGps
     ? 'Your Location'
-    : (travelInfo?.patient_address || 'Origin');
+    : (travelInfo?.location_address || travelInfo?.patient_address || 'Patient Location');
   const hospitalName = travelInfo?.hospital_name || 'SIMSRH Hospital';
 
   // 1. Initialize MapLibre GL instance
@@ -280,8 +280,17 @@ export default function LiveRouteMap({
             </div>
           </div>
         `;
+      } else if (travelInfo?.location_source === 'map_selected') {
+        // Map-selected patient location marker
+        el.innerHTML = `
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+            <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;color:#ffffff;z-index:2;">
+              📍
+            </div>
+          </div>
+        `;
       } else {
-        // Landmark fallback marker (NOT labeled "You", NO fake moving marker)
+        // Landmark / manual fallback marker (NOT labeled "You", NO fake moving marker)
         el.innerHTML = `
           <div style="position:relative;display:flex;align-items:center;justify-content:center;">
             <div style="width:30px;height:30px;background:#d97706;border:2px solid #ffffff;border-radius:50%;box-shadow:0 4px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;color:#ffffff;z-index:2;">
@@ -291,10 +300,14 @@ export default function LiveRouteMap({
         `;
       }
 
-      const popupTitle = hasLiveGps ? 'You (Live GPS)' : `Landmark: ${originName}`;
+      const popupTitle = hasLiveGps
+        ? 'You (Live GPS)'
+        : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`);
       const popupBadge = hasLiveGps
         ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
-        : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Landmark</span>';
+        : (travelInfo?.location_source === 'map_selected'
+          ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
+          : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>');
 
       const popup = new maplibregl.Popup({ offset: 20, closeButton: false })
         .setHTML(`<div style="font-size:11px;font-weight:700;color:#0f172a;padding:2px 4px;">${popupTitle}<br/>${popupBadge}</div>`);
@@ -319,6 +332,14 @@ export default function LiveRouteMap({
               </div>
             </div>
           `;
+        } else if (travelInfo?.location_source === 'map_selected') {
+          el.innerHTML = `
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+              <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;color:#ffffff;z-index:2;">
+                📍
+              </div>
+            </div>
+          `;
         } else {
           el.innerHTML = `
             <div style="position:relative;display:flex;align-items:center;justify-content:center;">
@@ -331,14 +352,18 @@ export default function LiveRouteMap({
       }
 
       if (patientMarkerRef.current.getPopup()) {
-        const popupTitle = hasLiveGps ? 'You (Live GPS)' : `Landmark: ${originName}`;
+        const popupTitle = hasLiveGps
+          ? 'You (Live GPS)'
+          : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`);
         const popupBadge = hasLiveGps
           ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
-          : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Landmark</span>';
+          : (travelInfo?.location_source === 'map_selected'
+            ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
+            : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>');
         patientMarkerRef.current.getPopup().setHTML(`<div style="font-size:11px;font-weight:700;color:#0f172a;padding:2px 4px;">${popupTitle}<br/>${popupBadge}</div>`);
       }
     }
-  }, [mapReady, activeOriginCoords, hasLiveGps, originName]);
+  }, [mapReady, activeOriginCoords, hasLiveGps, originName, travelInfo?.location_source]);
 
   // 4. Update SIMSRH Hospital Marker
   useEffect(() => {

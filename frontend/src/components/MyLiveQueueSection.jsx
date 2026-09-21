@@ -76,6 +76,12 @@ export default function MyLiveQueueSection({
     : 5;
   const expectedTime = activeQueue.expected_consultation_time || 'Approaching';
   const queueStatus = activeQueue.status || 'waiting';
+  const isArrived = Boolean(
+    activeQueue?.arrived_at_hospital || 
+    activeQueue?.verified_by_admin || 
+    queueStatus === 'arrived'
+  );
+  const target30Status = activeQueue?.target_30_status || (predictedWait <= 30 ? 'on_track' : 'exceeds_target');
 
   // Ordered list of safe tokens in this doctor's slot
   const queueEntries = (docQueue?.entries && docQueue.entries.length > 0)
@@ -83,6 +89,9 @@ export default function MyLiveQueueSection({
     : (liveQueueData?.queue_entries || []);
 
   const getStatusBadge = (status) => {
+    if (isArrived && status !== 'in_consultation') {
+      return { text: 'Arrival Verified', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold' };
+    }
     switch (status) {
       case 'in_consultation':
         return { text: 'In Consultation', color: 'bg-emerald-500 text-white' };
@@ -90,7 +99,7 @@ export default function MyLiveQueueSection({
       case 'called':
         return { text: 'Next Up (Ready)', color: 'bg-amber-500 text-white animate-pulse' };
       case 'arrived':
-        return { text: 'Arrived at Clinic', color: 'bg-sky-100 text-sky-800' };
+        return { text: 'Arrival Verified', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold' };
       case 'waiting':
       default:
         return { text: 'Waiting in Line', color: 'bg-slate-100 text-slate-700' };
@@ -241,23 +250,39 @@ export default function MyLiveQueueSection({
           </div>
 
           {/* Tile 4: Wait Time & Consultation Status */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                Predicted Wait & Start
-              </span>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${statusBadgeInfo.color}`}>
-                {statusBadgeInfo.text}
-              </span>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {isArrived ? 'Fresh Expected Start' : 'Predicted Wait & Start'}
+                </span>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${statusBadgeInfo.color}`}>
+                  {statusBadgeInfo.text}
+                </span>
+              </div>
+              <div className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-1.5">
+                <span>~{predictedWait}m</span>
+                <span className="text-xs font-bold text-slate-400 font-normal">estimated wait</span>
+              </div>
+              <div className="mt-1 text-xs font-semibold text-slate-600 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span>{isArrived ? 'Fresh Start: ' : 'Expected Start: '}<strong className="text-slate-900 font-black">{expectedTime}</strong></span>
+              </div>
             </div>
-            <div className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-1.5">
-              <span>~{predictedWait}m</span>
-              <span className="text-xs font-bold text-slate-400 font-normal">estimated wait</span>
-            </div>
-            <div className="mt-1 text-xs font-semibold text-slate-600 flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-amber-600" />
-              <span>Expected Start: <strong className="text-slate-900 font-black">{expectedTime}</strong></span>
-            </div>
+
+            {isArrived && (
+              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                  target30Status === 'on_track' 
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                }`}>
+                  <ShieldCheck className="w-3 h-3" />
+                  {target30Status === 'on_track' ? 'On track (30m target)' : 'Exceeds 30m target'}
+                </span>
+                <span className="text-[9px] text-slate-400 font-medium">Target, not guaranteed</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -159,3 +159,120 @@ def test_two_different_origins_return_different_distances():
         assert len(coords_2) > 0
         assert coords_1[0] != coords_2[0]
 
+def test_family_booking_stores_patient_location_and_does_not_overwrite_booker_profile():
+    """
+    Test real-world problem:
+    1. Booker is Ramesh in Bengaluru.
+    2. Booker books appointment for his Mother in Alipur/Chikkaballapur.
+    3. The appointment stores Mother's name, relation, and Alipur map-selected coordinates.
+    4. Ramesh's permanent user profile in db.users is NOT overwritten.
+    """
+    from database.mongodb import get_db
+    db = get_db()
+
+    booker_id = "PAT_TEST_BOOKER_1"
+    # Seed booker's user profile
+    db.users.update_one(
+        {"$or": [{"patient_id": booker_id}, {"user_id": booker_id}]},
+        {"$set": {
+            "patient_id": booker_id,
+            "user_id": booker_id,
+            "name": "Ramesh Kumar",
+            "city": "Bengaluru",
+            "age": 32,
+            "gender": "Male"
+        }},
+        upsert=True
+    )
+
+    mother_lat = 13.6234
+    mother_lon = 77.4567
+    mother_addr = "Alipur, Gauribidanur, Chikkaballapur"
+
+    res, err = book_appointment({
+        "patient_id": booker_id,
+        "doctor_id": "TEST_DOC_LOC",
+        "department": "General Medicine",
+        "consultation_date": date.today().isoformat(),
+        "consultation_slot": "morning",
+        "priority": "normal",
+        "booking_for": "family",
+        "relation": "Mother",
+        "patient_name": "Sharadamma",
+        "age": 62,
+        "gender": "Female",
+        "city": "Alipur",
+        "location_address": mother_addr,
+        "origin_latitude": mother_lat,
+        "origin_longitude": mother_lon,
+        "location_source": "map_selected",
+        "is_approximate": False
+    })
+
+    assert err is None
+    assert res["booking_for"] == "family"
+    assert res["relation"] == "Mother"
+    assert res["patient_name"] == "Sharadamma"
+    assert res["location_source"] == "map_selected"
+    assert res["location_address"] == mother_addr
+    assert res["origin_latitude"] == mother_lat
+    assert res["origin_longitude"] == mother_lon
+    assert res["is_approximate"] is False
+
+    # CRITICAL: Booker's permanent profile in db.users must NOT be overwritten!
+    booker_profile = db.users.find_one({"$or": [{"patient_id": booker_id}, {"user_id": booker_id}]})
+    assert booker_profile["name"] == "Ramesh Kumar"
+    assert booker_profile["city"] == "Bengaluru"
+    assert booker_profile["age"] == 32
+    assert booker_profile["gender"] == "Male"
+
+def test_manual_location_marked_approximate_with_notice():
+    """
+    Test that manual entry marks location as approximate and generates notice.
+    """
+    metrics = calculate_travel_metrics(
+        patient_address="Alipur Village, Chikkaballapur",
+        origin_coords=None,
+        wait_time_min=20,
+        location_source="manual",
+        is_approximate=True,
+        location_address="Alipur Village, Chikkaballapur"
+    )
+
+    assert metrics["is_approximate_location"] is True
+    assert metrics["location_source"] == "manual"
+    assert metrics.get("approximate_notice") == "Approximate location — travel time may vary."
+
+def test_ors_uses_patient_alipur_location_not_booker_bengaluru():
+    """
+    Verify that travel calculation receives the Patient's appointment location (Alipur),
+    and does NOT use the booker's device GPS (Bengaluru).
+    """
+    bengaluru_gps = [77.5946, 12.9716]  # [lon, lat] Booker device GPS in Bengaluru
+    alipur_patient = [77.4567, 13.6234]  # [lon, lat] Mother's map-selected location
+
+    # Booker's hypothetical metrics if Bengaluru had mistakenly been used
+    bengaluru_metrics = calculate_travel_metrics(
+        patient_address="Bengaluru Device",
+        origin_coords=bengaluru_gps,
+        wait_time_min=30,
+        location_source="device_gps"
+    )
+
+    # Mother's actual appointment metrics using Alipur
+    alipur_metrics = calculate_travel_metrics(
+        patient_address="Alipur, Chikkaballapur",
+        origin_coords=alipur_patient,
+        wait_time_min=30,
+        location_source="map_selected"
+    )
+
+    assert alipur_metrics["origin_coordinates"] == alipur_patient
+    assert alipur_metrics["origin_latitude"] == alipur_patient[1]
+    assert alipur_metrics["origin_longitude"] == alipur_patient[0]
+    assert alipur_metrics["location_source"] == "map_selected"
+
+    # The distance from Alipur to SIMSRH must NOT equal the distance from Bengaluru to SIMSRH
+    assert alipur_metrics["distance_km"] != bengaluru_metrics["distance_km"]
+    assert alipur_metrics["origin_coordinates"] != bengaluru_gps
+

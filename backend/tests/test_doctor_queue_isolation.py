@@ -15,19 +15,20 @@ from database.mongodb import get_db
 @pytest.fixture(autouse=True)
 def clean_test_isolation_data():
     """Ensure test doctor queues are clean in MongoDB and in-memory"""
+    test_docs = ["TEST_DOC_A", "TEST_DOC_B", "TEST_DOC_PLQ_A", "TEST_DOC_PLQ_B"]
     IN_MEMORY_QUEUE.clear()
     try:
         db = get_db()
-        db.queue.delete_many({"doctor_id": {"$in": ["TEST_DOC_A", "TEST_DOC_B"]}})
-        db.appointments.delete_many({"doctor_id": {"$in": ["TEST_DOC_A", "TEST_DOC_B"]}})
+        db.queue.delete_many({"doctor_id": {"$in": test_docs}})
+        db.appointments.delete_many({"doctor_id": {"$in": test_docs}})
     except Exception:
         pass
     yield
     IN_MEMORY_QUEUE.clear()
     try:
         db = get_db()
-        db.queue.delete_many({"doctor_id": {"$in": ["TEST_DOC_A", "TEST_DOC_B"]}})
-        db.appointments.delete_many({"doctor_id": {"$in": ["TEST_DOC_A", "TEST_DOC_B"]}})
+        db.queue.delete_many({"doctor_id": {"$in": test_docs}})
+        db.appointments.delete_many({"doctor_id": {"$in": test_docs}})
     except Exception:
         pass
 

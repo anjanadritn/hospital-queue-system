@@ -272,6 +272,43 @@ def verify_arrival_otp(token_or_booking_id: str, input_otp: str, verified_by: st
     except Exception:
         pass
 
+    # Update in-memory queue fallback if active
+    from services.queue_service import IN_MEMORY_QUEUE, recalculate_queue_positions
+    for q in IN_MEMORY_QUEUE:
+        if q.get("queue_id") in [queue_id, booking_id] or q.get("booking_id") in [queue_id, booking_id]:
+            q["arrived_at_hospital"] = True
+            q["verified_by_admin"] = True
+            q["status"] = "arrived"
+            q["verified_at"] = now.isoformat()
+            q["verified_by"] = verified_by
+
+    # Recalculate queue positions, Random Forest wait times, and fresh consultation times
+    target_q = None
+    try:
+        target_q = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": booking_id}]})
+    except Exception:
+        pass
+    if not target_q:
+        target_q = next((q for q in IN_MEMORY_QUEUE if q.get("queue_id") in [queue_id, booking_id] or q.get("booking_id") in [queue_id, booking_id]), None)
+
+    doc_id = (target_q or {}).get("doctor_id") or otp_doc.get("doctor_id")
+    c_date = (target_q or {}).get("consultation_date") or (target_q or {}).get("consultation_slot", {}).get("date")
+    s_id = (target_q or {}).get("slot_id") or (target_q or {}).get("consultation_slot", {}).get("slot_id")
+
+    try:
+        recalculate_queue_positions(doctor_id=doc_id, consultation_date=c_date, slot_id=s_id)
+    except Exception as e:
+        logger.warning(f"Error recalculating queue positions after arrival verification: {e}")
+
+    # Fetch authoritative refreshed queue entry
+    updated_entry = None
+    try:
+        updated_entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": booking_id}]})
+    except Exception:
+        pass
+    if not updated_entry:
+        updated_entry = next((q for q in IN_MEMORY_QUEUE if q.get("queue_id") in [queue_id, booking_id] or q.get("booking_id") in [queue_id, booking_id]), None)
+
     try:
         from services.notification_service import create_notification
         create_notification(
@@ -284,11 +321,20 @@ def verify_arrival_otp(token_or_booking_id: str, input_otp: str, verified_by: st
     except Exception:
         pass
 
-    return True, None, {
+    from database.mongodb import serialize_doc
+    base_response = {
         "booking_id": booking_id,
         "queue_id": queue_id,
         "patient_id": patient_id,
         "status": "arrived",
         "verified": True,
+        "arrived_at_hospital": True,
+        "verified_by_admin": True,
         "message": f"Patient arrival successfully verified by {verified_by}."
     }
+    if updated_entry:
+        serialized = serialize_doc(updated_entry)
+        base_response.update(serialized)
+        base_response["verified"] = True
+
+    return True, None, base_response

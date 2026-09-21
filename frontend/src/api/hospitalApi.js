@@ -332,6 +332,14 @@ export const hospitalApi = {
   evaluateQueueReminders: async () => {
     const response = await apiClient.post('/queue/evaluate-reminders');
     return response.data;
+  },
+  searchLocations: async (query) => {
+    const response = await apiClient.get(`/location/search?q=${encodeURIComponent(query)}`);
+    return response.data;
+  },
+  reverseGeocode: async (lat, lon) => {
+    const response = await apiClient.get(`/location/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+    return response.data;
   }
 };
 

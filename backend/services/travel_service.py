@@ -39,7 +39,10 @@ def calculate_travel_metrics(
     wait_time_min: int = None,
     origin_coords: Optional[List[float]] = None,
     leaving_now: bool = False,
-    leaving_now_at: Optional[str] = None
+    leaving_now_at: Optional[str] = None,
+    location_source: Optional[str] = None,
+    is_approximate: Optional[bool] = None,
+    location_address: Optional[str] = None
 ) -> Dict:
     """
     Smart Patient Arrival & Recommended Departure Time Engine:
@@ -48,6 +51,7 @@ def calculate_travel_metrics(
 
     Queries OpenRouteService for real road distance, travel duration, and GeoJSON geometry.
     Falls back gracefully to TUMKUR_LANDMARKS static lookup if ORS is unreachable.
+    Supports patient-specific location sources: device_gps, map_selected, manual, gps, landmark_approximate.
     """
     matched = None
     has_gps = bool(
@@ -61,14 +65,17 @@ def calculate_travel_metrics(
         target_coords = [float(origin_coords[0]), float(origin_coords[1])]
         origin_lat = float(origin_coords[1])
         origin_lon = float(origin_coords[0])
-        is_approximate = False
-        location_source = "gps"
+        if is_approximate is not None:
+            resolved_approximate = bool(is_approximate)
+        else:
+            resolved_approximate = (location_source == "manual")
+        resolved_source = location_source or "gps"
     else:
         target_coords = None
         origin_lat = None
         origin_lon = None
-        is_approximate = True
-        location_source = "landmark_approximate"
+        resolved_approximate = True
+        resolved_source = location_source or "landmark_approximate"
 
     if not has_gps and patient_address:
         for landmark, data in TUMKUR_LANDMARKS.items():
@@ -159,7 +166,7 @@ def calculate_travel_metrics(
     elif now >= rec_departure_dt:
         arrival_dt = now + timedelta(minutes=travel_time_min)
         departure_dt = rec_departure_dt
-        alert_msg = f"🚗 Depart immediately from {patient_address or 'your location'} (estimated travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')}."
+        alert_msg = f"🚗 Depart immediately from {patient_address or 'your location'} (recommended departure was {departure_dt.strftime('%I:%M %p')}, travel: {travel_time_min} mins) to arrive at SIMSRH around {arrival_dt.strftime('%I:%M %p')} for your consultation at {consultation_dt.strftime('%I:%M %p')}."
     else:
         arrival_dt = rec_departure_dt + timedelta(minutes=travel_time_min)
         departure_dt = rec_departure_dt
@@ -180,8 +187,11 @@ def calculate_travel_metrics(
         "origin_coordinates": target_coords,
         "origin_latitude": origin_lat,
         "origin_longitude": origin_lon,
-        "is_approximate_location": is_approximate,
-        "location_source": location_source,
+        "is_approximate_location": resolved_approximate,
+        "is_approximate": resolved_approximate,
+        "location_source": resolved_source,
+        "location_address": location_address or patient_address or "Tumkur City",
+        "approximate_notice": "Approximate location — travel time may vary." if resolved_approximate else None,
         "emergency_care": "24/7 Emergency Care Available",
         "patient_address": patient_address or "Tumkur City",
         "distance_km": distance_km,
