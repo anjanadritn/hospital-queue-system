@@ -18,6 +18,11 @@ SMS_ELIGIBLE_NOTIFICATION_TYPES = {
     "MISSED_CONSULTATION"
 }
 
+TURN_DEPARTURE_NOTIFICATION_TYPES = {
+    "TURN_APPROACHING",
+    "DEPARTURE_REMINDER"
+}
+
 def format_turn_approaching_sms(
     token: str,
     queue_position: Any,
@@ -28,7 +33,7 @@ def format_turn_approaching_sms(
     arrival_code: Optional[str] = None
 ) -> str:
     """
-    Formats the TURN_APPROACHING SMS message in the standardized hospital style:
+    Formats the single combined TURN_APPROACHING SMS message in the standardized hospital style:
     [SIMSRH Hospital] 🏥
     Your turn is approaching
     Token {token}
@@ -37,8 +42,6 @@ def format_turn_approaching_sms(
     Expected consultation {consultation_time}
     Recommended departure {departure_time}
     Please be near Room {room}
-    Hospital Arrival Code {arrival_code}
-    Show this code at the reception desk on arrival
     """
     clean_token = re.sub(r"[#:]", "", str(token or "D001-Q020")).strip() or "D001-Q020"
     clean_pos = re.sub(r"[#:]", "", str(queue_position or "2")).strip() or "2"
@@ -68,9 +71,6 @@ def format_turn_approaching_sms(
     room_val = re.sub(r"[#:]", "", str(room or "204")).strip()
     room_val = re.sub(r"^(?:room\s*)", "", room_val, flags=re.IGNORECASE).strip() or "204"
 
-    # Clean arrival code (e.g. '800066')
-    code_val = re.sub(r"[#:]", "", str(arrival_code or "800066")).rstrip(".").strip() or "800066"
-
     lines = [
         "[SIMSRH Hospital] 🏥",
         "Your turn is approaching",
@@ -79,10 +79,31 @@ def format_turn_approaching_sms(
         f"Estimated wait {wait_val} min",
         f"Expected consultation {exp_val}",
         f"Recommended departure {dep_val}",
-        f"Please be near Room {room_val}",
-        f"Hospital Arrival Code {code_val}",
-        "Show this code at the reception desk on arrival"
+        f"Please be near Room {room_val}"
     ]
+    return "\n".join(lines)
+
+def format_arrival_otp_sms(
+    arrival_code: Any,
+    token: Optional[str] = None
+) -> str:
+    """
+    Formats the separate Hospital Arrival OTP SMS message in the standardized hospital style:
+    [SIMSRH Hospital] 🏥
+    Hospital Arrival Code {arrival_code}
+    Token {token}
+    Show this code at the reception desk on arrival
+    """
+    clean_code = re.sub(r"[#:]", "", str(arrival_code or "800066")).rstrip(".").strip() or "800066"
+    lines = [
+        "[SIMSRH Hospital] 🏥",
+        f"Hospital Arrival Code {clean_code}"
+    ]
+    if token:
+        clean_tok = re.sub(r"[#:]", "", str(token)).strip()
+        if clean_tok:
+            lines.append(f"Token {clean_tok}")
+    lines.append("Show this code at the reception desk on arrival")
     return "\n".join(lines)
 
 def format_booking_confirmed_sms(
@@ -236,8 +257,73 @@ def build_turn_approaching_sms_text(
         estimated_wait=wait or 14,
         expected_consultation=exp or "9:09 PM",
         recommended_departure=dep or "8:58 PM",
-        room=room or "204",
-        arrival_code=otp or "800066"
+        room=room or "204"
+    )
+
+def build_arrival_otp_sms_text(
+    patient_id: Optional[str] = None,
+    booking_id: Optional[str] = None,
+    message: Optional[str] = None
+) -> str:
+    otp = None
+    token = booking_id
+
+    # 1. Parse from message if available
+    if message:
+        tok_match = re.search(r"token\s+([A-Za-z0-9\-]+)", message, re.IGNORECASE)
+        if tok_match:
+            token = tok_match.group(1)
+        otp_match = re.search(r"\b(\d{6})\b", message)
+        if otp_match:
+            otp = otp_match.group(1)
+
+    # 2. Query DB if missing
+    if not otp or not token:
+        try:
+            db = get_db()
+            q_entry = None
+            if booking_id:
+                q_entry = db.queue.find_one({"$or": [{"queue_id": booking_id}, {"booking_id": booking_id}]})
+            if not q_entry and patient_id:
+                q_entry = db.queue.find_one({"patient_id": patient_id})
+            if q_entry:
+                if not token:
+                    token = q_entry.get("queue_id") or booking_id
+                if not otp:
+                    otp = q_entry.get("arrival_otp")
+
+            if (not otp or not token) and booking_id:
+                apt = db.appointments.find_one({"$or": [{"booking_id": booking_id}, {"queue_id": booking_id}]})
+                if apt:
+                    if not token:
+                        token = apt.get("queue_id") or apt.get("booking_id")
+                    if not otp:
+                        otp = apt.get("arrival_otp")
+
+            if not otp and booking_id:
+                otp_rec = db.otp_verifications.find_one({"token_or_booking_id": booking_id})
+                if otp_rec:
+                    otp = otp_rec.get("otp")
+        except Exception:
+            pass
+
+    # 3. In-memory fallback
+    if not otp:
+        try:
+            from services.queue_service import IN_MEMORY_QUEUE
+            for q in IN_MEMORY_QUEUE:
+                if q.get("queue_id") == booking_id or q.get("booking_id") == booking_id or q.get("patient_id") == patient_id:
+                    if not token:
+                        token = q.get("queue_id")
+                    if not otp:
+                        otp = q.get("arrival_otp")
+                    break
+        except Exception:
+            pass
+
+    return format_arrival_otp_sms(
+        arrival_code=otp or "800066",
+        token=token
     )
 
 def resolve_patient_phone(patient_id: str, booking_id: Optional[str] = None) -> Optional[str]:
@@ -368,28 +454,42 @@ def is_duplicate_sms(patient_id: str, notification_type: str, booking_id: Option
     """
     Checks whether an SMS has already been dispatched for this exact notification event.
     Uses canonical event identities so that alias IDs (e.g. B029 and D001-Q020) share deduplication state.
+    Also ensures TURN_APPROACHING and DEPARTURE_REMINDER share deduplication to prevent multiple SMS
+    for the same turn/departure event.
     """
     all_ids = resolve_canonical_event_ids(booking_id) if booking_id else {booking_id or ""}
 
-    # Check in-memory event cache against all alias IDs
+    check_types = (
+        TURN_DEPARTURE_NOTIFICATION_TYPES
+        if notification_type in TURN_DEPARTURE_NOTIFICATION_TYPES
+        else {notification_type}
+    )
+
+    # Check in-memory event cache against all alias IDs and matching types
     for aid in all_ids:
-        if (patient_id, notification_type, aid) in SENT_SMS_EVENTS:
-            return True
+        for t in check_types:
+            if (patient_id, t, aid) in SENT_SMS_EVENTS:
+                return True
 
     try:
         db = get_db()
         query = {
             "patient_id": patient_id,
-            "type": notification_type,
             "sms_sent": True
         }
+        if len(check_types) > 1:
+            query["type"] = {"$in": list(check_types)}
+        else:
+            query["type"] = notification_type
+
         if all_ids:
             query["booking_id"] = {"$in": list(all_ids)}
 
         existing = db.notifications.find_one(query)
         if existing:
             for aid in all_ids:
-                SENT_SMS_EVENTS.add((patient_id, notification_type, aid))
+                for t in check_types:
+                    SENT_SMS_EVENTS.add((patient_id, t, aid))
             return True
     except Exception:
         pass
@@ -433,14 +533,26 @@ def create_notification(
                                 booking_id=booking_id,
                                 message=message
                             )
+                        elif notification_type == "ARRIVAL_OTP_ISSUED":
+                            sms_text = build_arrival_otp_sms_text(
+                                patient_id=patient_id,
+                                booking_id=booking_id,
+                                message=message
+                            )
                         else:
                             sms_text = f"{title}: {message}"
                     success, res, err = sms_service.send_sms(phone, sms_text)
                     sms_sent = bool(success)
                     if success:
                         all_ids = resolve_canonical_event_ids(booking_id) if booking_id else {booking_id or ""}
+                        recorded_types = (
+                            TURN_DEPARTURE_NOTIFICATION_TYPES
+                            if notification_type in TURN_DEPARTURE_NOTIFICATION_TYPES
+                            else {notification_type}
+                        )
                         for aid in all_ids:
-                            SENT_SMS_EVENTS.add((patient_id, notification_type, aid))
+                            for t in recorded_types:
+                                SENT_SMS_EVENTS.add((patient_id, t, aid))
                     else:
                         logger.warning(
                             "SMS notification failed for %s (%s): %s",

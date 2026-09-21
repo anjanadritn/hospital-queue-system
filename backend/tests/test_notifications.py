@@ -77,13 +77,12 @@ def test_notification_sms_sent_successfully():
         assert re.search(r"Expected consultation .+", call_msg)
         assert re.search(r"Recommended departure .+", call_msg)
         assert "Please be near Room" in call_msg
-        assert re.search(r"Hospital Arrival Code \d+", call_msg)
-        assert "Show this code at the reception desk on arrival" in call_msg
+        assert "Hospital Arrival Code" not in call_msg
         # Strict validation: No '#' symbols anywhere in SMS
         assert "#" not in call_msg
         # No ':' punctuation on label lines
         for line in call_msg.splitlines():
-            if line.startswith("Token") or line.startswith("Queue position") or line.startswith("Estimated wait") or line.startswith("Please be near") or line.startswith("Hospital Arrival Code"):
+            if line.startswith("Token") or line.startswith("Queue position") or line.startswith("Estimated wait") or line.startswith("Please be near"):
                 assert ":" not in line
 
 def test_turn_approaching_sms_exact_style_formatting():
@@ -98,9 +97,7 @@ def test_turn_approaching_sms_exact_style_formatting():
         "Estimated wait 14 min\n"
         "Expected consultation 9:09 PM\n"
         "Recommended departure 8:58 PM\n"
-        "Please be near Room 204\n"
-        "Hospital Arrival Code 800066\n"
-        "Show this code at the reception desk on arrival"
+        "Please be near Room 204"
     )
 
     formatted = format_turn_approaching_sms(
@@ -109,8 +106,7 @@ def test_turn_approaching_sms_exact_style_formatting():
         estimated_wait=14,
         expected_consultation="9:09 PM",
         recommended_departure="8:58 PM",
-        room="204",
-        arrival_code="800066"
+        room="204"
     )
 
     assert formatted == expected_output
@@ -123,8 +119,7 @@ def test_turn_approaching_sms_exact_style_formatting():
         estimated_wait="~14 mins",
         expected_consultation="Expected: 9:09 PM",
         recommended_departure="Recommended departure: 8:58 PM",
-        room="Room 204",
-        arrival_code="#800066:"
+        room="Room 204"
     )
     assert dirty_formatted == expected_output
     assert "#" not in dirty_formatted
@@ -372,11 +367,10 @@ def test_turn_approaching_queue_service_recalculation_flow():
         assert "Expected consultation" in call_msg
         assert "Recommended departure" in call_msg
         assert "Please be near Room 204" in call_msg
-        assert "Hospital Arrival Code 800066" in call_msg
-        assert "Show this code at the reception desk on arrival" in call_msg
+        assert "Hospital Arrival Code" not in call_msg
         assert "#" not in call_msg
         for line in call_msg.splitlines():
-            if line.startswith("Token") or line.startswith("Queue position") or line.startswith("Estimated wait") or line.startswith("Please be near") or line.startswith("Hospital Arrival Code"):
+            if line.startswith("Token") or line.startswith("Queue position") or line.startswith("Estimated wait") or line.startswith("Please be near"):
                 assert ":" not in line
 
 def test_advance_booking_sends_only_one_comprehensive_sms():
@@ -546,3 +540,116 @@ def test_stable_canonical_event_identity_deduplication():
         assert n2["sms_sent"] is False
         # Deduplication must suppress second SMS!
         assert mock_send.call_count == 1
+
+def test_arrival_otp_separate_sms_formatting():
+    """Verify format_arrival_otp_sms produces separate SMS starting with [SIMSRH Hospital]"""
+    from services.notification_service import format_arrival_otp_sms
+
+    expected_output = (
+        "[SIMSRH Hospital] 🏥\n"
+        "Hospital Arrival Code 800066\n"
+        "Token D001-Q020\n"
+        "Show this code at the reception desk on arrival"
+    )
+
+    formatted = format_arrival_otp_sms(
+        arrival_code="800066",
+        token="D001-Q020"
+    )
+
+    assert formatted == expected_output
+    assert formatted.startswith("[SIMSRH Hospital]")
+    assert "Hospital Arrival Code 800066" in formatted
+    assert "Token D001-Q020" in formatted
+
+def test_arrival_otp_separate_sms_dispatch():
+    """Verify ARRIVAL_OTP_ISSUED dispatches separate SMS starting with [SIMSRH Hospital]"""
+    patient_id = "TEST_PAT_OTP_01"
+    phone = "9876543230"
+    booking_id = "D001-Q020"
+
+    try:
+        db = get_db()
+        db.patients.insert_one({"patient_id": patient_id, "phone": phone, "name": "OTP Test Patient"})
+    except Exception:
+        pass
+
+    mock_sms_res = (True, {"return": True, "message": "SMS sent"}, None)
+
+    with patch("config.config.FAST2SMS_SMS_ENABLED", True), \
+         patch("services.sms_service.sms_service.send_sms", return_value=mock_sms_res) as mock_send_sms:
+
+        notif, err = create_notification(
+            patient_id=patient_id,
+            notification_type="ARRIVAL_OTP_ISSUED",
+            title="Hospital Arrival Code",
+            message="Your 6-digit hospital arrival verification code is 800066. Present this code at the reception desk upon arriving at SIMSRH.",
+            booking_id=booking_id
+        )
+
+        assert err is None
+        assert notif["sms_sent"] is True
+        mock_send_sms.assert_called_once()
+        call_phone, call_msg = mock_send_sms.call_args[0]
+        assert call_phone == phone
+        assert call_msg.startswith("[SIMSRH Hospital]")
+        assert "Hospital Arrival Code 800066" in call_msg
+        assert "Show this code at the reception desk on arrival" in call_msg
+
+def test_no_multiple_sms_for_same_turn_departure_event():
+    """Verify TURN_APPROACHING and DEPARTURE_REMINDER share deduplication and never send multiple SMS for same event"""
+    patient_id = "TEST_PAT_NODUP_01"
+    phone = "9876543231"
+    booking_id = "Q099"
+
+    try:
+        db = get_db()
+        db.patients.insert_one({"patient_id": patient_id, "phone": phone, "name": "NoDup Patient"})
+    except Exception:
+        pass
+
+    mock_sms_res = (True, {"return": True, "message": "SMS sent"}, None)
+
+    with patch("config.config.FAST2SMS_SMS_ENABLED", True), \
+         patch("services.sms_service.sms_service.send_sms", return_value=mock_sms_res) as mock_send_sms:
+
+        # 1. First event: TURN_APPROACHING dispatches combined SMS
+        n1, err1 = create_notification(
+            patient_id=patient_id,
+            notification_type="TURN_APPROACHING",
+            title="Your Turn is Approaching!",
+            message="Your token Q099 is now #2 in line.",
+            booking_id=booking_id
+        )
+        assert err1 is None
+        assert n1["sms_sent"] is True
+        assert mock_send_sms.call_count == 1
+        c_phone, c_msg = mock_send_sms.call_args[0]
+        assert c_msg.startswith("[SIMSRH Hospital]")
+        assert "Your turn is approaching" in c_msg
+        assert "Recommended departure" in c_msg
+        assert "Hospital Arrival Code" not in c_msg
+
+        # 2. Same turn/departure event: DEPARTURE_REMINDER must NOT send a second SMS
+        n2, err2 = create_notification(
+            patient_id=patient_id,
+            notification_type="DEPARTURE_REMINDER",
+            title="Recommended Departure Time",
+            message="Start from Tumkur City around 10:45 AM.",
+            booking_id=booking_id
+        )
+        assert err2 is None
+        assert n2["sms_sent"] is False
+        assert mock_send_sms.call_count == 1
+
+        # 3. Third event: Another TURN_APPROACHING for same token must also NOT send SMS
+        n3, err3 = create_notification(
+            patient_id=patient_id,
+            notification_type="TURN_APPROACHING",
+            title="Your Turn is Approaching!",
+            message="Your token Q099 is now #1 in line.",
+            booking_id=booking_id
+        )
+        assert err3 is None
+        assert n3["sms_sent"] is False
+        assert mock_send_sms.call_count == 1
