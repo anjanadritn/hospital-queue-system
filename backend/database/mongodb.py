@@ -40,7 +40,20 @@ def set_db_client(client_instance):
 
 def get_db():
     client = get_db_client()
-    return client[config.MONGO_DATABASE]
+    db_name = getattr(config, "MONGO_DATABASE", "hospital_queue_db")
+
+    # Defensive validation: ensure database name never contains '.' or other invalid characters
+    invalid_chars = {".", "/", "\\", " ", '"', "$", "\0"}
+    if not db_name or any(c in invalid_chars for c in str(db_name)):
+        try:
+            default_db = client.get_default_database()
+            if default_db is not None and not any(c in invalid_chars for c in default_db.name):
+                return default_db
+        except Exception:
+            pass
+        db_name = "hospital_queue_db"
+
+    return client[db_name]
 
 def is_db_connected():
     try:

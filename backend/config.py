@@ -9,9 +9,57 @@ if os.path.exists(_ENV_PATH):
 else:
     load_dotenv(override=True)
 
+def resolve_mongo_database() -> str:
+    """
+    Safely resolves the MongoDB database name from environment variables.
+    Guards against:
+    - Hostnames passed as database name (e.g. 'cluster0.mjkbasv.mongodb.net' containing '.')
+    - Full URIs passed as database name (e.g. 'mongodb+srv://.../hospital_queue_db')
+    - Invalid characters forbidden by MongoDB ('.', '/', '\\', ' ', '"', '$', '\0')
+    - Defaults safely to 'hospital_queue_db'
+    """
+    raw_db = (
+        os.getenv("MONGO_DATABASE")
+        or os.getenv("MONGODB_DATABASE")
+        or ""
+    ).strip()
+
+    # If raw_db looks like a full URI (e.g. mongodb:// or mongodb+srv://), extract the database component
+    if raw_db.startswith("mongodb://") or raw_db.startswith("mongodb+srv://"):
+        try:
+            from pymongo.uri_parser import parse_uri
+            parsed_db = parse_uri(raw_db).get("database")
+            if parsed_db:
+                raw_db = parsed_db.strip()
+        except Exception:
+            raw_db = ""
+
+    # If raw_db contains a path separator (e.g. hostname/dbname or /dbname)
+    if "/" in raw_db:
+        path_part = raw_db.split("/")[-1].split("?")[0].strip()
+        if path_part:
+            raw_db = path_part
+
+    # MongoDB database names cannot contain '.', '$', '/', '\\', '\0', or space
+    invalid_chars = {".", "/", "\\", " ", '"', "$", "\0"}
+    if not raw_db or any(c in invalid_chars for c in raw_db):
+        raw_uri = (os.getenv("MONGO_URI") or os.getenv("MONGODB_URI") or "").strip()
+        if raw_uri.startswith("mongodb://") or raw_uri.startswith("mongodb+srv://"):
+            try:
+                from pymongo.uri_parser import parse_uri
+                uri_db = parse_uri(raw_uri).get("database")
+                if uri_db and not any(c in invalid_chars for c in uri_db):
+                    return uri_db.strip()
+            except Exception:
+                pass
+        return "hospital_queue_db"
+
+    return raw_db
+
+
 class Config:
     MONGO_URI = os.getenv("MONGO_URI", os.getenv("MONGODB_URI", "mongodb://localhost:27017"))
-    MONGO_DATABASE = os.getenv("MONGO_DATABASE", os.getenv("MONGODB_DATABASE", "hospital_queue"))
+    MONGO_DATABASE = resolve_mongo_database()
     PORT = int(os.getenv("PORT", 5000))
     DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
     

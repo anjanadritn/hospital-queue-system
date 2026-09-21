@@ -241,3 +241,49 @@ def test_api_prefix_routes(client):
     res_q = client.get("/api/queue/all", headers={"Authorization": f"Bearer {doc_token}"})
     assert res_q.status_code == 200
     assert isinstance(res_q.get_json(), list)
+
+
+def test_mongo_database_name_sanitization(monkeypatch):
+    """Ensure MONGO_DATABASE resolves safely without invalid characters or hostname confusion."""
+    from config import resolve_mongo_database
+
+    # 1. Hostname with dots mistakenly passed as database name
+    monkeypatch.setenv("MONGO_DATABASE", "cluster0.mjkbasv.mongodb.net")
+    assert resolve_mongo_database() == "hospital_queue_db"
+
+    # 2. Hostname in MONGODB_DATABASE
+    monkeypatch.delenv("MONGO_DATABASE", raising=False)
+    monkeypatch.setenv("MONGODB_DATABASE", "cluster0.mjkbasv.mongodb.net")
+    assert resolve_mongo_database() == "hospital_queue_db"
+
+    # 3. Full URI passed as database name
+    monkeypatch.setenv("MONGO_DATABASE", "mongodb+srv://u:p@cluster0.mjkbasv.mongodb.net/hospital_queue_db?retryWrites=true")
+    assert resolve_mongo_database() == "hospital_queue_db"
+
+    # 4. Valid database name
+    monkeypatch.setenv("MONGO_DATABASE", "hospital_queue_db")
+    assert resolve_mongo_database() == "hospital_queue_db"
+
+    # 5. Custom valid database name
+    monkeypatch.setenv("MONGO_DATABASE", "hospital_prod_db")
+    assert resolve_mongo_database() == "hospital_prod_db"
+
+    # 6. Unset environment variables
+    monkeypatch.delenv("MONGO_DATABASE", raising=False)
+    monkeypatch.delenv("MONGODB_DATABASE", raising=False)
+    monkeypatch.setenv("MONGO_URI", "mongodb://localhost:27017")
+    assert resolve_mongo_database() == "hospital_queue_db"
+
+
+def test_get_db_safe_against_dot_database_name(monkeypatch):
+    """Verify get_db does not crash with InvalidName when config has invalid db name."""
+    from database.mongodb import get_db
+    from config import config
+
+    # Force an invalid name with dot into config
+    monkeypatch.setattr(config, "MONGO_DATABASE", "cluster0.invalid.name")
+    db = get_db()
+    assert db is not None
+    assert "." not in db.name
+    assert db.name == "hospital_queue_db"
+
