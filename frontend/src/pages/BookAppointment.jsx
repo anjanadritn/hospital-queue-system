@@ -1026,7 +1026,7 @@ export default function BookAppointment() {
                     {t('queue_token_number', 'Your Queue Token Number')}
                   </span>
                   <div className="text-3xl sm:text-4xl font-black text-sky-900 font-mono">
-                    {bookingResult.queue_id || 'Q001'}
+                    {bookingResult.queue_id || bookingResult.booking_id || '—'}
                   </div>
                   <div className="text-xs font-bold text-sky-700 mt-1">
                     {t('queue_pos', 'Queue Position')}: #{bookingResult.queue_position || 1}

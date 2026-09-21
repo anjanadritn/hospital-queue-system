@@ -150,7 +150,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to="/tracking"
+                to={activeQueueToken?.queue_id ? `/tracking?queue_id=${activeQueueToken.queue_id}` : '/tracking'}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
                   isActive('/tracking') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
@@ -354,7 +354,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to="/tracking"
+                to={activeQueueToken?.queue_id ? `/tracking?queue_id=${activeQueueToken.queue_id}` : '/tracking'}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
                   isActive('/tracking') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
@@ -544,7 +544,7 @@ export default function Navbar() {
                 <span className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-600" /> {t('my_medical_history')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/tracking" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+              <Link to={activeQueueToken?.queue_id ? `/tracking?queue_id=${activeQueueToken.queue_id}` : '/tracking'} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><Activity className="w-4 h-4 text-sky-600" /> {t('live_token')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>

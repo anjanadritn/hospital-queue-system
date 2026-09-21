@@ -55,11 +55,38 @@ export default function QueueTracking() {
       if (data && data.queue_id) {
         setActiveQueueId(data.queue_id);
         setQueueIdInput(data.queue_id);
-        setSearchParams({ queue_id: data.queue_id });
+        setSearchParams({ queue_id: data.queue_id }, { replace: true });
+        return data.queue_id;
       } else {
+        setLoading(false);
+        return null;
+      }
+    } catch (err) {
+      setLoading(false);
+      return null;
+    }
+  };
+
+  const handleLoadActiveToken = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await hospitalApi.getMyActiveQueue();
+      if (data && data.queue_id) {
+        setActiveQueueId(data.queue_id);
+        setQueueIdInput(data.queue_id);
+        setSearchParams({ queue_id: data.queue_id }, { replace: true });
+        navigate(`/tracking?queue_id=${data.queue_id}`, { replace: true });
+        await fetchQueueStatus(data.queue_id);
+      } else {
+        setError(t('no_active_consultations', "You don't currently have an active consultation token."));
+        setQueueData(null);
         setLoading(false);
       }
     } catch (err) {
+      console.warn('Could not load active queue:', err);
+      setError(t('no_active_consultations', "You don't currently have an active consultation token."));
+      setQueueData(null);
       setLoading(false);
     }
   };
@@ -69,6 +96,20 @@ export default function QueueTracking() {
       loadMyActiveQueue();
     }
   }, []);
+
+  // Synchronize when the URL search param changes externally (e.g. navigation / back / forward)
+  useEffect(() => {
+    const urlQueueId = searchParams.get('queue_id');
+    if (urlQueueId && urlQueueId.trim()) {
+      const cleanId = urlQueueId.trim().toUpperCase();
+      if (cleanId !== activeQueueId) {
+        setActiveQueueId(cleanId);
+        setQueueIdInput(cleanId);
+      }
+    } else if (!urlQueueId && !activeQueueId) {
+      loadMyActiveQueue();
+    }
+  }, [searchParams]);
 
   const playCallChime = () => {
     try {
@@ -120,13 +161,30 @@ export default function QueueTracking() {
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error('fetchQueueStatus error for token:', qId, err);
+      // AUTOMATIC FALLBACK: If token was not found or access forbidden, check if the authenticated patient has an active token!
+      if (user?.role === 'patient') {
+        try {
+          const myActive = await hospitalApi.getMyActiveQueue();
+          if (myActive && myActive.queue_id && myActive.queue_id.toUpperCase() !== qId.toUpperCase()) {
+            console.info(`Automatically redirecting from invalid token '${qId}' to active patient token '${myActive.queue_id}'`);
+            setActiveQueueId(myActive.queue_id);
+            setQueueIdInput(myActive.queue_id);
+            setSearchParams({ queue_id: myActive.queue_id }, { replace: true });
+            navigate(`/tracking?queue_id=${myActive.queue_id}`, { replace: true });
+            return;
+          }
+        } catch (activeErr) {
+          // No active queue found for this patient
+        }
+      }
+
       if (err.response?.status === 403) {
-        setError('Unauthorized Access: You can only view and track your own active consultation queue.');
+        setError(t('unauthorized_queue_view', 'Unauthorized Access: You can only view and track your own active consultation queue.'));
       } else if (err.response?.status === 401) {
-        setError('Your session has expired. Please login again.');
+        setError(t('session_expired', 'Your session has expired. Please login again.'));
       } else {
-        setError(`Consultation token '${qId}' was not found in active hospital queue records.`);
+        setError(t('token_not_found', { token: qId }, `Consultation token '${qId}' was not found in active hospital queue records.`));
       }
       setQueueData(null);
     } finally {
@@ -280,12 +338,22 @@ export default function QueueTracking() {
               <h3 className="text-base font-bold text-red-900 mb-1">{t('service_comm_notice', 'Queue Access Notice')}</h3>
               <p className="text-xs text-red-700 font-medium">{error}</p>
             </div>
-            <button
-              onClick={loadMyActiveQueue}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
-            >
-              {t('your_active_token', 'Load Active Token')}
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleLoadActiveToken}
+                className="w-full sm:w-auto px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-xs"
+              >
+                {t('your_active_token', 'Your Active Token')}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(user?.role === 'patient' ? '/patient' : '/')}
+                className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
+              >
+                {t('patient_care_portal', 'Patient Dashboard')}
+              </button>
+            </div>
           </div>
         ) : queueData ? (
           <div className="space-y-6">
