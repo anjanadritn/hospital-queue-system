@@ -38,10 +38,23 @@ export default function Signup() {
   const [otpSent, setOtpSent] = useState(false);
   const [devOtp, setDevOtp] = useState('');
   const [otpInput, setOtpInput] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  React.useEffect(() => {
+    let interval = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -60,6 +73,7 @@ export default function Signup() {
     try {
       const res = await hospitalApi.sendAuthOtp(phone.trim(), 'ACCOUNT_VERIFICATION');
       setOtpSent(true);
+      setResendTimer(30);
       if (res.development_otp) {
         setDevOtp(res.development_otp);
         setOtpInput(res.development_otp);
@@ -71,6 +85,31 @@ export default function Signup() {
         err.response?.data?.message ||
         err.message ||
         t('failed_send_otp', 'Failed to send verification OTP');
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0 || loading) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await hospitalApi.sendAuthOtp(phone.trim(), 'ACCOUNT_VERIFICATION');
+      setResendTimer(30);
+      if (res.development_otp) {
+        setDevOtp(res.development_otp);
+        setOtpInput(res.development_otp);
+      }
+    } catch (err) {
+      console.error('OTP Resend Error:', err);
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        t('failed_send_otp', 'Failed to resend verification OTP');
       setError(message);
     } finally {
       setLoading(false);
@@ -391,6 +430,29 @@ export default function Signup() {
                     onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
                     className="w-full text-center py-3 text-2xl font-mono font-extrabold tracking-[0.3em] bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 focus:bg-white focus:border-sky-600 focus:outline-none transition"
                   />
+                  <div className="flex items-center justify-between text-xs pt-2 px-1">
+                    <button
+                      type="button"
+                      disabled={resendTimer > 0 || loading}
+                      onClick={handleResendOtp}
+                      className="text-sky-600 font-bold hover:underline disabled:text-slate-400 disabled:no-underline cursor-pointer"
+                    >
+                      {resendTimer > 0
+                        ? `${t('resend_otp_in', 'Resend OTP in')} ${resendTimer}s`
+                        : t('resend_otp', 'Resend OTP Code')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOtpSent(false);
+                        setOtpInput('');
+                        setError(null);
+                      }}
+                      className="text-slate-500 font-bold hover:text-slate-700 hover:underline cursor-pointer"
+                    >
+                      {t('edit_phone', 'Change Phone')}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">

@@ -3,7 +3,7 @@ from typing import Optional, List, Tuple
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from services.ml_service import predict_consultation_duration
 from services.travel_service import calculate_travel_metrics
-from services.notification_service import create_notification
+from services.notification_service import create_notification, format_booking_confirmed_sms
 
 IN_MEMORY_BOOKINGS = []
 
@@ -137,7 +137,8 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "booking_id": booking_id,
         "consultation_date": consultation_date_str,
         "consultation_slot": slot_obj,
-        "slot_id": slot_obj.get("slot_id", "morning")
+        "slot_id": slot_obj.get("slot_id", "morning"),
+        "suppress_sms": True
     }
     queue_res, queue_err = join_queue(queue_payload)
 
@@ -239,20 +240,26 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         res = serialize_doc(booking_doc)
 
     # 4. GENERATE IN-APP NOTIFICATIONS
-    create_notification(
-        patient_id=patient_id,
-        notification_type="BOOKING_CONFIRMED",
-        title="Consultation Booked Successfully",
-        message=f"Confirmed for {consultation_date_str} with {doctor_id} ({department}). Queue Token: {queue_id} (Position #{queue_position}). Room 204.",
-        booking_id=booking_id
+    clean_room = str(booking_doc.get("room_number", "Room 204")).replace("Room", "").replace("room", "").strip() or "204"
+    dep_time = (travel_info.get("recommended_departure_time") if travel_info else None) or queue_res.get("recommended_departure_time") or "Soon"
+    booking_sms = format_booking_confirmed_sms(
+        token=queue_id or "Pending",
+        queue_position=queue_position,
+        consultation_date=consultation_date_str,
+        doctor_id=doctor_id,
+        department=department,
+        room=clean_room,
+        recommended_departure=dep_time,
+        arrival_code=arrival_otp
     )
 
     create_notification(
         patient_id=patient_id,
-        notification_type="DEPARTURE_REMINDER",
-        title="Departure Reminder",
-        message=f"Estimated wait time is {wait_time} mins. {travel_info.get('departure_alert', '')}",
-        booking_id=booking_id
+        notification_type="BOOKING_CONFIRMED",
+        title="Consultation Booked Successfully",
+        message=f"Confirmed for {consultation_date_str} with {doctor_id} ({department}). Queue Token: {queue_id} (Position #{queue_position}). Room {clean_room}.",
+        booking_id=booking_id,
+        sms_text=booking_sms
     )
 
     if doctor_id:

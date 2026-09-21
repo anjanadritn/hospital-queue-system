@@ -8,7 +8,7 @@ except Exception:
 from typing import Optional, List, Tuple, Dict
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from services.prediction_service import get_wait_time_prediction, predict_consultation_duration_service
-from services.notification_service import create_notification
+from services.notification_service import create_notification, format_turn_approaching_sms
 from services.travel_service import calculate_travel_metrics
 from services.otp_service import generate_consultation_otp
 from services.leave_service import (
@@ -168,6 +168,25 @@ def get_patient_arrival_deadline(entry: dict) -> Optional[datetime]:
             pass
 
     return None
+
+def _normalize_joined_dt(val) -> datetime:
+    """
+    Normalizes joined_at (string, datetime, or None) to a timezone-aware UTC datetime
+    for robust chronological queue priority sorting without ISO string collation errors.
+    """
+    if not val:
+        return datetime.max.replace(tzinfo=timezone.utc)
+    if isinstance(val, datetime):
+        if val.tzinfo is None:
+            return val.replace(tzinfo=HOSPITAL_TZ).astimezone(timezone.utc)
+        return val.astimezone(timezone.utc)
+    try:
+        dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=HOSPITAL_TZ)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        return datetime.max.replace(tzinfo=timezone.utc)
 
 def evaluate_late_arrivals(
     doctor_id: Optional[str] = None,
@@ -563,6 +582,7 @@ def recalculate_queue_positions(
             )
 
         waiting_entries = list(db.queue.find(query))
+        total_active_count = len(waiting_entries) + (1 if in_consult_entry else 0)
 
         def priority_sort_key(entry):
             p = str(entry.get("priority", "normal")).lower()
@@ -571,7 +591,8 @@ def recalculate_queue_positions(
             is_missed = 1 if s in ["missed", "missed_consultation"] else 0
             tier = 0 if is_emergency == 0 else (2 if is_missed == 1 else 1)
             is_late = 1 if entry.get("late_arrival_reordered") else 0
-            return (tier, is_late, entry.get("joined_at", ""), entry.get("queue_id", ""))
+            joined_dt = _normalize_joined_dt(entry.get("joined_at"))
+            return (tier, is_late, joined_dt, entry.get("queue_id", ""))
 
         waiting_entries.sort(key=priority_sort_key)
 
@@ -753,6 +774,8 @@ def recalculate_queue_positions(
                 {"queue_id": entry["queue_id"]},
                 {"$set": {
                     "position": idx,
+                    "is_late": bool(entry.get("late_arrival_reordered")),
+                    "total_active_queue": total_active_count,
                     "predicted_duration": predicted_dur,
                     "predicted_wait_time": predicted_wait,
                     "expected_consultation_time": expected_time_str,
@@ -803,14 +826,58 @@ def recalculate_queue_positions(
                 pass
 
             # Turn is approaching notification for top positions
-            if idx <= 2 and not entry.get("approaching_notified") and new_status != "missed":
+            today_str = datetime.now(HOSPITAL_TZ).strftime("%Y-%m-%d")
+            entry_date = str(entry.get("consultation_date") or entry.get("consultation_slot", {}).get("date") or "").strip()
+            is_today = (not entry_date) or (entry_date == today_str)
+            is_advance_future = bool(entry_date and entry_date > today_str)
+            is_booked_only = (new_status == "booked") or (entry.get("status") == "booked" and not entry.get("arrived_at_hospital"))
+
+            if (
+                idx <= 2
+                and not entry.get("approaching_notified")
+                and not entry.get("suppress_sms")
+                and new_status not in ["missed", "missed_consultation", "booked", "cancelled", "completed"]
+                and is_today
+                and not is_advance_future
+                and not is_booked_only
+                and predicted_wait <= 30
+            ):
                 try:
+                    arrival_code = entry.get("arrival_otp")
+                    if not arrival_code and booking_id:
+                        try:
+                            apt = db.appointments.find_one({"booking_id": booking_id})
+                            if apt:
+                                arrival_code = apt.get("arrival_otp")
+                        except Exception:
+                            pass
+                    if not arrival_code:
+                        try:
+                            otp_rec = db.otp_verifications.find_one({"token_or_booking_id": entry["queue_id"]})
+                            if otp_rec:
+                                arrival_code = otp_rec.get("otp")
+                        except Exception:
+                            pass
+
+                    clean_room = str(entry.get("room_number", "204")).replace("Room", "").replace("room", "").strip() or "204"
+
+                    sms_content = format_turn_approaching_sms(
+                        token=entry["queue_id"],
+                        queue_position=idx,
+                        estimated_wait=predicted_wait,
+                        expected_consultation=expected_time_str,
+                        recommended_departure=recommended_departure_str,
+                        room=clean_room,
+                        arrival_code=arrival_code or "800066"
+                    )
+
                     create_notification(
                         patient_id=entry.get("patient_id", "P001"),
                         notification_type="TURN_APPROACHING",
                         title="Your Turn is Approaching!",
                         message=f"Your token {entry['queue_id']} is now #{idx} in line. Estimated waiting time is ~{predicted_wait} mins. Expected at {expected_time_str}. Please be near Room {entry.get('room_number', '204')}.",
-                        booking_id=entry["queue_id"]
+                        booking_id=entry["queue_id"],
+                        sms_text=sms_content
                     )
                     db.queue.update_one({"queue_id": entry["queue_id"]}, {"$set": {"approaching_notified": True}})
                 except Exception:
@@ -849,7 +916,8 @@ def recalculate_queue_positions(
         is_missed = 1 if s in ["missed", "missed_consultation"] else 0
         tier = 0 if is_emergency == 0 else (2 if is_missed == 1 else 1)
         is_late = 1 if entry.get("late_arrival_reordered") else 0
-        return (tier, is_late, entry.get("joined_at", ""), entry.get("queue_id", ""))
+        joined_dt = _normalize_joined_dt(entry.get("joined_at"))
+        return (tier, is_late, joined_dt, entry.get("queue_id", ""))
 
     waiting.sort(key=p_key)
 
@@ -920,6 +988,7 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     city = str(data.get("city") or data.get("location") or data.get("address") or "Tumakuru").strip()
     pdo = str(data.get("pdo", "")).strip()
     booking_id = str(data.get("booking_id", "")).strip()
+    suppress_sms = bool(data.get("suppress_sms", False))
 
     if not patient_id:
         return None, "patient_id is required"
@@ -1038,6 +1107,7 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "late_arrival_moved_at": None,
         "arrival_otp": arrival_otp,
         "joined_at": now_str,
+        "suppress_sms": suppress_sms,
         "predicted_duration": predicted_dur,
         "predicted_wait_time": 2 if clean_priority == "emergency" else 5,
         "travel_info": travel_info
@@ -1076,7 +1146,8 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         notification_type="QUEUE_UPDATED",
         title="Queue Token Assigned",
         message=f"Queue Token {queue_id} assigned (Position #{pos}). Estimated waiting time is {wait_time} minutes.",
-        booking_id=queue_id
+        booking_id=queue_id,
+        suppress_sms=suppress_sms
     )
 
     # 2. Smart Departure notification
@@ -1085,7 +1156,8 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         notification_type="DEPARTURE_REMINDER",
         title="Recommended Departure Time",
         message=f"Your recommended departure time from {city} is {dep_time}. Estimated waiting time is {wait_time} minutes.",
-        booking_id=queue_id
+        booking_id=queue_id,
+        suppress_sms=suppress_sms
     )
 
     # 3. Arrival OTP notification
@@ -1094,7 +1166,8 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         notification_type="ARRIVAL_OTP_ISSUED",
         title="Hospital Arrival Code",
         message=f"Your 6-digit hospital arrival verification code is {arrival_otp}. Present this code at the reception desk upon arriving at SIMSRH.",
-        booking_id=queue_id
+        booking_id=queue_id,
+        suppress_sms=suppress_sms
     )
 
     if doctor_id:
@@ -1583,6 +1656,9 @@ def sanitize_public_entry(entry: dict) -> dict:
         "expected_consultation_iso": entry.get("expected_consultation_iso"),
         "is_current": bool(entry.get("is_current") or entry.get("status") == "in_consultation"),
         "is_next": bool(entry.get("is_next") or (entry.get("position") == 1 and entry.get("status") != "in_consultation")),
+        "is_late": bool(entry.get("late_arrival_reordered") or entry.get("is_late")),
+        "late_arrival_reordered": bool(entry.get("late_arrival_reordered")),
+        "total_active_queue": entry.get("total_active_queue"),
         "consultation_slot": {
             "slot_id": slot.get("slot_id", entry.get("slot_id", "morning")),
             "slot_name": slot.get("slot_name", "Morning Slot"),

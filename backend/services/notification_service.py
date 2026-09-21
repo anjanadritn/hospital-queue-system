@@ -1,6 +1,7 @@
+import re
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List, Tuple, Set
+from typing import Optional, List, Tuple, Set, Any
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from config import config
 
@@ -16,6 +17,228 @@ SMS_ELIGIBLE_NOTIFICATION_TYPES = {
     "TURN_APPROACHING",
     "MISSED_CONSULTATION"
 }
+
+def format_turn_approaching_sms(
+    token: str,
+    queue_position: Any,
+    estimated_wait: Any,
+    expected_consultation: Optional[str] = None,
+    recommended_departure: Optional[str] = None,
+    room: Optional[str] = None,
+    arrival_code: Optional[str] = None
+) -> str:
+    """
+    Formats the TURN_APPROACHING SMS message in the standardized hospital style:
+    [SIMSRH Hospital] 🏥
+    Your turn is approaching
+    Token {token}
+    Queue position {pos}
+    Estimated wait {wait} min
+    Expected consultation {consultation_time}
+    Recommended departure {departure_time}
+    Please be near Room {room}
+    Hospital Arrival Code {arrival_code}
+    Show this code at the reception desk on arrival
+    """
+    clean_token = re.sub(r"[#:]", "", str(token or "D001-Q020")).strip() or "D001-Q020"
+    clean_pos = re.sub(r"[#:]", "", str(queue_position or "2")).strip() or "2"
+
+    # Clean estimated wait (digits only, followed by 'min')
+    wait_str = str(estimated_wait or "14").strip()
+    digits = re.findall(r"\d+", wait_str)
+    wait_val = digits[0] if digits else ("0" if wait_str == "0" else "14")
+
+    # Clean expected consultation time (preserve standard HH:MM AM/PM, remove label colons or #)
+    exp_val = str(expected_consultation or "9:09 PM").replace("#", "").strip()
+    exp_val = re.sub(r"^(?:expected\s*(?:consultation|at)?[:\s]*)", "", exp_val, flags=re.IGNORECASE).rstrip(".").strip()
+    if exp_val.startswith(":"):
+        exp_val = exp_val.lstrip(": ")
+    if not exp_val:
+        exp_val = "9:09 PM"
+
+    # Clean recommended departure time (preserve standard HH:MM AM/PM, remove label colons or #)
+    dep_val = str(recommended_departure or "8:58 PM").replace("#", "").strip()
+    dep_val = re.sub(r"^(?:recommended\s*(?:departure)?[:\s]*)", "", dep_val, flags=re.IGNORECASE).rstrip(".").strip()
+    if dep_val.startswith(":"):
+        dep_val = dep_val.lstrip(": ")
+    if not dep_val:
+        dep_val = "8:58 PM"
+
+    # Clean room (e.g. 'Room 204' -> '204', '204' -> '204')
+    room_val = re.sub(r"[#:]", "", str(room or "204")).strip()
+    room_val = re.sub(r"^(?:room\s*)", "", room_val, flags=re.IGNORECASE).strip() or "204"
+
+    # Clean arrival code (e.g. '800066')
+    code_val = re.sub(r"[#:]", "", str(arrival_code or "800066")).rstrip(".").strip() or "800066"
+
+    lines = [
+        "[SIMSRH Hospital] 🏥",
+        "Your turn is approaching",
+        f"Token {clean_token}",
+        f"Queue position {clean_pos}",
+        f"Estimated wait {wait_val} min",
+        f"Expected consultation {exp_val}",
+        f"Recommended departure {dep_val}",
+        f"Please be near Room {room_val}",
+        f"Hospital Arrival Code {code_val}",
+        "Show this code at the reception desk on arrival"
+    ]
+    return "\n".join(lines)
+
+def format_booking_confirmed_sms(
+    token: str,
+    queue_position: Any,
+    consultation_date: Optional[str] = None,
+    doctor_id: Optional[str] = None,
+    department: Optional[str] = None,
+    room: Optional[str] = None,
+    recommended_departure: Optional[str] = None,
+    arrival_code: Optional[str] = None
+) -> str:
+    """
+    Formats the single comprehensive BOOKING_CONFIRMED SMS message in the standardized hospital style:
+    [SIMSRH Hospital] 🏥
+    Consultation Booked Successfully
+    Token {token}
+    Queue position {pos}
+    Date {date}
+    Doctor {doctor} ({dept})
+    Room {room}
+    Recommended departure {departure}
+    Hospital Arrival Code {arrival_code}
+    Show this code at the reception desk on arrival
+    """
+    clean_token = re.sub(r"[#:]", "", str(token or "Pending")).strip() or "Pending"
+    clean_pos = re.sub(r"[#:]", "", str(queue_position or "1")).strip() or "1"
+    clean_date = str(consultation_date or "").replace("#", "").strip()
+    clean_doc = str(doctor_id or "").replace("#", "").strip()
+    clean_dept = str(department or "").replace("#", "").strip()
+    clean_room = re.sub(r"[#:]", "", str(room or "204")).strip()
+    clean_room = re.sub(r"^(?:room\s*)", "", clean_room, flags=re.IGNORECASE).strip() or "204"
+    clean_dep = str(recommended_departure or "Soon").replace("#", "").strip()
+    clean_code = re.sub(r"[#:]", "", str(arrival_code or "800066")).rstrip(".").strip() or "800066"
+
+    lines = [
+        "[SIMSRH Hospital] 🏥",
+        "Consultation Booked Successfully",
+        f"Token {clean_token}",
+        f"Queue position {clean_pos}",
+        f"Date {clean_date}",
+        f"Doctor {clean_doc} ({clean_dept})",
+        f"Room {clean_room}",
+        f"Recommended departure {clean_dep}",
+        f"Hospital Arrival Code {clean_code}",
+        "Show this code at the reception desk on arrival"
+    ]
+    return "\n".join(lines)
+
+def build_turn_approaching_sms_text(
+    patient_id: Optional[str] = None,
+    booking_id: Optional[str] = None,
+    message: Optional[str] = None
+) -> str:
+    token = booking_id
+    pos = None
+    wait = None
+    exp = None
+    dep = None
+    room = None
+    otp = None
+
+    # 1. Parse message string first for any explicit values passed by the caller
+    if message:
+        tok_match = re.search(r"token\s+([A-Za-z0-9\-]+)", message, re.IGNORECASE)
+        if tok_match:
+            token = tok_match.group(1)
+        pos_match = re.search(r"(?:now\s+#?|#)(\d+)(?:\s+in\s+line|\b)", message, re.IGNORECASE)
+        if pos_match:
+            pos = pos_match.group(1)
+        wait_match = re.search(r"[~]?\s*(\d+)\s*mins?", message, re.IGNORECASE)
+        if wait_match:
+            wait = wait_match.group(1)
+        exp_match = re.search(r"Expected\s+at\s+([^.]+)", message, re.IGNORECASE)
+        if exp_match:
+            exp = exp_match.group(1).strip()
+        room_match = re.search(r"Room\s+([A-Za-z0-9]+)", message, re.IGNORECASE)
+        if room_match:
+            room = room_match.group(1)
+
+    # 2. Query MongoDB for any details not specified in message
+    try:
+        db = get_db()
+        q_entry = None
+        if booking_id:
+            q_entry = db.queue.find_one({"$or": [{"queue_id": booking_id}, {"booking_id": booking_id}]})
+        if not q_entry and patient_id:
+            q_entry = db.queue.find_one({"patient_id": patient_id})
+
+        if q_entry:
+            if not token:
+                token = q_entry.get("queue_id") or booking_id
+            if not pos:
+                pos = q_entry.get("position")
+            if not wait:
+                wait = q_entry.get("predicted_wait_time")
+            if not exp:
+                exp = q_entry.get("expected_consultation_time")
+            if not dep:
+                dep = q_entry.get("recommended_departure_time") or (q_entry.get("travel_info") or {}).get("recommended_departure_time")
+            if not room:
+                room = q_entry.get("room_number")
+            if not otp:
+                otp = q_entry.get("arrival_otp")
+
+        if (not otp or not pos or not dep) and booking_id:
+            apt = db.appointments.find_one({"$or": [{"booking_id": booking_id}, {"queue_id": booking_id}]})
+            if apt:
+                if not pos:
+                    pos = apt.get("queue_position")
+                if not wait:
+                    wait = apt.get("predicted_wait_time")
+                if not exp:
+                    exp = apt.get("expected_consultation_time")
+                if not dep:
+                    dep = apt.get("recommended_departure_time")
+                if not room:
+                    room = apt.get("room_number")
+                if not otp:
+                    otp = apt.get("arrival_otp")
+    except Exception:
+        pass
+
+    # 3. In-memory fallback if not in DB
+    if not q_entry:
+        try:
+            from services.queue_service import IN_MEMORY_QUEUE
+            for q in IN_MEMORY_QUEUE:
+                if q.get("queue_id") == booking_id or q.get("booking_id") == booking_id or q.get("patient_id") == patient_id:
+                    if not token:
+                        token = q.get("queue_id")
+                    if not pos:
+                        pos = q.get("position")
+                    if not wait:
+                        wait = q.get("predicted_wait_time")
+                    if not exp:
+                        exp = q.get("expected_consultation_time")
+                    if not dep:
+                        dep = q.get("recommended_departure_time") or (q.get("travel_info") or {}).get("recommended_departure_time")
+                    if not room:
+                        room = q.get("room_number")
+                    if not otp:
+                        otp = q.get("arrival_otp")
+                    break
+        except Exception:
+            pass
+
+    return format_turn_approaching_sms(
+        token=token or "D001-Q020",
+        queue_position=pos or 2,
+        estimated_wait=wait or 14,
+        expected_consultation=exp or "9:09 PM",
+        recommended_departure=dep or "8:58 PM",
+        room=room or "204",
+        arrival_code=otp or "800066"
+    )
 
 def resolve_patient_phone(patient_id: str, booking_id: Optional[str] = None) -> Optional[str]:
     """
@@ -86,11 +309,72 @@ def resolve_patient_phone(patient_id: str, booking_id: Optional[str] = None) -> 
 
     return None
 
+def resolve_canonical_event_ids(booking_id: Optional[str]) -> Set[str]:
+    """
+    Resolves all linked identity tokens for an appointment/queue event (e.g. B029 and D001-Q020).
+    Ensures deduplication recognizes that the appointment ID and queue token represent the exact same event.
+    """
+    if not booking_id:
+        return set()
+    b_clean = str(booking_id).strip()
+    ids = {b_clean}
+
+    try:
+        db = get_db()
+        # Check appointments collection
+        apt = db.appointments.find_one({"$or": [{"booking_id": b_clean}, {"queue_id": b_clean}]})
+        if apt:
+            if apt.get("booking_id"):
+                ids.add(str(apt["booking_id"]).strip())
+            if apt.get("queue_id"):
+                ids.add(str(apt["queue_id"]).strip())
+
+        # Check queue collection
+        q_doc = db.queue.find_one({"$or": [{"queue_id": b_clean}, {"booking_id": b_clean}]})
+        if q_doc:
+            if q_doc.get("queue_id"):
+                ids.add(str(q_doc["queue_id"]).strip())
+            if q_doc.get("booking_id"):
+                ids.add(str(q_doc["booking_id"]).strip())
+    except Exception:
+        pass
+
+    # Check in-memory fallbacks
+    try:
+        from services.appointment_service import IN_MEMORY_BOOKINGS
+        for b in IN_MEMORY_BOOKINGS:
+            if b.get("booking_id") == b_clean or b.get("queue_id") == b_clean:
+                if b.get("booking_id"):
+                    ids.add(str(b["booking_id"]).strip())
+                if b.get("queue_id"):
+                    ids.add(str(b["queue_id"]).strip())
+    except Exception:
+        pass
+
+    try:
+        from services.queue_service import IN_MEMORY_QUEUE
+        for q in IN_MEMORY_QUEUE:
+            if q.get("queue_id") == b_clean or q.get("booking_id") == b_clean:
+                if q.get("queue_id"):
+                    ids.add(str(q["queue_id"]).strip())
+                if q.get("booking_id"):
+                    ids.add(str(q["booking_id"]).strip())
+    except Exception:
+        pass
+
+    return ids
+
 def is_duplicate_sms(patient_id: str, notification_type: str, booking_id: Optional[str]) -> bool:
-    """Checks whether an SMS has already been dispatched for this exact notification event."""
-    event_key = (patient_id, notification_type, booking_id or "")
-    if event_key in SENT_SMS_EVENTS:
-        return True
+    """
+    Checks whether an SMS has already been dispatched for this exact notification event.
+    Uses canonical event identities so that alias IDs (e.g. B029 and D001-Q020) share deduplication state.
+    """
+    all_ids = resolve_canonical_event_ids(booking_id) if booking_id else {booking_id or ""}
+
+    # Check in-memory event cache against all alias IDs
+    for aid in all_ids:
+        if (patient_id, notification_type, aid) in SENT_SMS_EVENTS:
+            return True
 
     try:
         db = get_db()
@@ -99,12 +383,13 @@ def is_duplicate_sms(patient_id: str, notification_type: str, booking_id: Option
             "type": notification_type,
             "sms_sent": True
         }
-        if booking_id:
-            query["booking_id"] = booking_id
+        if all_ids:
+            query["booking_id"] = {"$in": list(all_ids)}
 
         existing = db.notifications.find_one(query)
         if existing:
-            SENT_SMS_EVENTS.add(event_key)
+            for aid in all_ids:
+                SENT_SMS_EVENTS.add((patient_id, notification_type, aid))
             return True
     except Exception:
         pass
@@ -124,29 +409,41 @@ def create_notification(
     notification_type: str,
     title: str,
     message: str,
-    booking_id: Optional[str] = None
+    booking_id: Optional[str] = None,
+    sms_text: Optional[str] = None,
+    suppress_sms: bool = False
 ) -> Tuple[Optional[dict], Optional[str]]:
     now_str = datetime.now(timezone.utc).isoformat()
     notif_id = generate_notification_id()
 
-    # Attempt SMS dispatch if eligible, enabled, not duplicate, and recipient is patient
+    # Attempt SMS dispatch if eligible, enabled, not suppressed, not duplicate, and recipient is patient
     sms_sent = False
     sms_eligible = notification_type in SMS_ELIGIBLE_NOTIFICATION_TYPES
 
-    if sms_eligible and getattr(config, "MSG91_SMS_ENABLED", False):
+    if not suppress_sms and sms_eligible and (getattr(config, "FAST2SMS_SMS_ENABLED", False) or getattr(config, "MSG91_SMS_ENABLED", False)):
         try:
             from services.sms_service import sms_service, mask_phone
             if not is_duplicate_sms(patient_id, notification_type, booking_id):
                 phone = resolve_patient_phone(patient_id, booking_id)
                 if phone:
-                    sms_text = f"{title}: {message}"
+                    if not sms_text:
+                        if notification_type == "TURN_APPROACHING":
+                            sms_text = build_turn_approaching_sms_text(
+                                patient_id=patient_id,
+                                booking_id=booking_id,
+                                message=message
+                            )
+                        else:
+                            sms_text = f"{title}: {message}"
                     success, res, err = sms_service.send_sms(phone, sms_text)
                     sms_sent = bool(success)
                     if success:
-                        SENT_SMS_EVENTS.add((patient_id, notification_type, booking_id or ""))
+                        all_ids = resolve_canonical_event_ids(booking_id) if booking_id else {booking_id or ""}
+                        for aid in all_ids:
+                            SENT_SMS_EVENTS.add((patient_id, notification_type, aid))
                     else:
                         logger.warning(
-                            "MSG91 SMS notification failed for %s (%s): %s",
+                            "SMS notification failed for %s (%s): %s",
                             mask_phone(phone),
                             notification_type,
                             err

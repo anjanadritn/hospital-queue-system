@@ -6,6 +6,7 @@ from services.auth_service import (
     verify_auth_otp,
     register_patient,
     login_user,
+    login_user_with_otp,
     reset_password,
     decode_jwt_token
 )
@@ -68,6 +69,22 @@ def request_login():
         return jsonify({"error": "Phone number and password are required"}), 400
 
     res, error = login_user(phone, password, role)
+    if error:
+        return jsonify({"error": error}), 401
+    return jsonify(res), 200
+
+@auth_bp.route("/auth/login-otp", methods=["POST"])
+@limiter.limit("10 per minute")
+def request_login_otp():
+    data = request.get_json(silent=True) or {}
+    phone = data.get("phone", "")
+    otp = data.get("otp", "")
+    role = data.get("role")
+
+    if not phone or not otp:
+        return jsonify({"error": "Phone number and OTP are required"}), 400
+
+    res, error = login_user_with_otp(phone, otp, role)
     if error:
         return jsonify({"error": error}), 401
     return jsonify(res), 200

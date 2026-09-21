@@ -16,6 +16,7 @@ import {
   Zap
 } from 'lucide-react';
 import LateArrivalWarningCard from './LateArrivalWarningCard';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * MyLiveQueueSection
@@ -32,6 +33,8 @@ export default function MyLiveQueueSection({
   onRefresh,
   refreshing = false
 }) {
+  const { t } = useLanguage();
+
   if (!activeQueue) {
     return null;
   }
@@ -164,7 +167,10 @@ export default function MyLiveQueueSection({
       <div className="p-6 sm:p-7 space-y-6 bg-slate-50/40">
         {/* LATE-ARRIVAL STATUS WARNING CARD */}
         {activeQueue?.late_arrival_reordered && (
-          <LateArrivalWarningCard queueData={activeQueue} />
+          <LateArrivalWarningCard
+            queueData={activeQueue}
+            totalQueueLength={queueEntries.length}
+          />
         )}
 
         {/* KEY OPERATIONAL METRICS (4 TILES) */}
@@ -273,6 +279,9 @@ export default function MyLiveQueueSection({
                   <span className="w-2 h-2 rounded-full bg-amber-500" /> Next / Ready
                 </span>
                 <span className="inline-flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" /> {t('late_arrival_status', 'Late Arrival')}
+                </span>
+                <span className="inline-flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-slate-400" /> Waiting
                 </span>
               </div>
@@ -284,6 +293,7 @@ export default function MyLiveQueueSection({
                 const isPatient = entry.token === patientToken || entry.queue_id === patientToken;
                 const isCurrent = entry.is_current || entry.status === 'in_consultation';
                 const isNext = (entry.is_next || entry.position === 1) && !isCurrent;
+                const isLate = Boolean(entry.is_late || entry.late_arrival_reordered);
 
                 return (
                   <div
@@ -295,6 +305,8 @@ export default function MyLiveQueueSection({
                         ? 'bg-emerald-50/70 border border-emerald-300'
                         : isNext
                         ? 'bg-sky-50/70 border border-sky-300'
+                        : isLate
+                        ? 'bg-rose-50/50 border border-rose-200'
                         : 'bg-slate-50 border border-slate-200'
                     }`}
                   >
@@ -305,7 +317,7 @@ export default function MyLiveQueueSection({
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-1 gap-1">
                       <span className={`text-[10px] font-black font-mono px-1.5 py-0.5 rounded ${
                         isPatient ? 'bg-amber-200 text-amber-900' : 'bg-slate-200/80 text-slate-700'
                       }`}>
@@ -316,16 +328,31 @@ export default function MyLiveQueueSection({
                           ? 'text-emerald-700 font-extrabold'
                           : isNext
                           ? 'text-sky-700 font-extrabold'
+                          : isLate
+                          ? 'text-rose-600 font-extrabold'
                           : 'text-slate-500'
                       }`}>
-                        {isCurrent ? '● Active' : isNext ? '● Next' : 'Waiting'}
+                        {isCurrent
+                          ? '● Active'
+                          : isNext
+                          ? '● Next'
+                          : isLate
+                          ? `● ${t('late_arrival_status', 'Late Arrival')}`
+                          : 'Waiting'}
                       </span>
                     </div>
 
-                    <div className={`text-base font-black font-mono mt-1 ${
-                      isPatient ? 'text-amber-950 font-black text-lg' : 'text-slate-800'
-                    }`}>
-                      {entry.token || entry.queue_id}
+                    <div className="flex items-center justify-between mt-1">
+                      <div className={`text-base font-black font-mono ${
+                        isPatient ? 'text-amber-950 font-black text-lg' : 'text-slate-800'
+                      }`}>
+                        {entry.token || entry.queue_id}
+                      </div>
+                      {isLate && (
+                        <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-extrabold uppercase tracking-tight">
+                          {t('late_arrival_status', 'Late Arrival')}
+                        </span>
+                      )}
                     </div>
 
                     <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500 font-medium">

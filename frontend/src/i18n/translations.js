@@ -985,7 +985,9 @@ export const translations = {
     pct_booked: "{pct}% Booked",
     capacity_utilization: "Capacity Utilization",
     bookings_util_summary: "{booked} / {capacity} Bookings ({remaining} available)",
-    active_in_line: "Active In Line"
+    active_in_line: "Active In Line",
+    end_of_queue_label: "End of Queue",
+    late_arrival_status: "Late Arrival"
   },
 
   kn: {
@@ -1963,7 +1965,9 @@ export const translations = {
     pct_booked: "{pct}% ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ",
     capacity_utilization: "ಸಾಮರ್ಥ್ಯದ ಬಳಕೆ",
     bookings_util_summary: "{booked} / {capacity} ಬುಕಿಂಗ್‌ಗಳು ({remaining} ಲಭ್ಯವಿದೆ)",
-    active_in_line: "ಸರತಿಯಲ್ಲಿ ಸಕ್ರಿಯ"
+    active_in_line: "ಸರತಿಯಲ್ಲಿ ಸಕ್ರಿಯ",
+    end_of_queue_label: "ಸಾಲಿನ ಕೊನೆ",
+    late_arrival_status: "ತಡವಾದ ಆಗಮನ"
   },
 
   hi: {
@@ -2941,6 +2945,8 @@ export const translations = {
     pct_booked: "{pct}% बुक किया गया",
     capacity_utilization: "क्षमता उपयोग",
     bookings_util_summary: "{booked} / {capacity} बुकिंग ({remaining} उपलब्ध)",
-    active_in_line: "कतार में सक्रिय"
+    active_in_line: "कतार में सक्रिय",
+    end_of_queue_label: "कतार का अंत",
+    late_arrival_status: "देर से आगमन"
   }
 };

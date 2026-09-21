@@ -12,7 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
  * Strictly renders only when queueData.late_arrival_reordered === true.
  * Uses dynamic tokens, positions, and consultation times with full i18n.
  */
-export default function LateArrivalWarningCard({ queueData, className = '' }) {
+export default function LateArrivalWarningCard({ queueData, className = '', totalQueueLength = null }) {
   const { t } = useLanguage();
 
   if (!queueData || !queueData.late_arrival_reordered) {
@@ -26,6 +26,16 @@ export default function LateArrivalWarningCard({ queueData, className = '' }) {
     queueData.travel_info?.expected_consultation_time ||
     'Approaching';
   const doctorName = queueData.doctor_name || 'Assigned Doctor';
+
+  const totalLength = totalQueueLength ?? queueData.total_active_queue ?? queueData.total_queue_count ?? null;
+  const isEndOfQueue = Boolean(
+    totalLength != null &&
+    position != null &&
+    !isNaN(Number(position)) &&
+    !isNaN(Number(totalLength)) &&
+    Number(totalLength) > 0 &&
+    Number(position) === Number(totalLength)
+  );
 
   return (
     <div
@@ -76,9 +86,11 @@ export default function LateArrivalWarningCard({ queueData, className = '' }) {
             <span className="text-2xl sm:text-3xl font-black font-mono text-red-600">
               #{position}
             </span>
-            <span className="text-[11px] font-bold text-rose-700">
-              (End of Queue)
-            </span>
+            {isEndOfQueue && (
+              <span className="text-[11px] font-bold text-rose-700">
+                ({t('end_of_queue_label', 'End of Queue')})
+              </span>
+            )}
           </div>
         </div>
 

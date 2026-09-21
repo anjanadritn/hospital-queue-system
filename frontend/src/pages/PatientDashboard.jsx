@@ -671,7 +671,15 @@ export default function PatientDashboard() {
 
             {/* LATE ARRIVAL REORDERED WARNING CARD */}
             {activeQueue?.late_arrival_reordered && (
-              <LateArrivalWarningCard queueData={activeQueue} />
+              <LateArrivalWarningCard
+                queueData={activeQueue}
+                totalQueueLength={
+                  liveQueueData?.doctor_queues?.[activeQueue.doctor_id]?.entries?.length ||
+                  liveQueueData?.queue_entries?.length ||
+                  activeQueue.total_active_queue ||
+                  null
+                }
+              />
             )}
 
             {/* MY LIVE QUEUE SECTION (Strictly doctor_id + consultation_date + consultation_slot) */}

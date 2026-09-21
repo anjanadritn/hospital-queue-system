@@ -354,7 +354,10 @@ export default function QueueTracking() {
 
             {/* LATE-ARRIVAL STATUS WARNING CARD */}
             {queueData.late_arrival_reordered && (
-              <LateArrivalWarningCard queueData={queueData} />
+              <LateArrivalWarningCard
+                queueData={queueData}
+                totalQueueLength={queueData.total_active_queue || null}
+              />
             )}
 
             {/* MAIN QUEUE CARD */}

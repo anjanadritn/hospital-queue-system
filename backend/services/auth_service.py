@@ -155,19 +155,66 @@ def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Op
         existing = get_user_by_phone(clean_phone)
         if existing:
             return None, f"An account with phone number '{clean_phone}' already exists. Please login."
+    elif purpose in ("PASSWORD_RESET", "LOGIN"):
+        existing = get_user_by_phone(clean_phone)
+        if not existing:
+            return None, f"No account found with phone number '{clean_phone}'."
 
     now = datetime.now(timezone.utc)
+    now_ts = now.timestamp()
     expires_at = now + timedelta(minutes=5)
+
+    # 1. RESEND PROTECTION & RATE LIMITING
+    existing_otp = None
+    try:
+        db = get_db()
+        existing_otp = db.auth_otps.find_one({"phone": clean_phone, "purpose": purpose})
+    except Exception:
+        pass
+
+    if not existing_otp:
+        existing_otp = IN_MEMORY_AUTH_OTPS.get(f"{clean_phone}_{purpose}")
+
+    window_start_ts = now_ts
+    resend_count = 1
+
+    if existing_otp:
+        last_created_ts = existing_otp.get("created_at_ts", 0)
+        time_since_last = now_ts - last_created_ts
+
+        # 30-second cooldown between requests
+        if time_since_last < 30:
+            wait_sec = max(1, int(30 - time_since_last))
+            return None, f"Please wait {wait_sec} seconds before requesting another OTP."
+
+        # Rolling 10-minute window rate limit (max 5 requests)
+        prev_window_start = existing_otp.get("window_start_ts", last_created_ts)
+        if now_ts - prev_window_start < 600:
+            prev_count = existing_otp.get("resend_count", 1)
+            if prev_count >= 5:
+                return None, "Too many OTP requests for this phone number. Please try again in a few minutes."
+            resend_count = prev_count + 1
+            window_start_ts = prev_window_start
+        else:
+            window_start_ts = now_ts
+            resend_count = 1
+
+    # 2. GENERATE AND SECURELY HASH OTP (NO PLAINTEXT STORAGE)
     otp_code = f"{random.randint(100000, 999999)}"
+    otp_hash = generate_password_hash(otp_code)
 
     otp_doc = {
         "phone": clean_phone,
         "purpose": purpose,
-        "otp": otp_code,
+        "otp_hash": otp_hash,
         "created_at": now.isoformat(),
+        "created_at_ts": now_ts,
         "expires_at_ts": expires_at.timestamp(),
         "failed_attempts": 0,
-        "verified": False
+        "verified": False,
+        "used": False,
+        "resend_count": resend_count,
+        "window_start_ts": window_start_ts
     }
 
     try:
@@ -182,16 +229,16 @@ def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Op
 
     IN_MEMORY_AUTH_OTPS[f"{clean_phone}_{purpose}"] = otp_doc
 
-    # Dispatch via MSG91 if enabled (fail-safe: SMS failure does NOT break auth flow)
+    # 3. DISPATCH VIA FAST2SMS SERVICE IF ENABLED
     sms_sent = False
     try:
         from services.sms_service import sms_service, mask_phone
-        if getattr(config, "MSG91_SMS_ENABLED", False):
+        if getattr(config, "FAST2SMS_SMS_ENABLED", False) or getattr(config, "MSG91_SMS_ENABLED", False):
             success, res, err = sms_service.send_otp(clean_phone, otp_code)
-            sms_sent = success
+            sms_sent = bool(success)
             if not success:
                 logger.warning(
-                    "MSG91 SMS OTP dispatch failed for %s: %s (continuing with auth flow)",
+                    "SMS OTP dispatch failed for %s: %s (continuing with auth flow)",
                     mask_phone(clean_phone),
                     err
                 )
@@ -213,6 +260,9 @@ def verify_auth_otp(phone: str, otp: str, purpose: str = "ACCOUNT_VERIFICATION")
     clean_otp = str(otp).strip()
     now_ts = datetime.now(timezone.utc).timestamp()
 
+    if not clean_otp or len(clean_otp) != 6:
+        return False, "A valid 6-digit OTP code is required"
+
     otp_doc = None
     try:
         db = get_db()
@@ -228,7 +278,7 @@ def verify_auth_otp(phone: str, otp: str, purpose: str = "ACCOUNT_VERIFICATION")
     if not otp_doc:
         return False, "OTP not found for this phone number"
 
-    if otp_doc.get("verified"):
+    if otp_doc.get("verified") or otp_doc.get("used"):
         return False, "OTP has already been used"
 
     if now_ts > otp_doc.get("expires_at_ts", 0):
@@ -237,8 +287,17 @@ def verify_auth_otp(phone: str, otp: str, purpose: str = "ACCOUNT_VERIFICATION")
     if otp_doc.get("failed_attempts", 0) >= 5:
         return False, "Too many incorrect attempts. Please request a new OTP"
 
-    if otp_doc.get("otp") != clean_otp:
-        otp_doc["failed_attempts"] = otp_doc.get("failed_attempts", 0) + 1
+    # Verify against hashed OTP (with legacy fallback for existing records)
+    is_valid = False
+    stored_hash = otp_doc.get("otp_hash")
+    if stored_hash:
+        is_valid = check_password_hash(stored_hash, clean_otp)
+    elif "otp" in otp_doc:
+        is_valid = (str(otp_doc["otp"]).strip() == clean_otp)
+
+    if not is_valid:
+        new_failed = otp_doc.get("failed_attempts", 0) + 1
+        otp_doc["failed_attempts"] = new_failed
         try:
             db = get_db()
             db.auth_otps.update_one(
@@ -247,15 +306,17 @@ def verify_auth_otp(phone: str, otp: str, purpose: str = "ACCOUNT_VERIFICATION")
             )
         except Exception:
             pass
-        return False, f"Invalid OTP code. {5 - otp_doc['failed_attempts']} attempt(s) remaining."
+        remaining = max(0, 5 - new_failed)
+        return False, f"Invalid OTP code. {remaining} attempt(s) remaining."
 
-    # SUCCESS
+    # SUCCESS: Mark as verified
     otp_doc["verified"] = True
+    otp_doc["verified_at_ts"] = now_ts
     try:
         db = get_db()
         db.auth_otps.update_one(
             {"phone": clean_phone, "purpose": purpose},
-            {"$set": {"verified": True}}
+            {"$set": {"verified": True, "verified_at_ts": now_ts}}
         )
     except Exception:
         pass
@@ -267,7 +328,7 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     phone = normalize_phone(data.get("phone", ""))
     email = data.get("email", "").strip()
     password = data.get("password", "").strip()
-    otp = data.get("otp", "").strip()
+    otp = str(data.get("otp", "")).strip()
 
     if not name or not phone or not password:
         return None, "Full name, phone number, and password are required"
@@ -275,16 +336,31 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     if len(phone) < 10:
         return None, "Valid 10-digit phone number is required"
 
-    # Verify OTP first
-    if otp:
-        ok, err = verify_auth_otp(phone, otp, "ACCOUNT_VERIFICATION")
-        if not ok:
-            return None, f"Phone verification failed: {err}"
+    # MANDATORY OTP VERIFICATION
+    if not otp:
+        return None, "OTP verification code is required to complete registration"
 
-    # Check if user exists
+    ok, err = verify_auth_otp(phone, otp, "ACCOUNT_VERIFICATION")
+    if not ok:
+        return None, f"Phone verification failed: {err}"
+
+    # Check if user already exists
     existing = get_user_by_phone(phone)
     if existing:
         return None, "An account with this phone number already exists. Please login."
+
+    # SINGLE-USE PROTECTION: Mark OTP consumed/used immediately
+    try:
+        db = get_db()
+        db.auth_otps.update_one(
+            {"phone": phone, "purpose": "ACCOUNT_VERIFICATION"},
+            {"$set": {"used": True, "verified": True}}
+        )
+    except Exception:
+        pass
+    if f"{phone}_ACCOUNT_VERIFICATION" in IN_MEMORY_AUTH_OTPS:
+        IN_MEMORY_AUTH_OTPS[f"{phone}_ACCOUNT_VERIFICATION"]["used"] = True
+        IN_MEMORY_AUTH_OTPS[f"{phone}_ACCOUNT_VERIFICATION"]["verified"] = True
 
     user_id = f"U_PAT_{random.randint(1000, 9999)}"
     patient_id = f"P{random.randint(100, 999)}"
@@ -396,3 +472,42 @@ def reset_password(phone: str, otp: str, new_password: str) -> Tuple[bool, Optio
             u["password_hash"] = new_hash
 
     return True, None
+
+def login_user_with_otp(phone: str, otp: str, role: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
+    clean_phone = normalize_phone(phone)
+    if not clean_phone or len(clean_phone) < 10:
+        return None, "Invalid phone number or OTP."
+
+    user = get_user_by_phone(clean_phone)
+    if not user:
+        return None, "No account found with this phone number."
+
+    ok, err = verify_auth_otp(clean_phone, otp, "LOGIN")
+    if not ok:
+        return None, f"Login verification failed: {err}"
+
+    # Consume the OTP (single use)
+    try:
+        db = get_db()
+        db.auth_otps.update_one(
+            {"phone": clean_phone, "purpose": "LOGIN"},
+            {"$set": {"used": True}}
+        )
+    except Exception:
+        pass
+    if f"{clean_phone}_LOGIN" in IN_MEMORY_AUTH_OTPS:
+        IN_MEMORY_AUTH_OTPS[f"{clean_phone}_LOGIN"]["used"] = True
+
+    if role and user.get("role") != role:
+        return None, f"Selected role '{role}' does not match account credentials. Please select the correct role."
+
+    token = generate_jwt_token(user)
+    user_clean = dict(user)
+    user_clean.pop("password_hash", None)
+
+    return {
+        "token": token,
+        "user": user_clean,
+        "redirect": "/staff" if user.get("role") in ["doctor", "admin"] else "/patient"
+    }, None
+

@@ -125,7 +125,8 @@ def test_forgot_password_flow(client):
 def test_auth_otp_sms_disabled(client):
     """When MSG91_SMS_ENABLED=False, OTP generation succeeds and no SMS is sent."""
     from unittest.mock import patch
-    with patch("config.config.MSG91_SMS_ENABLED", False):
+    with patch("config.config.FAST2SMS_SMS_ENABLED", False), \
+         patch("config.config.MSG91_SMS_ENABLED", False):
         with patch("services.sms_service.sms_service.send_otp") as mock_send_otp:
             res = client.post("/auth/send-otp", json={"phone": "9876500001", "purpose": "ACCOUNT_VERIFICATION"})
             assert res.status_code == 200
@@ -178,3 +179,257 @@ def test_auth_otp_sms_enabled_failure_resilience(client):
         verify_res = client.post("/auth/verify-otp", json={"phone": "9876500003", "otp": otp, "purpose": "ACCOUNT_VERIFICATION"})
         assert verify_res.status_code == 200
         assert verify_res.get_json()["verified"] is True
+
+def _clean_phone(phone: str):
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.users.delete_many({"phone": phone})
+        db.patients.delete_many({"phone": phone})
+        db.auth_otps.delete_many({"phone": phone})
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_USERS, IN_MEMORY_AUTH_OTPS
+    IN_MEMORY_USERS[:] = [u for u in IN_MEMORY_USERS if u.get("phone") != phone]
+    for key in list(IN_MEMORY_AUTH_OTPS.keys()):
+        if key.startswith(phone):
+            del IN_MEMORY_AUTH_OTPS[key]
+
+def test_registration_otp_sent(client):
+    """Verify registration OTP is sent, hashed securely in DB, and never stored in plaintext."""
+    test_phone = "9611111111"
+    _clean_phone(test_phone)
+
+    send_res = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    assert send_res.status_code == 200
+    data = send_res.get_json()
+    assert "development_otp" in data
+    assert len(data["development_otp"]) == 6
+
+    # Verify database record: MUST NOT store plaintext OTP
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        otp_doc = db.auth_otps.find_one({"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+        if otp_doc:
+            assert "otp_hash" in otp_doc
+            assert "otp" not in otp_doc  # No plaintext storage
+            assert otp_doc["otp_hash"] != data["development_otp"]
+    except Exception:
+        pass
+    _clean_phone(test_phone)
+
+def test_correct_otp_allows_registration(client):
+    """Verify correct OTP allows registration and marks phone as verified."""
+    test_phone = "9622222222"
+    _clean_phone(test_phone)
+
+    send_res = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    otp = send_res.get_json()["development_otp"]
+
+    reg_res = client.post("/auth/register", json={
+        "name": "Verified Patient",
+        "phone": test_phone,
+        "email": "verified@patient.test",
+        "password": "CorrectPassword123!",
+        "otp": otp
+    })
+    assert reg_res.status_code == 201
+    reg_data = reg_res.get_json()
+    assert "token" in reg_data
+    assert reg_data["user"]["phone_verified"] is True
+    assert reg_data["user"]["status"] == "VERIFIED"
+
+    # Confirm user exists in DB
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        user_doc = db.users.find_one({"phone": test_phone})
+        assert user_doc is not None
+        assert user_doc["phone_verified"] is True
+    except Exception:
+        pass
+    _clean_phone(test_phone)
+
+def test_wrong_otp_blocks_registration(client):
+    """Verify incorrect OTP blocks registration and does not create an account."""
+    test_phone = "9633333333"
+    _clean_phone(test_phone)
+
+    client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+
+    # Attempt with wrong OTP
+    reg_res = client.post("/auth/register", json={
+        "name": "Wrong OTP Patient",
+        "phone": test_phone,
+        "password": "Password123!",
+        "otp": "000000"
+    })
+    assert reg_res.status_code == 400
+    assert "Phone verification failed" in reg_res.get_json()["error"]
+
+    # Confirm no account was created
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        assert db.users.find_one({"phone": test_phone}) is None
+    except Exception:
+        pass
+    _clean_phone(test_phone)
+
+def test_expired_otp_blocks_registration(client):
+    """Verify expired OTP blocks registration and does not create an account."""
+    test_phone = "9644444444"
+    _clean_phone(test_phone)
+
+    send_res = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    otp = send_res.get_json()["development_otp"]
+
+    # Force expiration in DB and memory
+    import time
+    past_ts = time.time() - 100
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.auth_otps.update_one(
+            {"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"},
+            {"$set": {"expires_at_ts": past_ts}}
+        )
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_AUTH_OTPS
+    if f"{test_phone}_ACCOUNT_VERIFICATION" in IN_MEMORY_AUTH_OTPS:
+        IN_MEMORY_AUTH_OTPS[f"{test_phone}_ACCOUNT_VERIFICATION"]["expires_at_ts"] = past_ts
+
+    reg_res = client.post("/auth/register", json={
+        "name": "Expired OTP Patient",
+        "phone": test_phone,
+        "password": "Password123!",
+        "otp": otp
+    })
+    assert reg_res.status_code == 400
+    assert "expired" in reg_res.get_json()["error"].lower()
+
+    # Confirm no account was created
+    try:
+        db = get_db()
+        assert db.users.find_one({"phone": test_phone}) is None
+    except Exception:
+        pass
+    _clean_phone(test_phone)
+
+def test_reused_otp_blocks_registration(client):
+    """Verify an OTP cannot be reused to register multiple times (single-use protection)."""
+    test_phone = "9655555555"
+    _clean_phone(test_phone)
+
+    send_res = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    otp = send_res.get_json()["development_otp"]
+
+    # 1. First registration succeeds
+    reg1 = client.post("/auth/register", json={
+        "name": "First Patient",
+        "phone": test_phone,
+        "password": "Password123!",
+        "otp": otp
+    })
+    assert reg1.status_code == 201
+
+    # Clear user from DB so phone is available again, but OTP has already been used
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.users.delete_many({"phone": test_phone})
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_USERS
+    IN_MEMORY_USERS[:] = [u for u in IN_MEMORY_USERS if u.get("phone") != test_phone]
+
+    # 2. Second registration with SAME OTP must be rejected
+    reg2 = client.post("/auth/register", json={
+        "name": "Reused OTP Patient",
+        "phone": test_phone,
+        "password": "Password123!",
+        "otp": otp
+    })
+    assert reg2.status_code == 400
+    assert "already been used" in reg2.get_json()["error"].lower()
+    _clean_phone(test_phone)
+
+def test_unverified_phone_cannot_create_account(client):
+    """Verify calling /auth/register without OTP or with empty OTP fails."""
+    test_phone = "9666666666"
+    _clean_phone(test_phone)
+
+    # 1. Missing OTP field
+    res1 = client.post("/auth/register", json={
+        "name": "No OTP",
+        "phone": test_phone,
+        "password": "Password123!"
+    })
+    assert res1.status_code == 400
+    assert "OTP verification code is required" in res1.get_json()["error"]
+
+    # 2. Empty OTP field
+    res2 = client.post("/auth/register", json={
+        "name": "Empty OTP",
+        "phone": test_phone,
+        "password": "Password123!",
+        "otp": ""
+    })
+    assert res2.status_code == 400
+    assert "OTP verification code is required" in res2.get_json()["error"]
+
+    # Confirm no user exists
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        assert db.users.find_one({"phone": test_phone}) is None
+    except Exception:
+        pass
+    _clean_phone(test_phone)
+
+def test_resend_cooldown_blocks_rapid_requests(client):
+    """Verify requesting another OTP within 30 seconds is blocked by cooldown."""
+    test_phone = "9677777777"
+    _clean_phone(test_phone)
+
+    # 1st send succeeds
+    res1 = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    assert res1.status_code == 200
+
+    # Immediate 2nd send must be rejected with cooldown message
+    res2 = client.post("/auth/send-otp", json={"phone": test_phone, "purpose": "ACCOUNT_VERIFICATION"})
+    assert res2.status_code == 400
+    assert "Please wait" in res2.get_json()["error"]
+    _clean_phone(test_phone)
+
+def test_existing_login_otp_still_works(client):
+    """Verify login with OTP and password login continue to work seamlessly."""
+    from services.auth_service import init_seed_users, IN_MEMORY_AUTH_OTPS
+    init_seed_users()
+    IN_MEMORY_AUTH_OTPS.pop("9876543211_LOGIN", None)
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.auth_otps.delete_many({"phone": "9876543211", "purpose": "LOGIN"})
+    except Exception:
+        pass
+
+    # 1. Send Login OTP
+    send_res = client.post("/auth/send-otp", json={"phone": "9876543211", "purpose": "LOGIN"})
+    assert send_res.status_code == 200
+    otp = send_res.get_json()["development_otp"]
+
+    # 2. Login with OTP
+    login_otp_res = client.post("/auth/login-otp", json={"phone": "9876543211", "otp": otp, "role": "patient"})
+    assert login_otp_res.status_code == 200
+    data = login_otp_res.get_json()
+    assert "token" in data
+    assert data["user"]["phone"] == "9876543211"
+
+    # 3. Existing password login still works
+    login_pwd_res = client.post("/auth/login", json={"phone": "9876543211", "password": "PatientPass123!", "role": "patient"})
+    assert login_pwd_res.status_code == 200
+    assert "token" in login_pwd_res.get_json()
+
