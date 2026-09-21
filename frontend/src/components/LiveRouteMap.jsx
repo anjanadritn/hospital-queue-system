@@ -47,6 +47,9 @@ export default function LiveRouteMap({
   isExactGps = false,
   isWatching = false,
   gpsStatus = 'idle',
+  originMode = 'gps',
+  selectedOriginName = null,
+  selectedPresetCoords = null,
   onRecenter = null
 }) {
   const mapContainerRef = useRef(null);
@@ -59,16 +62,21 @@ export default function LiveRouteMap({
   const routeGeometry = travelInfo?.route_geometry;
   const coordinates = routeGeometry?.coordinates;
 
-  // Real GPS coordinates take precedence when active, otherwise fallback to stored origin
-  const hasLiveGps = Boolean(isExactGps && liveCoords && liveCoords.length === 2);
-  const activeOriginCoords = hasLiveGps
-    ? liveCoords
-    : (travelInfo?.origin_coordinates || (coordinates && coordinates.length > 0 ? coordinates[0] : (travelInfo?.origin_latitude && travelInfo?.origin_longitude ? [Number(travelInfo.origin_longitude), Number(travelInfo.origin_latitude)] : null)));
+  // Real GPS coordinates take precedence ONLY when originMode is explicitly 'gps' and verified
+  const hasLiveGps = Boolean(originMode === 'gps' && isExactGps && liveCoords && liveCoords.length === 2);
+  const isPresetMode = Boolean(originMode === 'preset' || travelInfo?.location_source === 'preset');
+
+  // When in preset mode, route origin MUST = selectedPreset coordinates. NEVER use browser GPS!
+  const activeOriginCoords = isPresetMode
+    ? (selectedPresetCoords || travelInfo?.origin_coordinates || (travelInfo?.origin_latitude && travelInfo?.origin_longitude ? [Number(travelInfo.origin_longitude), Number(travelInfo.origin_latitude)] : (coordinates && coordinates.length > 0 ? coordinates[0] : null)))
+    : (hasLiveGps
+      ? liveCoords
+      : (travelInfo?.origin_coordinates || (travelInfo?.origin_latitude && travelInfo?.origin_longitude ? [Number(travelInfo.origin_longitude), Number(travelInfo.origin_latitude)] : (coordinates && coordinates.length > 0 ? coordinates[0] : null))));
 
   const hospitalCoords = travelInfo?.hospital_coordinates || DEFAULT_HOSPITAL_COORDS;
   const originName = hasLiveGps
     ? 'Your Location'
-    : (travelInfo?.location_address || travelInfo?.patient_address || 'Patient Location');
+    : (selectedOriginName || travelInfo?.location_address || travelInfo?.patient_address || 'Patient Location');
   const hospitalName = travelInfo?.hospital_name || 'SIMSRH Hospital';
 
   // 1. Initialize MapLibre GL instance
@@ -270,6 +278,8 @@ export default function LiveRouteMap({
       const el = document.createElement('div');
       el.className = 'patient-marker-wrapper cursor-pointer';
 
+      const isPresetMode = originMode === 'preset' || travelInfo?.location_source === 'preset';
+
       if (hasLiveGps) {
         // Real GPS "You" marker with pulsing blue beacon
         el.innerHTML = `
@@ -277,6 +287,15 @@ export default function LiveRouteMap({
             <div style="position:absolute;width:38px;height:38px;background:rgba(14,165,233,0.35);border-radius:50%;animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></div>
             <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#ffffff;z-index:2;">
               You
+            </div>
+          </div>
+        `;
+      } else if (isPresetMode) {
+        // Preset landmark pin
+        el.innerHTML = `
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+            <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;color:#ffffff;z-index:2;">
+              📌
             </div>
           </div>
         `;
@@ -302,12 +321,14 @@ export default function LiveRouteMap({
 
       const popupTitle = hasLiveGps
         ? 'You (Live GPS)'
-        : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`);
+        : (isPresetMode ? `Location: ${originName}` : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`));
       const popupBadge = hasLiveGps
-        ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
-        : (travelInfo?.location_source === 'map_selected'
-          ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
-          : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>');
+        ? '<span style="color:#059669;font-size:10px;font-weight:700;">📍 Live GPS Active</span>'
+        : (isPresetMode
+          ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📌 Using selected location</span>'
+          : (travelInfo?.location_source === 'map_selected'
+            ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
+            : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>'));
 
       const popup = new maplibregl.Popup({ offset: 20, closeButton: false })
         .setHTML(`<div style="font-size:11px;font-weight:700;color:#0f172a;padding:2px 4px;">${popupTitle}<br/>${popupBadge}</div>`);
@@ -320,6 +341,8 @@ export default function LiveRouteMap({
       // Smoothly update marker coordinates on every GPS tick
       patientMarkerRef.current.setLngLat(activeOriginCoords);
 
+      const isPresetMode = originMode === 'preset' || travelInfo?.location_source === 'preset';
+
       // Refresh marker element if transitioning between landmark and live GPS
       const el = patientMarkerRef.current.getElement();
       if (el) {
@@ -329,6 +352,14 @@ export default function LiveRouteMap({
               <div style="position:absolute;width:38px;height:38px;background:rgba(14,165,233,0.35);border-radius:50%;animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></div>
               <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#ffffff;z-index:2;">
                 You
+              </div>
+            </div>
+          `;
+        } else if (isPresetMode) {
+          el.innerHTML = `
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+              <div style="width:32px;height:32px;background:#0284c7;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 4px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;color:#ffffff;z-index:2;">
+                📌
               </div>
             </div>
           `;
@@ -354,16 +385,18 @@ export default function LiveRouteMap({
       if (patientMarkerRef.current.getPopup()) {
         const popupTitle = hasLiveGps
           ? 'You (Live GPS)'
-          : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`);
+          : (isPresetMode ? `Location: ${originName}` : (travelInfo?.location_source === 'map_selected' ? `Patient: ${originName}` : `Location: ${originName}`));
         const popupBadge = hasLiveGps
-          ? '<span style="color:#059669;font-size:10px;font-weight:700;">✓ Exact GPS Active</span>'
-          : (travelInfo?.location_source === 'map_selected'
-            ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
-            : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>');
+          ? '<span style="color:#059669;font-size:10px;font-weight:700;">📍 Live GPS Active</span>'
+          : (isPresetMode
+            ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📌 Using selected location</span>'
+            : (travelInfo?.location_source === 'map_selected'
+              ? '<span style="color:#0284c7;font-size:10px;font-weight:700;">📍 Map Selected</span>'
+              : '<span style="color:#d97706;font-size:10px;font-weight:700;">Approximate Location</span>'));
         patientMarkerRef.current.getPopup().setHTML(`<div style="font-size:11px;font-weight:700;color:#0f172a;padding:2px 4px;">${popupTitle}<br/>${popupBadge}</div>`);
       }
     }
-  }, [mapReady, activeOriginCoords, hasLiveGps, originName, travelInfo?.location_source]);
+  }, [mapReady, activeOriginCoords, hasLiveGps, originName, originMode, travelInfo?.location_source]);
 
   // 4. Update SIMSRH Hospital Marker
   useEffect(() => {
@@ -478,6 +511,8 @@ export default function LiveRouteMap({
       <div className="absolute top-3 left-3 z-10 bg-slate-900/90 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 text-xs">
         {hasLiveGps ? (
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+        ) : originMode === 'preset' ? (
+          <span className="w-2.5 h-2.5 rounded-full bg-sky-400" />
         ) : (
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
         )}
@@ -491,12 +526,16 @@ export default function LiveRouteMap({
         </div>
       </div>
 
-      {/* Live GPS / Approximate Indicator (Top-Right) */}
+      {/* Live GPS / Preset / Approximate Indicator (Top-Right) */}
       <div className="absolute top-3 right-12 z-10">
-        {hasLiveGps ? (
+        {originMode === 'preset' ? (
+          <span className="px-2.5 py-1 bg-sky-500/20 text-sky-300 border border-sky-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
+            <span>📌 {t('using_selected_location', 'Using selected location')}</span>
+          </span>
+        ) : hasLiveGps ? (
           <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>✓ {t('live_gps_active', 'Exact GPS Active')}</span>
+            <span>📍 {t('live_gps_active', 'Live GPS Active')}</span>
           </span>
         ) : (gpsStatus === 'denied' || gpsStatus === 'unavailable') ? (
           <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">

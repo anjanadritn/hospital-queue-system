@@ -27,7 +27,9 @@ TUMKUR_LANDMARKS = {
     "Gubbi Gate": {"distance_km": 8.0, "travel_time_min": 22, "coordinates": [77.0984, 13.3325]},
     "Tumkur Railway Station": {"distance_km": 7.5, "travel_time_min": 20, "coordinates": [77.1065, 13.3435]},
     "B.H. Road Tumkur": {"distance_km": 6.1, "travel_time_min": 16, "coordinates": [77.1025, 13.3410]},
-    "Siddaganga Matha": {"distance_km": 11.2, "travel_time_min": 28, "coordinates": [77.1425, 13.3167]}
+    "Siddaganga Matha": {"distance_km": 11.2, "travel_time_min": 28, "coordinates": [77.1425, 13.3167]},
+    "Alipur, Gauribidanur": {"distance_km": 53.0, "travel_time_min": 52, "coordinates": [77.4200, 13.6100]},
+    "Alipur": {"distance_km": 53.0, "travel_time_min": 52, "coordinates": [77.4200, 13.6100]}
 }
 
 DEFAULT_ORIGIN_COORDINATES = [77.1000, 13.3400]  # Central Tumakuru
@@ -42,7 +44,11 @@ def calculate_travel_metrics(
     leaving_now_at: Optional[str] = None,
     location_source: Optional[str] = None,
     is_approximate: Optional[bool] = None,
-    location_address: Optional[str] = None
+    location_address: Optional[str] = None,
+    origin_mode: Optional[str] = None,
+    origin_lat: Optional[float] = None,
+    origin_lng: Optional[float] = None,
+    origin_label: Optional[str] = None
 ) -> Dict:
     """
     Smart Patient Arrival & Recommended Departure Time Engine:
@@ -51,9 +57,39 @@ def calculate_travel_metrics(
 
     Queries OpenRouteService for real road distance, travel duration, and GeoJSON geometry.
     Falls back gracefully to TUMKUR_LANDMARKS static lookup if ORS is unreachable.
-    Supports patient-specific location sources: device_gps, map_selected, manual, gps, landmark_approximate.
+    Supports patient-specific location sources: device_gps, map_selected, manual, gps, preset, landmark_approximate.
     """
     matched = None
+
+    # Harmonize explicit origin_mode ("gps" or "preset")
+    mode = str(origin_mode or "").strip().lower()
+    if not mode:
+        if location_source == "preset":
+            mode = "preset"
+        elif location_source in ["gps", "device_gps"]:
+            mode = "gps"
+
+    # Harmonize explicit origin_lat / origin_lng coordinates
+    if origin_lat is not None and origin_lng is not None:
+        try:
+            origin_coords = [float(origin_lng), float(origin_lat)]
+        except (ValueError, TypeError):
+            pass
+
+    # If preset mode, ensure coordinates are populated from TUMKUR_LANDMARKS if missing
+    if mode == "preset":
+        location_source = "preset"
+        resolved_approximate = False
+        resolved_source = "preset"
+        search_name = origin_label or location_address or patient_address or ""
+        if not origin_coords or origin_coords[0] is None or origin_coords[1] is None:
+            for landmark, data in TUMKUR_LANDMARKS.items():
+                if landmark.lower() in search_name.lower() or search_name.lower() in landmark.lower():
+                    matched = data
+                    if "coordinates" in data:
+                        origin_coords = data["coordinates"]
+                    break
+
     has_gps = bool(
         origin_coords 
         and len(origin_coords) == 2 
@@ -65,11 +101,15 @@ def calculate_travel_metrics(
         target_coords = [float(origin_coords[0]), float(origin_coords[1])]
         origin_lat = float(origin_coords[1])
         origin_lon = float(origin_coords[0])
-        if is_approximate is not None:
+        if mode == "preset":
+            resolved_approximate = False
+            resolved_source = "preset"
+        elif is_approximate is not None:
             resolved_approximate = bool(is_approximate)
+            resolved_source = location_source or "gps"
         else:
             resolved_approximate = (location_source == "manual")
-        resolved_source = location_source or "gps"
+            resolved_source = location_source or "gps"
     else:
         target_coords = None
         origin_lat = None
@@ -87,6 +127,10 @@ def calculate_travel_metrics(
 
     if not target_coords:
         target_coords = DEFAULT_ORIGIN_COORDINATES
+
+    if target_coords and (origin_lat is None or origin_lon is None):
+        origin_lon = float(target_coords[0])
+        origin_lat = float(target_coords[1])
 
     # Attempt real routing with OpenRouteService using exact patient coordinates
     route_data = None
@@ -210,5 +254,9 @@ def calculate_travel_metrics(
         "route_geometry": route_geometry,
         "source": source,
         "leaving_now": leaving_now,
-        "leaving_now_at": leaving_now_at
+        "leaving_now_at": leaving_now_at,
+        "origin_mode": mode or resolved_source,
+        "origin_lat": origin_lat,
+        "origin_lng": origin_lon,
+        "origin_label": origin_label or location_address or patient_address or "Tumkur City"
     }

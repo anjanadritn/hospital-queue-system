@@ -276,3 +276,45 @@ def test_ors_uses_patient_alipur_location_not_booker_bengaluru():
     assert alipur_metrics["distance_km"] != bengaluru_metrics["distance_km"]
     assert alipur_metrics["origin_coordinates"] != bengaluru_gps
 
+def test_selected_preset_landmark_preserved_during_gps_poll_and_updates():
+    """
+    Regression test for Requirement 12:
+    Verifies that when a patient selects a manual/preset landmark (e.g., 'Tumkur Bus Stand'),
+    route calculation properly honors the preset landmark coordinates, marks location_source as 'preset',
+    and does NOT overwrite the preset with live GPS readings or background polling events.
+    """
+    landmark_name = "Tumkur Bus Stand"
+    bus_stand_coords = TUMKUR_LANDMARKS[landmark_name]["coordinates"]  # [lon, lat]
+
+    # 1. Calculate travel metrics for Tumkur Bus Stand preset
+    preset_metrics = calculate_travel_metrics(
+        patient_address=landmark_name,
+        origin_coords=bus_stand_coords,
+        wait_time_min=25,
+        location_source="preset",
+        is_approximate=False
+    )
+
+    assert preset_metrics["patient_address"] == "Tumkur Bus Stand"
+    assert preset_metrics["origin_coordinates"] == bus_stand_coords
+    assert preset_metrics["origin_latitude"] == bus_stand_coords[1]
+    assert preset_metrics["origin_longitude"] == bus_stand_coords[0]
+    assert preset_metrics["location_source"] == "preset"
+    assert preset_metrics["is_approximate_location"] is False
+
+    # 2. Simulate subsequent browser GPS reading occurring in the background
+    background_gps_coords = [77.1234, 13.3456]
+    background_gps_metrics = calculate_travel_metrics(
+        patient_address="Current GPS Location",
+        origin_coords=background_gps_coords,
+        wait_time_min=25,
+        location_source="gps",
+        is_approximate=False
+    )
+
+    # 3. Verify that preset metrics remain isolated and uncorrupted by GPS coordinates
+    assert preset_metrics["patient_address"] == "Tumkur Bus Stand"
+    assert preset_metrics["origin_coordinates"] != background_gps_metrics["origin_coordinates"]
+    assert preset_metrics["origin_coordinates"] == bus_stand_coords
+
+

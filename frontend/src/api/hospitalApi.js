@@ -255,7 +255,14 @@ export const hospitalApi = {
 
   // 11. Smart Travel & Departure Calculation
   calculateTravelDeparture: async (payload) => {
-    const response = await apiClient.post('/travel/calculate', payload);
+    const formattedPayload = {
+      ...payload,
+      origin_mode: payload.origin_mode || (payload.location_source === 'preset' ? 'preset' : (payload.origin_latitude ? 'gps' : 'preset')),
+      origin_lat: payload.origin_lat !== undefined ? payload.origin_lat : payload.origin_latitude,
+      origin_lng: payload.origin_lng !== undefined ? payload.origin_lng : payload.origin_longitude,
+      origin_label: payload.origin_label || payload.origin || payload.patient_address,
+    };
+    const response = await apiClient.post('/travel/calculate', formattedPayload);
     return response.data;
   },
 

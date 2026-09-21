@@ -15,8 +15,8 @@ REGIONAL_DIRECTORY: List[Dict[str, Any]] = [
         "name": "Alipur",
         "locality": "Gauribidanur, Chikkaballapur",
         "city": "Alipur",
-        "latitude": 13.5683,
-        "longitude": 77.7289,
+        "latitude": 13.6100,
+        "longitude": 77.4200,
         "is_approximate": False
     },
     {

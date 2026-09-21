@@ -792,16 +792,26 @@ def recalculate_queue_positions(
                         "leaving_now_at": leaving_now_at
                     }
                 else:
-                    city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
-                    entry_coords = None
-                    if entry.get("origin_latitude") is not None and entry.get("origin_longitude") is not None:
-                        try:
-                            entry_coords = [float(entry["origin_longitude"]), float(entry["origin_latitude"])]
-                        except (ValueError, TypeError):
-                            entry_coords = None
-                    loc_source = entry.get("location_source")
-                    is_approx = entry.get("is_approximate") if entry.get("is_approximate") is not None else entry.get("is_approximate_location")
-                    loc_addr = entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or city
+                    entry_mode = entry.get("origin_mode")
+                    if entry_mode == "preset":
+                        loc_source = "preset"
+                        is_approx = False
+                        lat = entry.get("origin_lat") if entry.get("origin_lat") is not None else entry.get("origin_latitude")
+                        lon = entry.get("origin_lng") if entry.get("origin_lng") is not None else entry.get("origin_longitude")
+                        loc_addr = entry.get("origin_label") or entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or "Tumkur City"
+                        entry_coords = [float(lon), float(lat)] if (lat is not None and lon is not None) else None
+                    else:
+                        city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
+                        entry_coords = None
+                        if entry.get("origin_latitude") is not None and entry.get("origin_longitude") is not None:
+                            try:
+                                entry_coords = [float(entry["origin_longitude"]), float(entry["origin_latitude"])]
+                            except (ValueError, TypeError):
+                                entry_coords = None
+                        loc_source = entry.get("location_source")
+                        is_approx = entry.get("is_approximate") if entry.get("is_approximate") is not None else entry.get("is_approximate_location")
+                        loc_addr = entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or city
+
                     travel_info = calculate_travel_metrics(
                         patient_address=loc_addr,
                         wait_time_min=predicted_wait,
@@ -812,7 +822,9 @@ def recalculate_queue_positions(
                         leaving_now_at=leaving_now_at,
                         location_source=loc_source,
                         is_approximate=is_approx,
-                        location_address=loc_addr
+                        location_address=loc_addr,
+                        origin_mode=entry_mode,
+                        origin_label=loc_addr
                     )
                     recommended_departure_str = travel_info.get("recommended_departure_time")
                     recommended_departure_iso = travel_info.get("recommended_departure_iso")

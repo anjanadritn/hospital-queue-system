@@ -287,55 +287,124 @@ def no_show_queue_route(queue_id):
 @queue_bp.route("/travel/calculate", methods=["POST"])
 def travel_calculate_route():
     data = request.get_json(silent=True) or {}
-    origin = data.get("origin") or data.get("patient_address") or "Tumkur City"
     expected_iso = data.get("expected_consultation_iso")
     buffer_min = data.get("safety_buffer_min", 10)
     leaving_now = bool(data.get("leaving_now", False))
     leaving_now_at = data.get("leaving_now_at")
 
-    origin_coords = None
-    lat = data.get("origin_latitude") if data.get("origin_latitude") is not None else data.get("latitude")
-    lon = data.get("origin_longitude") if data.get("origin_longitude") is not None else data.get("longitude")
-    if lat is not None and lon is not None:
+    # 1. Distinguish origin_mode: "gps" or "preset"
+    origin_mode = str(data.get("origin_mode") or "").strip().lower()
+    if not origin_mode:
+        loc_src = data.get("location_source")
+        if loc_src == "preset":
+            origin_mode = "preset"
+        elif loc_src in ["gps", "device_gps"]:
+            origin_mode = "gps"
+        elif "gps" in str(data.get("origin") or data.get("origin_label") or "").lower():
+            origin_mode = "gps"
+        else:
+            origin_mode = "preset"
+
+    origin_label = data.get("origin_label") or data.get("origin") or data.get("patient_address") or ("Current GPS Location" if origin_mode == "gps" else "Tumkur Bus Stand")
+
+    # 2. Extract origin_lat / origin_lng
+    raw_lat = data.get("origin_lat") if data.get("origin_lat") is not None else data.get("origin_latitude")
+    raw_lon = data.get("origin_lng") if data.get("origin_lng") is not None else data.get("origin_longitude")
+    if raw_lat is None:
+        raw_lat = data.get("latitude")
+    if raw_lon is None:
+        raw_lon = data.get("longitude")
+
+    lat = None
+    lon = None
+    if raw_lat is not None and raw_lon is not None:
         try:
-            origin_coords = [float(lon), float(lat)]
+            lat = float(raw_lat)
+            lon = float(raw_lon)
         except (ValueError, TypeError):
-            origin_coords = None
-    elif data.get("origin_coords") and isinstance(data.get("origin_coords"), list):
-        origin_coords = data.get("origin_coords")
+            lat = None
+            lon = None
+
+    # Requirement 6: For preset mode, backend must use origin_lat/origin_lng from the selected preset.
+    if origin_mode == "preset":
+        location_source = "preset"
+        # If coordinates were not passed in payload, look up in TUMKUR_LANDMARKS
+        if lat is None or lon is None:
+            from services.travel_service import TUMKUR_LANDMARKS
+            for landmark_name, landmark_data in TUMKUR_LANDMARKS.items():
+                if landmark_name.lower() in str(origin_label).lower() or str(origin_label).lower() in landmark_name.lower():
+                    if "coordinates" in landmark_data:
+                        lon = float(landmark_data["coordinates"][0])
+                        lat = float(landmark_data["coordinates"][1])
+                    break
+        origin_coords = [lon, lat] if (lon is not None and lat is not None) else None
+    else:
+        location_source = "gps"
+        origin_coords = [lon, lat] if (lon is not None and lat is not None) else None
 
     metrics = calculate_travel_metrics(
-        patient_address=origin,
+        patient_address=origin_label,
         expected_consultation_iso=expected_iso,
         safety_buffer_min=int(buffer_min),
         origin_coords=origin_coords,
         leaving_now=leaving_now,
-        leaving_now_at=leaving_now_at
+        leaving_now_at=leaving_now_at,
+        location_source=location_source,
+        origin_mode=origin_mode,
+        origin_lat=lat,
+        origin_lng=lon,
+        origin_label=origin_label,
+        is_approximate=False
     )
+    from services.travel_service import TUMKUR_LANDMARKS
     metrics["landmarks"] = list(TUMKUR_LANDMARKS.keys())
+    metrics["origin_mode"] = origin_mode
+    metrics["origin_lat"] = lat
+    metrics["origin_lng"] = lon
+    metrics["origin_label"] = origin_label
 
-    # Optionally persist latest live GPS travel metrics if queue_id or booking_id is supplied
+    # Optionally persist latest travel metrics if queue_id or booking_id is supplied
     queue_id = data.get("queue_id") or data.get("booking_id")
     if queue_id:
         try:
             db = get_db()
-            db.queue.update_one(
-                {"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]},
-                {"$set": {
-                    "origin_latitude": lat,
-                    "origin_longitude": lon,
-                    "distance_km": metrics.get("distance_km"),
-                    "travel_time_min": metrics.get("travel_time_min"),
-                    "travel_time_minutes": metrics.get("travel_time_min"),
-                    "expected_arrival_time": metrics.get("expected_hospital_arrival"),
-                    "expected_arrival_iso": metrics.get("expected_hospital_arrival_iso"),
-                    "arrival_deadline_time": metrics.get("arrival_deadline_time"),
-                    "arrival_deadline_iso": metrics.get("arrival_deadline_iso"),
-                    "recommended_departure_time": metrics.get("recommended_departure_time"),
-                    "recommended_departure_iso": metrics.get("recommended_departure_iso"),
-                    "travel_info": metrics
-                }}
-            )
+            queue_entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]})
+            should_update = True
+            if queue_entry:
+                existing_mode = queue_entry.get("origin_mode")
+                # If current queue record is in 'preset' mode, background GPS telemetry (origin_mode="gps" without user_selected_gps=True)
+                # MUST NOT overwrite the preset route origin in db.queue!
+                is_user_selected_gps = bool(data.get("user_selected_gps", False))
+                if existing_mode == "preset" and origin_mode == "gps" and not is_user_selected_gps:
+                    should_update = False
+
+            if should_update:
+                db.queue.update_one(
+                    {"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]},
+                    {"$set": {
+                        "origin_mode": origin_mode,
+                        "origin_lat": lat,
+                        "origin_lng": lon,
+                        "origin_label": origin_label,
+                        "origin_latitude": lat,
+                        "origin_longitude": lon,
+                        "patient_address": origin_label,
+                        "location_address": origin_label,
+                        "location_source": location_source,
+                        "is_approximate": False,
+                        "is_approximate_location": False,
+                        "distance_km": metrics.get("distance_km"),
+                        "travel_time_min": metrics.get("travel_time_min"),
+                        "travel_time_minutes": metrics.get("travel_time_min"),
+                        "expected_arrival_time": metrics.get("expected_hospital_arrival"),
+                        "expected_arrival_iso": metrics.get("expected_hospital_arrival_iso"),
+                        "arrival_deadline_time": metrics.get("arrival_deadline_time"),
+                        "arrival_deadline_iso": metrics.get("arrival_deadline_iso"),
+                        "recommended_departure_time": metrics.get("recommended_departure_time"),
+                        "recommended_departure_iso": metrics.get("recommended_departure_iso"),
+                        "travel_info": metrics
+                    }}
+                )
         except Exception:
             pass
 
