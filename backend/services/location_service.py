@@ -83,6 +83,7 @@ class LocationService:
         }
 
         try:
+            logger.info(f"[OpenRouteService] Requesting route: start=[{start_lon}, {start_lat}] -> dest=[{dest_lon}, {dest_lat}]")
             response = requests.post(
                 self.geojson_url,
                 json=body,
@@ -107,6 +108,7 @@ class LocationService:
 
                 dist_km = round(distance_m / 1000.0, 1)
                 dur_min = max(1, int(round(duration_s / 60.0)))
+                logger.info(f"[OpenRouteService] Route calculated: start=[{start_lon}, {start_lat}] -> {dist_km} km / {dur_min} min")
 
                 res = {
                     "distance_km": dist_km,

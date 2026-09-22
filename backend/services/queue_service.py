@@ -793,12 +793,22 @@ def recalculate_queue_positions(
                     }
                 else:
                     entry_mode = entry.get("origin_mode")
+                    lat = None
+                    lon = None
                     if entry_mode == "preset":
                         loc_source = "preset"
                         is_approx = False
                         lat = entry.get("origin_lat") if entry.get("origin_lat") is not None else entry.get("origin_latitude")
                         lon = entry.get("origin_lng") if entry.get("origin_lng") is not None else entry.get("origin_longitude")
-                        loc_addr = entry.get("origin_label") or entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or "Tumkur City"
+                        loc_addr = entry.get("origin_label") or entry.get("location_address") or entry.get("display_address") or entry.get("patient_address") or "Tumkur Bus Stand"
+                        if lat is None or lon is None:
+                            from services.travel_service import TUMKUR_LANDMARKS
+                            for landmark_name, landmark_data in TUMKUR_LANDMARKS.items():
+                                if landmark_name.lower() in str(loc_addr).lower() or str(loc_addr).lower() in landmark_name.lower():
+                                    if "coordinates" in landmark_data:
+                                        lon = float(landmark_data["coordinates"][0])
+                                        lat = float(landmark_data["coordinates"][1])
+                                    break
                         entry_coords = [float(lon), float(lat)] if (lat is not None and lon is not None) else None
                     else:
                         city = entry.get("city") or entry.get("patient_address") or "Tumkur City"
@@ -824,6 +834,8 @@ def recalculate_queue_positions(
                         is_approximate=is_approx,
                         location_address=loc_addr,
                         origin_mode=entry_mode,
+                        origin_lat=lat,
+                        origin_lng=lon,
                         origin_label=loc_addr
                     )
                     recommended_departure_str = travel_info.get("recommended_departure_time")

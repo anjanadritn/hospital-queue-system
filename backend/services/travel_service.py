@@ -128,9 +128,11 @@ def calculate_travel_metrics(
     if not target_coords:
         target_coords = DEFAULT_ORIGIN_COORDINATES
 
-    if target_coords and (origin_lat is None or origin_lon is None):
+    if (has_gps or mode == "preset") and target_coords and (origin_lat is None or origin_lon is None):
         origin_lon = float(target_coords[0])
         origin_lat = float(target_coords[1])
+
+    logger.info(f"[travel_service] Route calculation: mode={mode}, origin='{origin_label or patient_address}', coords={target_coords} -> dest={HOSPITAL_COORDINATES}")
 
     # Attempt real routing with OpenRouteService using exact patient coordinates
     route_data = None

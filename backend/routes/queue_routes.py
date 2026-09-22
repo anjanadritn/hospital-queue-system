@@ -342,6 +342,8 @@ def travel_calculate_route():
         location_source = "gps"
         origin_coords = [lon, lat] if (lon is not None and lat is not None) else None
 
+    logger.info(f"[/api/travel/calculate] origin_mode={origin_mode}, origin_label='{origin_label}', coords=[{lon}, {lat}], queue_id={data.get('queue_id') or data.get('booking_id')}")
+
     metrics = calculate_travel_metrics(
         patient_address=origin_label,
         expected_consultation_iso=expected_iso,

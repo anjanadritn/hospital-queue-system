@@ -317,4 +317,127 @@ def test_selected_preset_landmark_preserved_during_gps_poll_and_updates():
     assert preset_metrics["origin_coordinates"] != background_gps_metrics["origin_coordinates"]
     assert preset_metrics["origin_coordinates"] == bus_stand_coords
 
+def test_preset_mode_alipur_and_tumkur_isolated_from_browser_gps():
+    """
+    Regression test for User Request (Requirements 1, 2, 3, 4, 5, 8, 10, 11):
+    1. Selects Alipur preset (lat 13.6100, lng 77.4200).
+    2. Simulates browser GPS at a completely different location (Tumkur GPS 13.3770, 77.0990, ~0.6km from SIMSRH).
+    3. Calls route calculation API (/api/travel/calculate) with preset payload.
+    4. Verifies route origin is Alipur ([77.42, 13.61]).
+    5. Verifies distance is Alipur distance (~53-55 km), NOT browser GPS (0.6 km).
+    6. Tests second preset 'Tumkur Bus Stand' ([77.1011, 13.3392]) and verifies distance (~5.2-7.2 km).
+    7. Verifies background GPS telemetry does not overwrite preset route in db.queue.
+    """
+    from app import create_app
+    from database import get_db
+
+    flask_app = create_app()
+    flask_app.config["TESTING"] = True
+
+    with flask_app.test_client() as client:
+        # Define coordinates
+        alipur_lat = 13.6100
+        alipur_lng = 77.4200
+        alipur_coords = [alipur_lng, alipur_lat]
+
+        tumkur_bus_lat = 13.3392
+        tumkur_bus_lng = 77.1011
+        tumkur_bus_coords = [tumkur_bus_lng, tumkur_bus_lat]
+
+        # Completely different browser GPS location (right near hospital, ~0.6 km)
+        browser_gps_lat = 13.3770
+        browser_gps_lng = 77.0990
+
+        # --- TEST 1: Alipur preset route calculation ---
+        alipur_payload = {
+            "origin_mode": "preset",
+            "origin_label": "Alipur, Gauribidanur",
+            "origin": "Alipur, Gauribidanur",
+            "origin_lat": alipur_lat,
+            "origin_lng": alipur_lng,
+            "origin_latitude": alipur_lat,
+            "origin_longitude": alipur_lng,
+            "location_source": "preset"
+        }
+
+        resp = client.post("/api/travel/calculate", json=alipur_payload)
+        assert resp.status_code == 200
+        data = resp.get_json()
+
+        assert data["origin_mode"] == "preset"
+        assert data["origin_latitude"] == alipur_lat
+        assert data["origin_longitude"] == alipur_lng
+        assert data["origin_coordinates"] == alipur_coords
+        assert data["patient_address"] == "Alipur, Gauribidanur"
+        # Distance must reflect Alipur (~53-55 km), NOT browser GPS (~0.6 km)
+        assert data["distance_km"] >= 45.0
+        assert data["distance_km"] != pytest.approx(0.6, abs=1.0)
+
+        # --- TEST 2: Tumkur Bus Stand preset route calculation ---
+        bus_stand_payload = {
+            "origin_mode": "preset",
+            "origin_label": "Tumkur Bus Stand",
+            "origin": "Tumkur Bus Stand",
+            "origin_lat": tumkur_bus_lat,
+            "origin_lng": tumkur_bus_lng,
+            "origin_latitude": tumkur_bus_lat,
+            "origin_longitude": tumkur_bus_lng,
+            "location_source": "preset"
+        }
+
+        resp2 = client.post("/api/travel/calculate", json=bus_stand_payload)
+        assert resp2.status_code == 200
+        data2 = resp2.get_json()
+
+        assert data2["origin_mode"] == "preset"
+        assert data2["origin_latitude"] == tumkur_bus_lat
+        assert data2["origin_longitude"] == tumkur_bus_lng
+        assert data2["origin_coordinates"] == tumkur_bus_coords
+        assert data2["patient_address"] == "Tumkur Bus Stand"
+        assert 4.0 <= data2["distance_km"] <= 10.0
+
+        # --- TEST 3: Stored queue decoupling from background GPS telemetry ---
+        db = get_db()
+        test_qid = "TEST-Q-REGRESSION-PRESET-01"
+        db.queue.delete_many({"queue_id": test_qid})
+        db.queue.insert_one({
+            "queue_id": test_qid,
+            "booking_id": "TEST-B-01",
+            "doctor_id": "D001",
+            "patient_name": "Preset Test Patient",
+            "origin_mode": "preset",
+            "origin_label": "Alipur, Gauribidanur",
+            "origin_lat": alipur_lat,
+            "origin_lng": alipur_lng,
+            "origin_latitude": alipur_lat,
+            "origin_longitude": alipur_lng,
+            "distance_km": data["distance_km"],
+            "travel_time_min": data["travel_time_min"],
+            "status": "waiting"
+        })
+
+        # Simulate background GPS telemetry update (user_selected_gps=False)
+        gps_telemetry_payload = {
+            "queue_id": test_qid,
+            "origin_mode": "gps",
+            "user_selected_gps": False,
+            "origin_label": "Current GPS Location",
+            "origin_lat": browser_gps_lat,
+            "origin_lng": browser_gps_lng,
+            "location_source": "gps"
+        }
+        resp3 = client.post("/api/travel/calculate", json=gps_telemetry_payload)
+        assert resp3.status_code == 200
+
+        # Verify db.queue was NOT corrupted or overwritten by background GPS telemetry
+        q_doc = db.queue.find_one({"queue_id": test_qid})
+        assert q_doc["origin_mode"] == "preset"
+        assert q_doc["origin_label"] == "Alipur, Gauribidanur"
+        assert q_doc["origin_latitude"] == alipur_lat
+        assert q_doc["origin_longitude"] == alipur_lng
+        assert q_doc["distance_km"] >= 45.0
+
+        # Cleanup
+        db.queue.delete_many({"queue_id": test_qid})
+
 
