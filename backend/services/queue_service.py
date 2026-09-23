@@ -1551,6 +1551,52 @@ def skip_patient_service(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
 
     return None, f"Queue token '{queue_id}' not found"
 
+def _notify_consultation_completed(entry: dict) -> None:
+    """
+    In-app CONSULTATION_COMPLETED notice for the patient.
+    Created only after a successful complete_consultation — never for skip/missed.
+    SMS is not sent: CONSULTATION_COMPLETED is not in SMS_ELIGIBLE_NOTIFICATION_TYPES.
+    """
+    patient_id = entry.get("patient_id")
+    if not patient_id:
+        return
+    doctor_name = entry.get("doctor_name") or ""
+    if not doctor_name:
+        doctor_id_for_lookup = entry.get("doctor_id")
+        if doctor_id_for_lookup:
+            try:
+                db = get_db()
+                doc_rec = db.doctors.find_one({"doctor_id": doctor_id_for_lookup})
+                if doc_rec:
+                    doctor_name = doc_rec.get("name", "") or doctor_name
+            except Exception:
+                pass
+    department = entry.get("department") or ""
+    if doctor_name and not str(doctor_name).lower().startswith("dr"):
+        doctor_display = f"Dr. {doctor_name}"
+    else:
+        doctor_display = doctor_name or "the Doctor"
+    notif_title = "Consultation Completed ✓"
+    if department:
+        notif_message = (
+            f"Congratulations! Your {department} consultation with {doctor_display} has been completed successfully. "
+            f"Thank you for visiting SIMSRH. Stay healthy and happy!"
+        )
+    else:
+        notif_message = (
+            f"Congratulations! Your consultation with {doctor_display} has been completed successfully. "
+            f"Thank you for visiting SIMSRH. Stay healthy and happy!"
+        )
+    create_notification(
+        patient_id=patient_id,
+        notification_type="CONSULTATION_COMPLETED",
+        title=notif_title,
+        message=notif_message,
+        booking_id=entry.get("queue_id") or entry.get("booking_id"),
+        suppress_sms=True,
+        extra_fields={"doctor_name": doctor_display, "department": department}
+    )
+
 def complete_consultation(booking_id: str, actual_duration_mins: int = 15, doctor_notes: Optional[str] = None, diagnosis: Optional[str] = None, advice: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
@@ -1593,46 +1639,10 @@ def complete_consultation(booking_id: str, actual_duration_mins: int = 15, docto
             except Exception as ex:
                 logger.warning(f"Error archiving consultation: {ex}")
 
-            # --- CONSULTATION_COMPLETED in-app notification ---
-            # Fires ONLY on successful completion (not skip/no-show/cancel).
-            # SMS is intentionally suppressed: CONSULTATION_COMPLETED is not in
-            # SMS_ELIGIBLE_NOTIFICATION_TYPES per the existing notification_service config.
             try:
-                patient_id = entry.get("patient_id")
-                if patient_id:
-                    doctor_name = entry.get("doctor_name", "")
-                    if not doctor_name:
-                        doctor_id_for_lookup = entry.get("doctor_id")
-                        if doctor_id_for_lookup:
-                            try:
-                                doc_rec = db.doctors.find_one({"doctor_id": doctor_id_for_lookup})
-                                if doc_rec:
-                                    doctor_name = doc_rec.get("name", "")
-                            except Exception:
-                                pass
-                    department = entry.get("department", "")
-                    doctor_display = f"Dr. {doctor_name}" if doctor_name and not doctor_name.lower().startswith("dr") else (doctor_name or "the Doctor")
-                    notif_title = "Consultation Completed ✓"
-                    notif_message = (
-                        f"Congratulations! Your consultation with {doctor_display} has been completed successfully. "
-                        f"Thank you for visiting SIMSRH. Stay healthy and happy!"
-                    )
-                    if department:
-                        notif_message = (
-                            f"Congratulations! Your {department} consultation with {doctor_display} has been completed successfully. "
-                            f"Thank you for visiting SIMSRH. Stay healthy and happy!"
-                        )
-                    create_notification(
-                        patient_id=patient_id,
-                        notification_type="CONSULTATION_COMPLETED",
-                        title=notif_title,
-                        message=notif_message,
-                        booking_id=q_id or b_id,
-                        suppress_sms=True  # CONSULTATION_COMPLETED is not SMS-eligible per config
-                    )
+                _notify_consultation_completed(entry)
             except Exception as notif_ex:
                 logger.warning(f"[complete_consultation] Failed to create completion notification: {notif_ex}")
-            # --- end notification ---
 
             entry["status"] = "completed"
             entry["actual_duration_mins"] = actual_duration_mins

@@ -511,7 +511,8 @@ def create_notification(
     message: str,
     booking_id: Optional[str] = None,
     sms_text: Optional[str] = None,
-    suppress_sms: bool = False
+    suppress_sms: bool = False,
+    extra_fields: Optional[dict] = None
 ) -> Tuple[Optional[dict], Optional[str]]:
     now_str = datetime.now(timezone.utc).isoformat()
     notif_id = generate_notification_id()
@@ -578,6 +579,10 @@ def create_notification(
         "created_at": now_str,
         "sms_sent": sms_sent
     }
+    if extra_fields:
+        for key, value in extra_fields.items():
+            if key not in notif_doc and value is not None:
+                notif_doc[key] = value
 
     try:
         db = get_db()
