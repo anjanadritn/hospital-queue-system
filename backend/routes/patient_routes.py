@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from services.rbac_middleware import require_auth
 from services.patient_service import (
-    create_patient_profile, get_patient_by_id, update_patient_profile, get_patient_by_user_id
+    create_patient_profile, get_patient_by_id, update_patient_profile, get_patient_by_user_id,
+    update_profile_picture
 )
 from services.consultation_service import (
     get_patient_consultations, get_consultation_by_id
@@ -63,6 +64,54 @@ def update_my_profile():
         return jsonify({"success": False, "error": err}), 400
 
     return jsonify(result), 200
+
+
+@patient_bp.route("/me/picture", methods=["PUT"])
+@require_auth(allowed_roles=["patient"])
+def update_my_profile_picture():
+    """
+    Upload or update profile picture for the authenticated patient.
+    Accepts:
+      - multipart/form-data with field 'picture' (file upload)
+      - application/json with field 'image_base64' (base64 string) and 'mime_type'
+    Validates type (jpeg/png/webp) and size (max 2 MB).
+    JWT identity is used — patient can only update their OWN picture.
+    """
+    import base64
+    current_user = getattr(request, "current_user", {})
+    patient_id = current_user.get("patient_id") or current_user.get("user_id")
+
+    image_bytes = None
+    mime_type = None
+
+    content_type = request.content_type or ""
+    if "multipart/form-data" in content_type:
+        # File upload via form
+        file = request.files.get("picture")
+        if not file:
+            return jsonify({"success": False, "error": "No picture file provided in form field 'picture'"}), 400
+        mime_type = file.content_type or "image/jpeg"
+        image_bytes = file.read()
+    else:
+        # JSON body with base64
+        data = request.get_json(silent=True) or {}
+        b64_str = data.get("image_base64", "")
+        mime_type = data.get("mime_type", "image/jpeg")
+        if not b64_str:
+            return jsonify({"success": False, "error": "No image data provided. Send 'image_base64' or use multipart/form-data."}), 400
+        # Strip data-URI prefix if present
+        if "," in b64_str:
+            b64_str = b64_str.split(",", 1)[1]
+        try:
+            image_bytes = base64.b64decode(b64_str)
+        except Exception:
+            return jsonify({"success": False, "error": "Invalid base64 image data"}), 400
+
+    result, err = update_profile_picture(patient_id, image_bytes, mime_type)
+    if err:
+        return jsonify({"success": False, "error": err}), 400
+
+    return jsonify({"success": True, "patient": result}), 200
 
 @patient_bp.route("/me/history", methods=["GET"])
 @require_auth(allowed_roles=["patient"])

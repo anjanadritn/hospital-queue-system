@@ -99,8 +99,26 @@ def get_current_user_profile():
     if not decoded:
         return jsonify({"error": "Invalid or expired token"}), 401
 
+    from database.mongodb import get_db, serialize_doc
     from services.auth_service import get_user_by_phone
-    user = get_user_by_phone(decoded.get("phone", ""))
+
+    user = None
+
+    # Primary: look up by user_id (authoritative identifier in JWT)
+    jwt_user_id = decoded.get("user_id")
+    if jwt_user_id:
+        try:
+            db = get_db()
+            doc = db.users.find_one({"user_id": jwt_user_id})
+            if doc:
+                user = serialize_doc(doc)
+        except Exception:
+            pass
+
+    # Secondary: look up by phone from JWT
+    if not user:
+        user = get_user_by_phone(decoded.get("phone", ""))
+
     if user:
         user_clean = dict(user)
         user_clean.pop("password_hash", None)

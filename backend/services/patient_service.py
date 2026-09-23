@@ -143,6 +143,10 @@ def update_patient_profile(patient_id: str, data: dict) -> Tuple[Optional[dict],
         update_fields["city"] = str(data["city"]).strip()
     if "address" in data:
         update_fields["address"] = str(data["address"]).strip()
+    if "date_of_birth" in data and data["date_of_birth"]:
+        update_fields["date_of_birth"] = str(data["date_of_birth"]).strip()
+    if "village" in data and str(data["village"]).strip():
+        update_fields["village"] = str(data["village"]).strip()
 
     # Update in db.patients
     db.patients.update_one({"patient_id": actual_pid}, {"$set": update_fields})
@@ -357,3 +361,62 @@ def search_patients(query_str: Optional[str] = None) -> List[dict]:
         enhanced_list.append(p_ser)
 
     return enhanced_list
+
+
+def update_profile_picture(patient_id: str, image_bytes: bytes, mime_type: str) -> tuple:
+    """
+    Stores a profile picture for the given patient_id.
+    - Validates MIME type: only jpeg, png, webp allowed.
+    - Validates size: max 2 MB.
+    - Stores as base64 data-URI in db.patients and db.users.
+    - Returns (updated_patient_doc, error_string).
+    """
+    import base64
+
+    ALLOWED_MIMES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
+    MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+
+    if mime_type not in ALLOWED_MIMES:
+        return None, f"Invalid image type '{mime_type}'. Allowed types: JPEG, PNG, WebP."
+    if len(image_bytes) > MAX_BYTES:
+        size_kb = len(image_bytes) // 1024
+        return None, f"Image too large ({size_kb} KB). Maximum allowed size is 2 MB."
+
+    b64_data = base64.b64encode(image_bytes).decode("utf-8")
+    data_uri = f"data:{mime_type};base64,{b64_data}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    try:
+        db = get_db()
+        # Find patient record
+        patient = db.patients.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
+        if not patient:
+            # Try via users collection
+            user = db.users.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
+            if not user:
+                return None, "Patient profile not found"
+            actual_pid = user.get("patient_id") or patient_id
+            user_id = user.get("user_id")
+        else:
+            actual_pid = patient.get("patient_id", patient_id)
+            user_id = patient.get("user_id")
+
+        # Update patients collection
+        db.patients.update_one(
+            {"patient_id": actual_pid},
+            {"$set": {"profile_picture": data_uri, "updated_at": now}},
+            upsert=True
+        )
+        # Sync to users collection
+        if user_id:
+            db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"profile_picture": data_uri, "updated_at": now}}
+            )
+
+        updated = db.patients.find_one({"patient_id": actual_pid})
+        result = serialize_doc(updated) if updated else {"patient_id": actual_pid, "profile_picture": data_uri}
+        result.pop("password_hash", None)
+        return result, None
+    except Exception as ex:
+        return None, f"Failed to save profile picture: {str(ex)}"

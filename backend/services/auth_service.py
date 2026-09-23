@@ -123,27 +123,56 @@ def decode_jwt_token(token: str) -> Optional[dict]:
         return None
 
 def normalize_phone(phone_input: str) -> str:
-    """Normalizes phone input to standard 10-digit number."""
-    digits = re.sub(r"\D", "", str(phone_input).strip())
-    if len(digits) == 12 and digits.startswith("91"):
+    """
+    Normalizes any Indian phone number format to a standard 10-digit number.
+    Handles: +91XXXXXXXXXX, 0091XXXXXXXXXX, 91XXXXXXXXXX, 0XXXXXXXXXX,
+             +91-XXXX-XXXXXX, spaces, dashes, dots between digits.
+    Always returns exactly 10 digits (or the raw stripped digits if it cannot be normalized).
+    """
+    raw = str(phone_input).strip()
+    # Remove all non-digit characters
+    digits = re.sub(r"\D", "", raw)
+    # Handle 0091... (international prefix with 00)
+    if len(digits) >= 12 and digits.startswith("0091"):
+        digits = digits[4:]
+    # Handle +91... or 91... (12 or 13 digits starting with 91)
+    elif len(digits) == 12 and digits.startswith("91"):
         digits = digits[2:]
+    elif len(digits) == 13 and digits.startswith("091"):
+        digits = digits[3:]
+    # Handle leading zero (011 digits -> 10 digits)
     elif len(digits) == 11 and digits.startswith("0"):
         digits = digits[1:]
+    # Return last 10 digits if still longer (safety)
+    if len(digits) > 10:
+        digits = digits[-10:]
     return digits
 
 def get_user_by_phone(phone: str) -> Optional[dict]:
+    """
+    Looks up a user by phone number. Always normalizes input.
+    Tries MongoDB first (authoritative store), then in-memory fallback.
+    Logs DB errors so cross-device failures are traceable.
+    """
     clean_phone = normalize_phone(phone)
+    if not clean_phone:
+        return None
+    db_available = False
     try:
         db = get_db()
+        db_available = True
         doc = db.users.find_one({"phone": clean_phone})
         if doc:
             return serialize_doc(doc)
-    except Exception:
-        pass
+    except Exception as db_err:
+        logger.warning("[get_user_by_phone] MongoDB lookup failed for phone %s...: %s",
+                       clean_phone[:4], type(db_err).__name__)
 
-    for u in IN_MEMORY_USERS:
-        if u.get("phone") == clean_phone:
-            return serialize_doc(u)
+    # Only fall back to in-memory if MongoDB was unavailable
+    if not db_available:
+        for u in IN_MEMORY_USERS:
+            if u.get("phone") == clean_phone:
+                return serialize_doc(u)
     return None
 
 def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Optional[dict], Optional[str]]:

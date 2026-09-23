@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   HeartPulse,
@@ -30,13 +30,33 @@ export default function Login() {
   const { login } = useAuth();
   const { t } = useLanguage();
 
-  const [role, setRole] = useState('patient');
+  // Read role from URL query param (?role=patient|doctor|admin)
+  const getInitialRole = () => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role');
+    if (roleParam && ['patient', 'doctor', 'admin'].includes(roleParam)) {
+      return roleParam;
+    }
+    return 'patient';
+  };
+
+  const [role, setRole] = useState(getInitialRole);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Sync role tab if URL search param changes (e.g. navigating from navbar links)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role');
+    if (roleParam && ['patient', 'doctor', 'admin'].includes(roleParam)) {
+      setRole(roleParam);
+      setError(null);
+    }
+  }, [location.search]);
 
   const handleRoleChange = (selectedRole) => {
     setRole(selectedRole);

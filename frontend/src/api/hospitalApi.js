@@ -131,6 +131,16 @@ export const hospitalApi = {
     const response = await apiClient.get('/patients/me');
     return response.data;
   },
+  uploadProfilePicture: async (imageDataUri, mimeType = 'image/jpeg') => {
+    // Accepts a data-URI string (e.g. from FileReader.readAsDataURL)
+    // Sends as base64 JSON to backend for validation and storage
+    const b64 = imageDataUri.includes(',') ? imageDataUri.split(',')[1] : imageDataUri;
+    const response = await apiClient.put('/patients/me/picture', {
+      image_base64: b64,
+      mime_type: mimeType,
+    });
+    return response.data;
+  },
   getPatientProfile: async (patientId) => {
     const response = await apiClient.get(`/patients/${patientId}`);
     return response.data;
