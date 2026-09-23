@@ -54,7 +54,8 @@ def request_register():
     data = request.get_json(silent=True) or {}
     res, error = register_patient(data)
     if error:
-        return jsonify({"error": error}), 400
+        status_code = 503 if "database" in error.lower() or "unavailable" in error.lower() else 400
+        return jsonify({"error": error}), status_code
     return jsonify(res), 201
 
 @auth_bp.route("/auth/login", methods=["POST"])
@@ -70,7 +71,8 @@ def request_login():
 
     res, error = login_user(phone, password, role)
     if error:
-        return jsonify({"error": error}), 401
+        status_code = 503 if "database" in error.lower() or "unavailable" in error.lower() else 401
+        return jsonify({"error": error}), status_code
     return jsonify(res), 200
 
 @auth_bp.route("/auth/login-otp", methods=["POST"])
@@ -86,7 +88,8 @@ def request_login_otp():
 
     res, error = login_user_with_otp(phone, otp, role)
     if error:
-        return jsonify({"error": error}), 401
+        status_code = 503 if "database" in error.lower() or "unavailable" in error.lower() else 401
+        return jsonify({"error": error}), status_code
     return jsonify(res), 200
 
 @auth_bp.route("/auth/me", methods=["GET"])

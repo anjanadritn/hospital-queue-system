@@ -1049,7 +1049,16 @@ export const translations = {
     location_source_map: "Map Selected",
     location_source_manual: "Manual Entry (Approximate)",
     device_gps_confirmed: "Device Location",
-    patient_and_origin: "Patient & Origin"
+    patient_and_origin: "Patient & Origin",
+    consultation_completed_title: "Consultation Completed ✓",
+    consultation_completed_desc: "Your consultation has been completed. Thank you for visiting SIMSRH. Stay healthy and happy!",
+    profile_picture: "Profile Picture",
+    upload_photo: "Upload Photo",
+    change_photo: "Change Photo",
+    photo_size_hint: "JPEG, PNG or WebP, max 2MB",
+    date_of_birth: "Date of Birth",
+    patient_portal: "Patient Portal",
+    my_profile: "My Profile"
   },
 
   kn: {
@@ -2091,7 +2100,16 @@ export const translations = {
     location_source_map: "ನಕ್ಷೆಯಲ್ಲಿ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ",
     location_source_manual: "ಹಸ್ತಚಾಲಿತ ನಮೂದು (ಅಂದಾಜು)",
     device_gps_confirmed: "ಸಾಧನದ ಸ್ಥಳ",
-    patient_and_origin: "ರೋಗಿ ಮತ್ತು ಮೂಲ ಸ್ಥಳ"
+    patient_and_origin: "ರೋಗಿ ಮತ್ತು ಮೂಲ ಸ್ಥಳ",
+    consultation_completed_title: "ಸಮಾಲೋಚನೆ ಯಶಸ್ವಿಯಾಗಿ ಪೂರ್ಣಗೊಂಡಿದೆ ✓",
+    consultation_completed_desc: "ನಿಮ್ಮ ಸಮಾಲೋಚನೆ ಯಶಸ್ವಿಯಾಗಿ ಪೂರ್ಣಗೊಂಡಿದೆ. ಸಿಮ್ಸ್‌ಗೆ ಭೇಟಿ ನೀಡಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು. ಆರೋಗ್ಯವಾಗಿರಿ!",
+    profile_picture: "ಪ್ರೊಫೈಲ್ ಚಿತ್ರ",
+    upload_photo: "ಭಾವಚಿತ್ರ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+    change_photo: "ಭಾವಚಿತ್ರ ಬದಲಾಯಿಸಿ",
+    photo_size_hint: "JPEG, PNG ಅಥವಾ WebP, ಗರಿಷ್ಠ 2MB",
+    date_of_birth: "ಹುಟ್ಟಿದ ದಿನಾಂಕ",
+    patient_portal: "ರೋಗಿ ಪೋರ್ಟಲ್",
+    my_profile: "ನನ್ನ ಪ್ರೊಫೈಲ್"
   },
 
   hi: {
@@ -3133,6 +3151,15 @@ export const translations = {
     location_source_map: "मानचित्र पर चयनित",
     location_source_manual: "मैन्युअल प्रविष्टि (अनुमानित)",
     device_gps_confirmed: "डिवाइस का स्थान",
-    patient_and_origin: "मरीज़ और मूल स्थान"
+    patient_and_origin: "मरीज़ और मूल स्थान",
+    consultation_completed_title: "परामर्श सफलतापूर्वक पूर्ण हुआ ✓",
+    consultation_completed_desc: "आपका परामर्श पूरा हो गया है। सिम्स में आने के लिए धन्यवाद। स्वस्थ और खुश रहें!",
+    profile_picture: "प्रोफ़ाइल फ़ोटो",
+    upload_photo: "फ़ोटो अपलोड करें",
+    change_photo: "फ़ोटो बदलें",
+    photo_size_hint: "JPEG, PNG या WebP, अधिकतम 2MB",
+    date_of_birth: "जन्म तिथि",
+    patient_portal: "मरीज़ पोर्टल",
+    my_profile: "मेरी प्रोफ़ाइल"
   }
 };

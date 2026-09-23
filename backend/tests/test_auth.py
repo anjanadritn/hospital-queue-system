@@ -433,3 +433,127 @@ def test_existing_login_otp_still_works(client):
     assert login_pwd_res.status_code == 200
     assert "token" in login_pwd_res.get_json()
 
+def test_cross_device_login_and_duplicate_rejection(client):
+    """
+    Test requirement:
+    - register user
+    - login from browser/session A
+    - login with same credentials from browser/session B
+    - both succeed
+    - wrong password still fails
+    - duplicate phone registration is rejected
+    - phone normalization (+91, spaces, dashes) resolves consistently
+    """
+    from database.mongodb import get_db
+    from services.auth_service import IN_MEMORY_USERS, IN_MEMORY_AUTH_OTPS
+
+    test_phone = "9112233445"
+    pwd = "CrossDevicePass123!"
+
+    # Clean up any previous state
+    try:
+        db = get_db()
+        db.users.delete_many({"phone": test_phone})
+        db.patients.delete_many({"phone": test_phone})
+        db.auth_otps.delete_many({"phone": test_phone})
+    except Exception:
+        pass
+    IN_MEMORY_USERS[:] = [u for u in IN_MEMORY_USERS if u.get("phone") != test_phone]
+    IN_MEMORY_AUTH_OTPS.pop(f"{test_phone}_ACCOUNT_VERIFICATION", None)
+
+    # 1. Register user with normalized phone (+91 format during send-otp, formatted during signup)
+    send_res = client.post("/auth/send-otp", json={
+        "phone": f"+91 {test_phone[:5]}-{test_phone[5:]}",
+        "purpose": "ACCOUNT_VERIFICATION"
+    })
+    assert send_res.status_code == 200
+    otp = send_res.get_json()["development_otp"]
+
+    reg_res = client.post("/auth/register", json={
+        "name": "Cross Device Patient",
+        "phone": f"91{test_phone}",  # format with 91 prefix
+        "email": "crossdevice@hospital.local",
+        "password": pwd,
+        "otp": otp,
+        "age": 30,
+        "gender": "Female"
+    })
+    assert reg_res.status_code == 201
+    reg_data = reg_res.get_json()
+    assert "token" in reg_data
+    assert reg_data["user"]["phone"] == test_phone  # canonical 10-digit
+
+    # 2. Login from Session A (using standard 10-digit number)
+    login_a = client.post("/auth/login", json={
+        "phone": test_phone,
+        "password": pwd,
+        "role": "patient"
+    })
+    assert login_a.status_code == 200
+    token_a = login_a.get_json()["token"]
+    assert token_a is not None
+
+    # 3. Login from Session B (simulating another device/session, using +91 format with spaces/dashes)
+    login_b = client.post("/auth/login", json={
+        "phone": f"+91-{test_phone[:5]}-{test_phone[5:]}",
+        "password": pwd,
+        "role": "patient"
+    })
+    assert login_b.status_code == 200
+    token_b = login_b.get_json()["token"]
+    assert token_b is not None
+    # Both tokens are valid JWTs for the same user
+    assert login_a.get_json()["user"]["phone"] == login_b.get_json()["user"]["phone"]
+
+    # 4. Wrong password from either device fails with 401
+    wrong_pwd_res = client.post("/auth/login", json={
+        "phone": test_phone,
+        "password": "WrongPassword999!"
+    })
+    assert wrong_pwd_res.status_code == 401
+    assert "Invalid phone number or password" in wrong_pwd_res.get_json()["error"]
+
+    # 5. Duplicate phone registration is rejected
+    # Requesting OTP for already registered phone fails
+    dup_otp_res = client.post("/auth/send-otp", json={
+        "phone": f"+91{test_phone}",
+        "purpose": "ACCOUNT_VERIFICATION"
+    })
+    assert dup_otp_res.status_code == 400
+    assert "already exists" in dup_otp_res.get_json()["error"]
+
+    # Direct registration attempt with existing phone is rejected
+    dup_reg_res = client.post("/auth/register", json={
+        "name": "Imposter Patient",
+        "phone": test_phone,
+        "password": "AnotherPassword123!",
+        "otp": "123456"
+    })
+    assert dup_reg_res.status_code in (400, 401)
+
+def test_mongodb_failure_returns_server_error(monkeypatch, client):
+    """
+    Test requirement:
+    If MongoDB is unavailable or query fails:
+    - return a clear server/database error (HTTP 503)
+    - do NOT authenticate against stale IN_MEMORY_USERS
+    - do NOT make a newly registered user appear invalid because of fallback data
+    """
+    from services import auth_service
+    from pymongo.errors import ServerSelectionTimeoutError
+
+    # Simulate MongoDB network failure during user lookup
+    def mock_db_failure():
+        raise ServerSelectionTimeoutError("Simulated MongoDB cluster connection timeout")
+
+    monkeypatch.setattr(auth_service, "get_db", mock_db_failure)
+
+    # Attempting to login when MongoDB is unavailable must return 503 and clear database error
+    res = client.post("/auth/login", json={
+        "phone": "9876543211",
+        "password": "PatientPass123!",
+        "role": "patient"
+    })
+    assert res.status_code == 503
+    assert "Database service is temporarily unavailable" in res.get_json()["error"]
+

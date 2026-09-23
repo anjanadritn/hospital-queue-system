@@ -357,6 +357,13 @@ export const hospitalApi = {
   reverseGeocode: async (lat, lon) => {
     const response = await apiClient.get(`/location/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
     return response.data;
+  },
+  uploadProfilePicture: async (imageDataUri, mimeType) => {
+    const response = await apiClient.put('/patients/me/picture', {
+      image_base64: imageDataUri,
+      mime_type: mimeType
+    });
+    return response.data;
   }
 };
 

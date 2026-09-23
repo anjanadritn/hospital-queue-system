@@ -16,6 +16,10 @@ DEVELOPMENT_MODE = True  # Set to True for local development and testing
 IN_MEMORY_USERS = []
 IN_MEMORY_AUTH_OTPS = {}
 
+class DatabaseUnavailableError(Exception):
+    """Raised when MongoDB is unreachable or query execution fails."""
+    pass
+
 INITIAL_USERS = [
     {
         "user_id": "U_ADMIN",
@@ -150,29 +154,37 @@ def normalize_phone(phone_input: str) -> str:
 
 def get_user_by_phone(phone: str) -> Optional[dict]:
     """
-    Looks up a user by phone number. Always normalizes input.
-    Tries MongoDB first (authoritative store), then in-memory fallback.
-    Logs DB errors so cross-device failures are traceable.
+    Looks up a user by phone number from MongoDB (authoritative store).
+    Always normalizes phone input to 10 digits.
+    If MongoDB is unavailable or the query fails, raises DatabaseUnavailableError
+    so that callers return a clear server/database error rather than
+    silently falling back to stale in-memory data or making registered users appear invalid.
     """
     clean_phone = normalize_phone(phone)
     if not clean_phone:
         return None
-    db_available = False
+
     try:
         db = get_db()
-        db_available = True
         doc = db.users.find_one({"phone": clean_phone})
         if doc:
             return serialize_doc(doc)
     except Exception as db_err:
-        logger.warning("[get_user_by_phone] MongoDB lookup failed for phone %s...: %s",
-                       clean_phone[:4], type(db_err).__name__)
+        logger.error("[get_user_by_phone] MongoDB query failed for phone %s: %s",
+                     clean_phone, db_err)
+        raise DatabaseUnavailableError(f"Database unavailable: {db_err}") from db_err
 
-    # Only fall back to in-memory if MongoDB was unavailable
-    if not db_available:
-        for u in IN_MEMORY_USERS:
-            if u.get("phone") == clean_phone:
-                return serialize_doc(u)
+    # If MongoDB was reached successfully and returned None:
+    # Check if this is a built-in seed user that needs to be synchronized into MongoDB
+    for seed_u in INITIAL_USERS:
+        if seed_u.get("phone") == clean_phone:
+            try:
+                db = get_db()
+                db.users.update_one({"phone": clean_phone}, {"$set": dict(seed_u)}, upsert=True)
+            except Exception:
+                pass
+            return serialize_doc(seed_u)
+
     return None
 
 def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Optional[dict], Optional[str]]:
@@ -180,14 +192,17 @@ def send_auth_otp(phone: str, purpose: str = "ACCOUNT_VERIFICATION") -> Tuple[Op
     if not clean_phone or len(clean_phone) < 10:
         return None, "Valid 10-digit phone number is required"
 
-    if purpose == "ACCOUNT_VERIFICATION":
-        existing = get_user_by_phone(clean_phone)
-        if existing:
-            return None, f"An account with phone number '{clean_phone}' already exists. Please login."
-    elif purpose in ("PASSWORD_RESET", "LOGIN"):
-        existing = get_user_by_phone(clean_phone)
-        if not existing:
-            return None, f"No account found with phone number '{clean_phone}'."
+    try:
+        if purpose == "ACCOUNT_VERIFICATION":
+            existing = get_user_by_phone(clean_phone)
+            if existing:
+                return None, f"An account with phone number '{clean_phone}' already exists. Please login."
+        elif purpose in ("PASSWORD_RESET", "LOGIN"):
+            existing = get_user_by_phone(clean_phone)
+            if not existing:
+                return None, f"No account found with phone number '{clean_phone}'."
+    except DatabaseUnavailableError:
+        return None, "Database service is temporarily unavailable. Please try again later."
 
     now = datetime.now(timezone.utc)
     now_ts = now.timestamp()
@@ -374,7 +389,10 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         return None, f"Phone verification failed: {err}"
 
     # Check if user already exists
-    existing = get_user_by_phone(phone)
+    try:
+        existing = get_user_by_phone(phone)
+    except DatabaseUnavailableError:
+        return None, "Database service is temporarily unavailable. Please try again later."
     if existing:
         return None, "An account with this phone number already exists. Please login."
 
@@ -446,19 +464,19 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         user_clean = serialize_doc(user_doc)
         user_clean.pop("password_hash", None)
         return {"user": user_clean, "token": token}, None
-    except Exception:
-        IN_MEMORY_USERS.append(user_doc)
-        token = generate_jwt_token(user_doc)
-        user_clean = serialize_doc(user_doc)
-        user_clean.pop("password_hash", None)
-        return {"user": user_clean, "token": token}, None
+    except Exception as db_err:
+        logger.error("[register_patient] MongoDB insertion failed: %s", db_err)
+        return None, "Database service is temporarily unavailable. Could not complete registration."
 
 def login_user(phone: str, password: str, role: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
     clean_phone = normalize_phone(phone)
     if not clean_phone or len(clean_phone) < 10:
         return None, "Invalid phone number or password."
 
-    user = get_user_by_phone(clean_phone)
+    try:
+        user = get_user_by_phone(clean_phone)
+    except DatabaseUnavailableError:
+        return None, "Database service is temporarily unavailable. Please try again later."
 
     if not user:
         return None, "Invalid phone number or password."
@@ -507,7 +525,10 @@ def login_user_with_otp(phone: str, otp: str, role: Optional[str] = None) -> Tup
     if not clean_phone or len(clean_phone) < 10:
         return None, "Invalid phone number or OTP."
 
-    user = get_user_by_phone(clean_phone)
+    try:
+        user = get_user_by_phone(clean_phone)
+    except DatabaseUnavailableError:
+        return None, "Database service is temporarily unavailable. Please try again later."
     if not user:
         return None, "No account found with this phone number."
 

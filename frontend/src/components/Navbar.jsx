@@ -451,7 +451,7 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
-                to="/login"
+                to="/login?role=patient"
                 className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition shadow-sm shadow-sky-600/15 cursor-pointer"
               >
                 <LogIn className="w-3.5 h-3.5" />
@@ -641,7 +641,7 @@ export default function Navbar() {
                 <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
               </Link>
               <div className="pt-3 flex gap-2">
-                <Link to="/login" className="flex-1 py-2.5 bg-sky-600 text-white rounded-xl text-center text-xs font-bold">
+                <Link to="/login?role=patient" className="flex-1 py-2.5 bg-sky-600 text-white rounded-xl text-center text-xs font-bold">
                   {t('sign_in')}
                 </Link>
                 <Link to="/signup" className="flex-1 py-2.5 bg-slate-100 text-slate-800 rounded-xl text-center text-xs font-bold">

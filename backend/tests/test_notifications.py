@@ -653,3 +653,57 @@ def test_no_multiple_sms_for_same_turn_departure_event():
         assert err3 is None
         assert n3["sms_sent"] is False
         assert mock_send_sms.call_count == 1
+
+def test_consultation_completed_notification():
+    """Verify that complete_consultation creates a warm in-app notification with doctor name and SIMSRH, and no SMS is dispatched"""
+    from services.queue_service import complete_consultation
+    from services.notification_service import get_patient_notifications
+    from database.mongodb import get_db
+
+    patient_id = "TEST_PAT_COMPL_01"
+    booking_id = "TEST_BOOK_COMPL_01"
+    queue_id = "TEST_Q_COMPL_01"
+    doctor_id = "D001"
+
+    db = get_db()
+    try:
+        db.queue.delete_many({"$or": [{"booking_id": booking_id}, {"queue_id": queue_id}]})
+        db.notifications.delete_many({"patient_id": patient_id})
+        db.doctors.update_one(
+            {"doctor_id": doctor_id},
+            {"$set": {"name": "Dr. Ananya Sharma", "department": "General Medicine"}},
+            upsert=True
+        )
+        db.queue.insert_one({
+            "queue_id": queue_id,
+            "booking_id": booking_id,
+            "patient_id": patient_id,
+            "doctor_id": doctor_id,
+            "doctor_name": "Dr. Ananya Sharma",
+            "department": "General Medicine",
+            "status": "in_consultation"
+        })
+    except Exception:
+        pass
+
+    with patch("config.config.FAST2SMS_SMS_ENABLED", True), \
+         patch("services.sms_service.sms_service.send_sms") as mock_send_sms:
+
+        res, err = complete_consultation(booking_id=queue_id, actual_duration_mins=15)
+        assert err is None
+        assert res is not None
+
+        # Verify in-app notification exists for patient
+        res_data = get_patient_notifications(patient_id)
+        notifs = res_data.get("notifications", [])
+        compl_notifs = [n for n in notifs if n.get("type") == "CONSULTATION_COMPLETED"]
+        assert len(compl_notifs) >= 1
+        compl_n = compl_notifs[0]
+        assert "Consultation Completed" in compl_n["title"]
+        assert "Dr. Ananya Sharma" in compl_n["message"]
+        assert "SIMSRH" in compl_n["message"]
+        assert "Stay healthy and happy" in compl_n["message"]
+        # In-app only: no SMS sent
+        assert compl_n.get("sms_sent") is False
+        mock_send_sms.assert_not_called()
+

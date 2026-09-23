@@ -23,7 +23,9 @@ import {
   Bell,
   FileText,
   Save,
-  Check
+  Check,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -89,10 +91,14 @@ export default function PatientDashboard() {
     city: 'Tumakuru',
     height_cm: '',
     weight_kg: '',
+    date_of_birth: '',
     pdo: ''
   });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [picUploading, setPicUploading] = useState(false);
+  const [picError, setPicError] = useState('');
 
   const fetchMyLiveQueue = async (queueObj) => {
     if (!queueObj) {
@@ -181,6 +187,7 @@ export default function PatientDashboard() {
       if (profileData.status === 'fulfilled' && profileData.value) {
         const p = profileData.value;
         setPatientProfile(p);
+        if (p.profile_picture) setProfilePicture(p.profile_picture);
         setProfileForm({
           name: p.name || user.name || '',
           phone: p.phone || user.phone || '',
@@ -190,6 +197,7 @@ export default function PatientDashboard() {
           city: p.city || user.city || user.address || 'Tumakuru',
           height_cm: p.height_cm || user.height_cm || '',
           weight_kg: p.weight_kg || user.weight_kg || '',
+          date_of_birth: p.date_of_birth || '',
           pdo: p.pdo || ''
         });
       } else {
@@ -202,6 +210,7 @@ export default function PatientDashboard() {
           city: user.city || user.address || 'Tumakuru',
           height_cm: user.height_cm || '',
           weight_kg: user.weight_kg || '',
+          date_of_birth: '',
           pdo: ''
         });
       }
@@ -276,6 +285,7 @@ export default function PatientDashboard() {
         city: profileForm.city,
         height_cm: profileForm.height_cm ? Number(profileForm.height_cm) : null,
         weight_kg: profileForm.weight_kg ? Number(profileForm.weight_kg) : null,
+        date_of_birth: profileForm.date_of_birth || null,
         pdo: profileForm.pdo
       });
       setProfileSuccess(true);
@@ -285,6 +295,42 @@ export default function PatientDashboard() {
       alert(err.response?.data?.error || 'Failed to update profile');
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const handleProfilePictureChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED.includes(file.type)) {
+      setPicError('Only JPEG, PNG, or WebP images are allowed.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setPicError(`Image too large (${(file.size / 1024).toFixed(0)} KB). Maximum allowed size is 2 MB.`);
+      return;
+    }
+    setPicError('');
+    setPicUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUri = ev.target.result;
+        setProfilePicture(dataUri);
+        try {
+          await hospitalApi.uploadProfilePicture(dataUri, file.type);
+        } catch (uploadErr) {
+          setPicError(uploadErr.response?.data?.error || 'Failed to save profile picture.');
+          setProfilePicture(null);
+        } finally {
+          setPicUploading(false);
+        }
+      };
+      reader.onerror = () => { setPicError('Failed to read image file.'); setPicUploading(false); };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setPicError('Unexpected error uploading picture.');
+      setPicUploading(false);
     }
   };
 
@@ -1465,8 +1511,33 @@ export default function PatientDashboard() {
               {/* LEFT: MASTER PATIENT PROFILE CARD (5 cols) */}
               <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-6">
                 <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-600 to-teal-600 text-white flex items-center justify-center text-2xl font-black shadow-md shadow-sky-600/20 shrink-0">
-                    {(profileForm.name || user?.name || 'P').charAt(0).toUpperCase()}
+                  {/* Profile Picture with upload */}
+                  <div className="relative shrink-0">
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-tr from-sky-600 to-teal-600 text-white flex items-center justify-center text-2xl font-black shadow-md shadow-sky-600/20">
+                      {profilePicture ? (
+                        <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(profileForm.name || user?.name || 'P').charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <label
+                      htmlFor="profile-pic-upload"
+                      className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center cursor-pointer shadow transition ${picUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                      title={t('change_photo', 'Change Photo')}
+                    >
+                      {picUploading ? (
+                        <span className="animate-spin text-[10px]">⟳</span>
+                      ) : (
+                        <Camera className="w-3.5 h-3.5" />
+                      )}
+                    </label>
+                    <input
+                      id="profile-pic-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleProfilePictureChange}
+                    />
                   </div>
                   <div>
                     <h4 className="text-lg font-black text-slate-900 leading-tight">
@@ -1475,8 +1546,18 @@ export default function PatientDashboard() {
                     <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded mt-1 inline-block border border-sky-200">
                       ID: {user?.patient_id || patientProfile?.patient_id || 'N/A'}
                     </span>
+                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                      <Upload className="w-3 h-3" />
+                      {t('photo_size_hint', 'JPEG, PNG or WebP, max 2MB')}
+                    </p>
                   </div>
                 </div>
+                {picError && (
+                  <div className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-[11px] font-semibold flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    {picError}
+                  </div>
+                )}
 
                 {/* Contact & Origin Summary */}
                 <div className="space-y-3 text-xs">
@@ -1699,6 +1780,16 @@ export default function PatientDashboard() {
                           : 'Enter Ht & Wt'}
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">{t('date_of_birth', 'Date of Birth')}</label>
+                    <input
+                      type="date"
+                      value={profileForm.date_of_birth || ''}
+                      onChange={(e) => setProfileForm({ ...profileForm, date_of_birth: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
+                    />
                   </div>
 
                   <div>
