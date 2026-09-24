@@ -1,0 +1,4001 @@
+doctor_id,department,doctor_avg_consult_minutes,day_of_week,hour_of_day,queue_length_ahead,patient_type,wait_time_minutes
+DOC4,Pediatrics,12,Friday,19,4,normal,55.18
+DOC5,Dermatology,8,Tuesday,16,3,normal,38.81
+DOC6,General Medicine,10,Friday,17,3,normal,56.4
+DOC3,Orthopedics,20,Thursday,15,5,normal,155.32
+DOC6,General Medicine,10,Tuesday,18,3,normal,50.4
+DOC6,General Medicine,10,Monday,12,3,normal,41.58
+DOC5,Dermatology,8,Sunday,10,6,emergency,2.98
+DOC2,General Medicine,10,Sunday,13,5,emergency,1.83
+DOC1,Cardiology,15,Monday,16,0,normal,28.44
+DOC1,Cardiology,15,Wednesday,13,6,normal,86.79
+DOC5,Dermatology,8,Wednesday,16,6,normal,72.35
+DOC3,Orthopedics,20,Sunday,15,4,normal,88.1
+DOC5,Dermatology,8,Thursday,15,6,normal,73.09
+DOC2,General Medicine,10,Sunday,17,2,normal,30.21
+DOC4,Pediatrics,12,Friday,17,3,normal,59.68
+DOC3,Orthopedics,20,Saturday,16,6,normal,124.95
+DOC1,Cardiology,15,Wednesday,9,2,normal,67.3
+DOC5,Dermatology,8,Thursday,18,6,normal,76.0
+DOC6,General Medicine,10,Saturday,19,6,normal,46.76
+DOC4,Pediatrics,12,Sunday,12,6,normal,48.86
+DOC2,General Medicine,10,Wednesday,15,5,normal,78.78
+DOC1,Cardiology,15,Monday,11,10,normal,302.65
+DOC1,Cardiology,15,Friday,10,4,normal,102.75
+DOC4,Pediatrics,12,Sunday,11,3,normal,43.65
+DOC6,General Medicine,10,Saturday,14,8,normal,54.84
+DOC1,Cardiology,15,Thursday,13,7,normal,97.19
+DOC1,Cardiology,15,Wednesday,10,5,normal,126.17
+DOC2,General Medicine,10,Tuesday,9,4,normal,66.57
+DOC2,General Medicine,10,Monday,16,9,normal,167.54
+DOC1,Cardiology,15,Tuesday,14,1,emergency,5.16
+DOC6,General Medicine,10,Sunday,14,5,normal,32.48
+DOC3,Orthopedics,20,Sunday,16,6,normal,123.53
+DOC5,Dermatology,8,Tuesday,13,3,normal,20.95
+DOC6,General Medicine,10,Monday,16,6,normal,117.27
+DOC3,Orthopedics,20,Friday,14,0,normal,17.33
+DOC4,Pediatrics,12,Tuesday,18,3,normal,64.72
+DOC2,General Medicine,10,Saturday,13,2,normal,26.36
+DOC5,Dermatology,8,Thursday,16,8,normal,93.85
+DOC4,Pediatrics,12,Wednesday,9,3,normal,65.74
+DOC5,Dermatology,8,Tuesday,18,2,normal,31.82
+DOC5,Dermatology,8,Tuesday,19,6,normal,45.04
+DOC6,General Medicine,10,Friday,9,5,normal,80.34
+DOC5,Dermatology,8,Wednesday,11,1,normal,21.59
+DOC6,General Medicine,10,Sunday,12,4,normal,26.16
+DOC4,Pediatrics,12,Friday,15,5,normal,99.04
+DOC4,Pediatrics,12,Monday,18,7,normal,163.45
+DOC6,General Medicine,10,Wednesday,16,7,normal,97.89
+DOC2,General Medicine,10,Wednesday,15,5,normal,82.71
+DOC1,Cardiology,15,Wednesday,17,5,normal,117.67
+DOC5,Dermatology,8,Thursday,11,2,normal,33.64
+DOC1,Cardiology,15,Friday,14,3,normal,47.67
+DOC4,Pediatrics,12,Friday,16,3,normal,65.33
+DOC5,Dermatology,8,Monday,12,6,normal,60.47
+DOC2,General Medicine,10,Tuesday,16,5,normal,82.43
+DOC3,Orthopedics,20,Friday,18,6,emergency,5.52
+DOC5,Dermatology,8,Saturday,11,6,normal,55.79
+DOC5,Dermatology,8,Thursday,9,3,normal,49.45
+DOC3,Orthopedics,20,Tuesday,9,4,emergency,5.23
+DOC5,Dermatology,8,Friday,10,7,normal,83.51
+DOC4,Pediatrics,12,Saturday,15,6,emergency,8.92
+DOC6,General Medicine,10,Friday,10,3,normal,57.1
+DOC4,Pediatrics,12,Monday,11,6,normal,150.06
+DOC6,General Medicine,10,Friday,14,2,normal,29.89
+DOC1,Cardiology,15,Tuesday,17,4,emergency,5.07
+DOC4,Pediatrics,12,Monday,16,3,normal,76.57
+DOC2,General Medicine,10,Friday,18,1,normal,30.1
+DOC6,General Medicine,10,Wednesday,10,3,normal,54.06
+DOC4,Pediatrics,12,Monday,9,4,normal,105.96
+DOC6,General Medicine,10,Tuesday,16,6,normal,92.49
+DOC5,Dermatology,8,Saturday,13,2,normal,12.86
+DOC6,General Medicine,10,Saturday,16,3,normal,35.68
+DOC4,Pediatrics,12,Wednesday,12,0,normal,6.88
+DOC6,General Medicine,10,Saturday,11,7,normal,79.05
+DOC1,Cardiology,15,Tuesday,14,4,normal,65.13
+DOC2,General Medicine,10,Friday,15,3,normal,59.17
+DOC3,Orthopedics,20,Saturday,9,7,normal,154.99
+DOC4,Pediatrics,12,Friday,16,5,normal,92.78
+DOC2,General Medicine,10,Monday,10,5,normal,111.02
+DOC1,Cardiology,15,Monday,9,2,normal,75.03
+DOC3,Orthopedics,20,Sunday,11,4,normal,102.3
+DOC4,Pediatrics,12,Friday,14,4,normal,52.93
+DOC6,General Medicine,10,Saturday,12,5,normal,33.48
+DOC3,Orthopedics,20,Sunday,11,4,normal,92.66
+DOC2,General Medicine,10,Saturday,19,4,normal,35.99
+DOC4,Pediatrics,12,Thursday,12,2,normal,26.99
+DOC1,Cardiology,15,Saturday,11,7,normal,121.51
+DOC6,General Medicine,10,Sunday,11,2,normal,26.36
+DOC1,Cardiology,15,Tuesday,19,5,normal,76.04
+DOC6,General Medicine,10,Monday,15,1,normal,31.65
+DOC2,General Medicine,10,Thursday,10,3,normal,58.72
+DOC4,Pediatrics,12,Sunday,16,3,normal,43.34
+DOC5,Dermatology,8,Monday,16,5,normal,81.59
+DOC3,Orthopedics,20,Sunday,12,4,normal,54.91
+DOC4,Pediatrics,12,Tuesday,15,1,normal,30.99
+DOC3,Orthopedics,20,Sunday,16,2,normal,53.55
+DOC6,General Medicine,10,Saturday,19,4,normal,30.81
+DOC2,General Medicine,10,Sunday,9,1,normal,14.59
+DOC2,General Medicine,10,Monday,13,4,normal,57.29
+DOC6,General Medicine,10,Saturday,17,4,normal,48.42
+DOC1,Cardiology,15,Tuesday,11,5,normal,125.91
+DOC2,General Medicine,10,Tuesday,10,1,normal,28.59
+DOC6,General Medicine,10,Tuesday,9,3,normal,53.06
+DOC3,Orthopedics,20,Monday,14,6,normal,140.04
+DOC6,General Medicine,10,Wednesday,9,2,normal,39.03
+DOC3,Orthopedics,20,Thursday,9,6,normal,192.3
+DOC4,Pediatrics,12,Wednesday,9,4,normal,84.44
+DOC1,Cardiology,15,Monday,17,3,normal,104.36
+DOC1,Cardiology,15,Friday,9,7,normal,166.22
+DOC6,General Medicine,10,Monday,10,4,normal,93.46
+DOC6,General Medicine,10,Sunday,13,2,normal,17.2
+DOC5,Dermatology,8,Tuesday,12,3,normal,24.3
+DOC2,General Medicine,10,Wednesday,13,6,normal,55.07
+DOC1,Cardiology,15,Friday,18,4,normal,99.42
+DOC3,Orthopedics,20,Sunday,12,1,emergency,4.66
+DOC4,Pediatrics,12,Monday,16,2,normal,66.05
+DOC1,Cardiology,15,Wednesday,16,3,emergency,5.34
+DOC6,General Medicine,10,Sunday,17,2,normal,25.35
+DOC4,Pediatrics,12,Saturday,15,6,normal,78.85
+DOC6,General Medicine,10,Friday,11,3,normal,54.09
+DOC5,Dermatology,8,Saturday,15,7,normal,61.81
+DOC6,General Medicine,10,Friday,16,4,normal,64.46
+DOC3,Orthopedics,20,Monday,10,5,normal,213.11
+DOC3,Orthopedics,20,Friday,18,5,normal,158.72
+DOC3,Orthopedics,20,Tuesday,16,10,normal,286.11
+DOC6,General Medicine,10,Thursday,15,4,normal,65.69
+DOC2,General Medicine,10,Thursday,10,2,normal,41.54
+DOC6,General Medicine,10,Wednesday,9,3,normal,54.83
+DOC2,General Medicine,10,Monday,10,5,emergency,3.66
+DOC3,Orthopedics,20,Monday,14,3,normal,89.26
+DOC4,Pediatrics,12,Friday,15,3,normal,60.18
+DOC2,General Medicine,10,Tuesday,10,5,normal,84.73
+DOC6,General Medicine,10,Wednesday,19,4,normal,43.31
+DOC4,Pediatrics,12,Saturday,11,5,emergency,2.5
+DOC4,Pediatrics,12,Wednesday,16,2,normal,51.13
+DOC3,Orthopedics,20,Saturday,10,3,normal,82.15
+DOC1,Cardiology,15,Saturday,15,3,normal,56.07
+DOC6,General Medicine,10,Saturday,13,4,normal,26.64
+DOC6,General Medicine,10,Wednesday,17,3,normal,44.73
+DOC1,Cardiology,15,Thursday,17,1,normal,37.17
+DOC2,General Medicine,10,Thursday,9,2,emergency,2.71
+DOC4,Pediatrics,12,Tuesday,14,5,normal,58.23
+DOC1,Cardiology,15,Sunday,17,6,normal,98.19
+DOC4,Pediatrics,12,Saturday,18,2,normal,37.82
+DOC4,Pediatrics,12,Sunday,17,4,normal,53.22
+DOC3,Orthopedics,20,Thursday,10,1,normal,54.53
+DOC4,Pediatrics,12,Tuesday,11,2,normal,59.68
+DOC4,Pediatrics,12,Monday,13,6,normal,82.67
+DOC5,Dermatology,8,Tuesday,12,6,normal,50.81
+DOC5,Dermatology,8,Sunday,9,3,normal,31.28
+DOC6,General Medicine,10,Saturday,16,4,normal,49.02
+DOC3,Orthopedics,20,Friday,13,4,normal,73.71
+DOC6,General Medicine,10,Monday,9,5,normal,109.96
+DOC5,Dermatology,8,Thursday,13,6,normal,43.84
+DOC2,General Medicine,10,Friday,9,3,normal,54.65
+DOC6,General Medicine,10,Thursday,18,3,normal,52.2
+DOC3,Orthopedics,20,Tuesday,15,2,normal,79.2
+DOC2,General Medicine,10,Tuesday,15,3,normal,51.69
+DOC2,General Medicine,10,Monday,18,2,normal,50.62
+DOC6,General Medicine,10,Thursday,9,6,normal,100.41
+DOC1,Cardiology,15,Friday,17,2,normal,57.31
+DOC6,General Medicine,10,Saturday,12,6,normal,35.37
+DOC5,Dermatology,8,Wednesday,17,3,normal,36.67
+DOC6,General Medicine,10,Saturday,18,7,normal,67.91
+DOC4,Pediatrics,12,Sunday,19,4,normal,38.31
+DOC5,Dermatology,8,Thursday,17,4,normal,53.39
+DOC6,General Medicine,10,Wednesday,11,3,normal,63.04
+DOC2,General Medicine,10,Monday,19,3,normal,45.1
+DOC4,Pediatrics,12,Thursday,12,3,normal,39.98
+DOC5,Dermatology,8,Sunday,14,5,normal,26.05
+DOC2,General Medicine,10,Wednesday,13,6,normal,58.25
+DOC5,Dermatology,8,Sunday,9,3,emergency,7.45
+DOC3,Orthopedics,20,Tuesday,17,4,normal,134.87
+DOC3,Orthopedics,20,Tuesday,14,2,normal,49.17
+DOC6,General Medicine,10,Tuesday,15,5,normal,81.61
+DOC4,Pediatrics,12,Friday,9,4,normal,80.71
+DOC2,General Medicine,10,Wednesday,14,6,normal,58.2
+DOC4,Pediatrics,12,Friday,17,4,normal,77.94
+DOC6,General Medicine,10,Friday,15,6,normal,92.15
+DOC2,General Medicine,10,Sunday,9,3,normal,37.15
+DOC1,Cardiology,15,Friday,10,5,normal,122.48
+DOC3,Orthopedics,20,Saturday,19,5,normal,76.72
+DOC6,General Medicine,10,Saturday,11,3,normal,45.21
+DOC2,General Medicine,10,Wednesday,10,7,normal,110.45
+DOC3,Orthopedics,20,Monday,14,2,emergency,6.86
+DOC1,Cardiology,15,Sunday,12,2,normal,27.38
+DOC5,Dermatology,8,Wednesday,10,2,normal,32.22
+DOC2,General Medicine,10,Monday,10,5,normal,107.07
+DOC4,Pediatrics,12,Monday,12,3,normal,52.48
+DOC4,Pediatrics,12,Thursday,14,4,normal,51.62
+DOC5,Dermatology,8,Friday,14,3,normal,24.65
+DOC5,Dermatology,8,Tuesday,15,2,emergency,3.01
+DOC4,Pediatrics,12,Wednesday,13,3,normal,38.31
+DOC4,Pediatrics,12,Tuesday,16,6,normal,108.61
+DOC2,General Medicine,10,Tuesday,16,6,normal,89.86
+DOC3,Orthopedics,20,Friday,9,2,normal,87.28
+DOC3,Orthopedics,20,Monday,13,8,normal,188.93
+DOC6,General Medicine,10,Tuesday,14,4,normal,37.42
+DOC1,Cardiology,15,Monday,17,3,normal,98.76
+DOC2,General Medicine,10,Saturday,13,4,normal,25.51
+DOC3,Orthopedics,20,Saturday,18,3,normal,73.41
+DOC6,General Medicine,10,Monday,16,6,normal,114.42
+DOC3,Orthopedics,20,Saturday,14,3,normal,45.5
+DOC4,Pediatrics,12,Wednesday,10,6,normal,123.03
+DOC4,Pediatrics,12,Sunday,17,3,normal,45.55
+DOC5,Dermatology,8,Wednesday,9,4,normal,57.3
+DOC2,General Medicine,10,Monday,17,1,normal,37.36
+DOC6,General Medicine,10,Thursday,9,0,normal,16.32
+DOC3,Orthopedics,20,Sunday,15,3,normal,76.17
+DOC2,General Medicine,10,Saturday,11,2,normal,28.15
+DOC1,Cardiology,15,Sunday,15,3,normal,51.06
+DOC4,Pediatrics,12,Saturday,16,5,emergency,7.23
+DOC6,General Medicine,10,Friday,12,3,normal,30.05
+DOC2,General Medicine,10,Sunday,12,4,normal,27.81
+DOC3,Orthopedics,20,Sunday,14,7,normal,96.41
+DOC6,General Medicine,10,Saturday,14,4,normal,29.54
+DOC2,General Medicine,10,Friday,12,1,normal,14.4
+DOC2,General Medicine,10,Wednesday,9,1,emergency,4.07
+DOC1,Cardiology,15,Sunday,12,3,normal,32.56
+DOC4,Pediatrics,12,Sunday,11,6,normal,85.48
+DOC5,Dermatology,8,Thursday,10,3,normal,50.9
+DOC4,Pediatrics,12,Sunday,15,6,normal,74.77
+DOC3,Orthopedics,20,Monday,13,3,normal,80.01
+DOC2,General Medicine,10,Monday,15,5,normal,107.92
+DOC6,General Medicine,10,Saturday,10,6,normal,71.42
+DOC6,General Medicine,10,Thursday,16,5,normal,78.39
+DOC4,Pediatrics,12,Saturday,12,5,normal,43.52
+DOC2,General Medicine,10,Thursday,18,3,normal,55.79
+DOC4,Pediatrics,12,Sunday,17,2,normal,31.37
+DOC4,Pediatrics,12,Tuesday,16,7,normal,127.75
+DOC3,Orthopedics,20,Friday,11,4,normal,141.97
+DOC4,Pediatrics,12,Wednesday,13,4,normal,47.76
+DOC5,Dermatology,8,Friday,10,3,emergency,5.9
+DOC1,Cardiology,15,Wednesday,9,2,normal,64.45
+DOC6,General Medicine,10,Wednesday,17,6,normal,90.29
+DOC5,Dermatology,8,Thursday,16,4,normal,48.57
+DOC6,General Medicine,10,Monday,13,3,normal,47.64
+DOC2,General Medicine,10,Tuesday,11,2,normal,43.76
+DOC3,Orthopedics,20,Thursday,18,3,normal,102.58
+DOC6,General Medicine,10,Thursday,12,8,normal,75.32
+DOC6,General Medicine,10,Wednesday,11,3,normal,55.64
+DOC2,General Medicine,10,Saturday,15,8,normal,88.5
+DOC4,Pediatrics,12,Saturday,16,3,emergency,6.06
+DOC4,Pediatrics,12,Monday,19,1,normal,26.11
+DOC4,Pediatrics,12,Tuesday,17,6,normal,109.65
+DOC3,Orthopedics,20,Saturday,10,4,normal,96.46
+DOC3,Orthopedics,20,Monday,10,5,normal,218.48
+DOC1,Cardiology,15,Wednesday,18,3,normal,82.2
+DOC4,Pediatrics,12,Thursday,12,7,normal,80.13
+DOC1,Cardiology,15,Tuesday,9,3,normal,79.76
+DOC3,Orthopedics,20,Saturday,11,5,normal,109.82
+DOC4,Pediatrics,12,Thursday,9,6,normal,114.94
+DOC3,Orthopedics,20,Wednesday,15,1,normal,52.81
+DOC6,General Medicine,10,Wednesday,19,2,normal,29.49
+DOC5,Dermatology,8,Friday,9,3,normal,44.26
+DOC6,General Medicine,10,Friday,15,2,normal,40.76
+DOC5,Dermatology,8,Wednesday,16,2,normal,34.46
+DOC2,General Medicine,10,Sunday,17,5,normal,55.95
+DOC5,Dermatology,8,Tuesday,14,6,normal,41.58
+DOC5,Dermatology,8,Friday,9,3,normal,43.91
+DOC5,Dermatology,8,Sunday,17,8,normal,68.77
+DOC2,General Medicine,10,Wednesday,17,1,normal,22.2
+DOC4,Pediatrics,12,Friday,16,5,normal,93.73
+DOC3,Orthopedics,20,Saturday,19,4,normal,68.67
+DOC5,Dermatology,8,Tuesday,13,3,normal,24.21
+DOC6,General Medicine,10,Saturday,19,2,normal,13.49
+DOC5,Dermatology,8,Tuesday,13,8,normal,56.54
+DOC6,General Medicine,10,Thursday,13,5,normal,45.64
+DOC1,Cardiology,15,Friday,13,4,normal,58.14
+DOC2,General Medicine,10,Wednesday,12,6,normal,55.91
+DOC4,Pediatrics,12,Saturday,11,3,normal,45.34
+DOC6,General Medicine,10,Friday,14,5,normal,49.13
+DOC4,Pediatrics,12,Thursday,14,3,normal,38.31
+DOC3,Orthopedics,20,Wednesday,17,6,normal,182.49
+DOC4,Pediatrics,12,Friday,9,3,normal,67.18
+DOC5,Dermatology,8,Friday,15,1,normal,23.66
+DOC2,General Medicine,10,Saturday,13,3,normal,25.7
+DOC3,Orthopedics,20,Wednesday,10,3,normal,113.55
+DOC5,Dermatology,8,Friday,16,6,normal,74.95
+DOC6,General Medicine,10,Thursday,14,5,normal,49.17
+DOC1,Cardiology,15,Sunday,10,3,normal,61.18
+DOC4,Pediatrics,12,Tuesday,15,2,normal,46.98
+DOC1,Cardiology,15,Monday,17,1,normal,49.67
+DOC3,Orthopedics,20,Monday,17,4,normal,169.63
+DOC6,General Medicine,10,Tuesday,12,3,normal,30.53
+DOC2,General Medicine,10,Thursday,15,5,normal,79.68
+DOC2,General Medicine,10,Saturday,14,5,normal,31.75
+DOC1,Cardiology,15,Monday,19,7,normal,141.2
+DOC2,General Medicine,10,Friday,9,5,normal,82.25
+DOC4,Pediatrics,12,Wednesday,9,6,normal,120.55
+DOC3,Orthopedics,20,Sunday,10,2,normal,57.87
+DOC5,Dermatology,8,Tuesday,13,6,normal,40.14
+DOC4,Pediatrics,12,Tuesday,11,4,normal,86.45
+DOC4,Pediatrics,12,Wednesday,11,5,normal,101.33
+DOC3,Orthopedics,20,Monday,11,3,normal,145.85
+DOC4,Pediatrics,12,Tuesday,18,6,emergency,6.35
+DOC2,General Medicine,10,Friday,14,4,normal,41.78
+DOC4,Pediatrics,12,Wednesday,13,3,normal,40.41
+DOC5,Dermatology,8,Saturday,19,2,normal,17.15
+DOC4,Pediatrics,12,Friday,15,7,normal,126.79
+DOC2,General Medicine,10,Monday,18,6,normal,115.7
+DOC1,Cardiology,15,Monday,12,3,normal,63.75
+DOC4,Pediatrics,12,Thursday,17,4,normal,78.6
+DOC5,Dermatology,8,Saturday,13,6,normal,34.22
+DOC4,Pediatrics,12,Monday,9,10,normal,240.11
+DOC1,Cardiology,15,Tuesday,11,2,emergency,6.07
+DOC5,Dermatology,8,Tuesday,9,7,normal,91.88
+DOC1,Cardiology,15,Wednesday,12,3,emergency,6.24
+DOC2,General Medicine,10,Sunday,19,2,normal,18.28
+DOC3,Orthopedics,20,Saturday,13,3,normal,44.78
+DOC1,Cardiology,15,Friday,15,7,normal,157.85
+DOC4,Pediatrics,12,Friday,19,5,normal,62.39
+DOC1,Cardiology,15,Monday,14,6,normal,111.44
+DOC3,Orthopedics,20,Friday,15,7,normal,206.35
+DOC6,General Medicine,10,Thursday,17,4,normal,61.92
+DOC5,Dermatology,8,Thursday,10,5,normal,66.7
+DOC5,Dermatology,8,Saturday,17,0,normal,9.28
+DOC6,General Medicine,10,Saturday,13,3,normal,20.62
+DOC3,Orthopedics,20,Sunday,12,6,normal,75.5
+DOC6,General Medicine,10,Wednesday,14,4,normal,44.49
+DOC3,Orthopedics,20,Tuesday,17,5,normal,154.49
+DOC5,Dermatology,8,Saturday,9,7,normal,65.98
+DOC6,General Medicine,10,Monday,9,1,normal,39.17
+DOC6,General Medicine,10,Saturday,12,8,normal,48.26
+DOC3,Orthopedics,20,Wednesday,12,4,normal,84.33
+DOC5,Dermatology,8,Wednesday,14,3,normal,24.89
+DOC6,General Medicine,10,Wednesday,11,3,normal,56.81
+DOC2,General Medicine,10,Saturday,11,2,normal,25.36
+DOC4,Pediatrics,12,Monday,9,1,normal,45.73
+DOC4,Pediatrics,12,Monday,14,3,normal,48.31
+DOC3,Orthopedics,20,Saturday,13,1,normal,17.28
+DOC1,Cardiology,15,Friday,12,5,normal,70.48
+DOC1,Cardiology,15,Tuesday,18,3,normal,72.99
+DOC2,General Medicine,10,Thursday,17,2,normal,44.12
+DOC2,General Medicine,10,Thursday,16,4,normal,65.36
+DOC3,Orthopedics,20,Monday,14,3,normal,80.49
+DOC3,Orthopedics,20,Tuesday,17,6,normal,186.37
+DOC2,General Medicine,10,Friday,19,6,emergency,1.94
+DOC4,Pediatrics,12,Wednesday,9,4,normal,85.54
+DOC2,General Medicine,10,Tuesday,19,4,normal,50.03
+DOC2,General Medicine,10,Wednesday,16,4,normal,63.52
+DOC5,Dermatology,8,Sunday,12,0,normal,2.38
+DOC2,General Medicine,10,Wednesday,10,6,normal,95.39
+DOC3,Orthopedics,20,Sunday,16,5,normal,109.66
+DOC1,Cardiology,15,Sunday,9,5,normal,90.5
+DOC3,Orthopedics,20,Thursday,14,4,normal,78.56
+DOC1,Cardiology,15,Friday,12,3,normal,42.68
+DOC1,Cardiology,15,Sunday,11,3,normal,61.17
+DOC5,Dermatology,8,Sunday,12,2,normal,14.46
+DOC3,Orthopedics,20,Tuesday,15,2,normal,76.52
+DOC5,Dermatology,8,Thursday,18,3,normal,43.31
+DOC6,General Medicine,10,Wednesday,11,6,emergency,4.27
+DOC5,Dermatology,8,Saturday,12,2,emergency,1.33
+DOC2,General Medicine,10,Friday,14,4,normal,43.36
+DOC2,General Medicine,10,Monday,18,2,normal,56.2
+DOC3,Orthopedics,20,Saturday,16,6,normal,119.49
+DOC6,General Medicine,10,Monday,10,2,normal,54.61
+DOC5,Dermatology,8,Friday,15,3,normal,41.71
+DOC5,Dermatology,8,Monday,9,7,normal,112.13
+DOC1,Cardiology,15,Monday,17,3,normal,105.4
+DOC1,Cardiology,15,Friday,11,0,normal,21.13
+DOC1,Cardiology,15,Tuesday,11,2,normal,64.72
+DOC4,Pediatrics,12,Thursday,17,6,normal,106.95
+DOC3,Orthopedics,20,Saturday,16,2,normal,58.47
+DOC3,Orthopedics,20,Saturday,19,4,normal,65.9
+DOC1,Cardiology,15,Thursday,16,6,normal,134.1
+DOC4,Pediatrics,12,Monday,14,8,normal,116.84
+DOC5,Dermatology,8,Wednesday,14,6,normal,51.03
+DOC2,General Medicine,10,Thursday,11,7,normal,116.26
+DOC5,Dermatology,8,Thursday,13,4,normal,34.14
+DOC6,General Medicine,10,Thursday,18,3,normal,54.28
+DOC6,General Medicine,10,Friday,13,7,normal,69.69
+DOC2,General Medicine,10,Tuesday,16,2,normal,36.83
+DOC4,Pediatrics,12,Thursday,19,3,normal,37.93
+DOC5,Dermatology,8,Monday,11,1,normal,31.04
+DOC3,Orthopedics,20,Saturday,13,1,normal,26.4
+DOC3,Orthopedics,20,Tuesday,11,4,normal,141.89
+DOC3,Orthopedics,20,Wednesday,10,6,normal,197.88
+DOC1,Cardiology,15,Saturday,19,6,emergency,6.77
+DOC3,Orthopedics,20,Sunday,17,3,normal,74.49
+DOC6,General Medicine,10,Tuesday,9,2,normal,39.36
+DOC3,Orthopedics,20,Wednesday,16,5,normal,157.16
+DOC2,General Medicine,10,Wednesday,16,3,normal,51.39
+DOC1,Cardiology,15,Thursday,12,6,normal,82.19
+DOC1,Cardiology,15,Sunday,15,5,normal,79.99
+DOC1,Cardiology,15,Tuesday,11,4,emergency,7.46
+DOC5,Dermatology,8,Saturday,17,5,normal,36.07
+DOC4,Pediatrics,12,Tuesday,15,4,normal,80.55
+DOC6,General Medicine,10,Friday,14,3,normal,36.5
+DOC1,Cardiology,15,Monday,15,5,normal,152.75
+DOC1,Cardiology,15,Sunday,18,6,normal,95.61
+DOC1,Cardiology,15,Sunday,14,5,normal,49.67
+DOC1,Cardiology,15,Monday,13,8,normal,139.5
+DOC4,Pediatrics,12,Friday,11,3,normal,67.4
+DOC1,Cardiology,15,Saturday,11,7,normal,118.94
+DOC5,Dermatology,8,Tuesday,12,2,normal,20.8
+DOC5,Dermatology,8,Monday,14,3,normal,36.97
+DOC3,Orthopedics,20,Friday,15,2,normal,71.29
+DOC1,Cardiology,15,Friday,15,7,emergency,1.0
+DOC5,Dermatology,8,Sunday,9,5,emergency,1.0
+DOC6,General Medicine,10,Sunday,9,5,normal,63.97
+DOC3,Orthopedics,20,Saturday,9,2,normal,55.33
+DOC2,General Medicine,10,Friday,13,3,emergency,6.21
+DOC3,Orthopedics,20,Saturday,16,3,normal,74.32
+DOC4,Pediatrics,12,Wednesday,9,4,normal,84.59
+DOC6,General Medicine,10,Tuesday,9,2,normal,44.63
+DOC6,General Medicine,10,Wednesday,18,2,normal,43.42
+DOC2,General Medicine,10,Tuesday,16,5,normal,74.95
+DOC6,General Medicine,10,Friday,17,2,emergency,6.88
+DOC1,Cardiology,15,Tuesday,12,5,emergency,6.27
+DOC2,General Medicine,10,Sunday,10,5,normal,55.45
+DOC2,General Medicine,10,Saturday,11,3,normal,33.74
+DOC2,General Medicine,10,Tuesday,12,5,normal,48.81
+DOC4,Pediatrics,12,Wednesday,10,4,normal,86.44
+DOC2,General Medicine,10,Friday,13,3,emergency,3.57
+DOC2,General Medicine,10,Monday,16,2,normal,51.47
+DOC5,Dermatology,8,Friday,14,2,normal,15.47
+DOC2,General Medicine,10,Sunday,12,1,normal,11.29
+DOC1,Cardiology,15,Sunday,18,5,normal,82.49
+DOC1,Cardiology,15,Saturday,18,5,normal,86.38
+DOC5,Dermatology,8,Monday,13,1,normal,17.95
+DOC2,General Medicine,10,Monday,15,1,normal,30.36
+DOC2,General Medicine,10,Tuesday,12,3,normal,31.06
+DOC3,Orthopedics,20,Sunday,19,3,normal,48.49
+DOC3,Orthopedics,20,Tuesday,9,5,normal,162.43
+DOC3,Orthopedics,20,Thursday,12,4,normal,81.06
+DOC4,Pediatrics,12,Wednesday,15,7,normal,124.03
+DOC5,Dermatology,8,Sunday,13,0,normal,3.29
+DOC5,Dermatology,8,Sunday,14,4,normal,21.6
+DOC3,Orthopedics,20,Sunday,11,5,normal,116.88
+DOC1,Cardiology,15,Thursday,14,3,normal,51.86
+DOC6,General Medicine,10,Monday,10,3,normal,74.15
+DOC6,General Medicine,10,Monday,10,4,normal,85.39
+DOC1,Cardiology,15,Monday,11,3,normal,110.67
+DOC4,Pediatrics,12,Monday,18,3,normal,80.05
+DOC3,Orthopedics,20,Tuesday,14,4,normal,87.29
+DOC6,General Medicine,10,Sunday,16,2,normal,31.2
+DOC1,Cardiology,15,Thursday,13,1,normal,24.43
+DOC5,Dermatology,8,Saturday,15,2,normal,20.33
+DOC5,Dermatology,8,Friday,11,4,normal,56.3
+DOC1,Cardiology,15,Saturday,12,2,normal,27.8
+DOC6,General Medicine,10,Friday,11,5,normal,82.59
+DOC6,General Medicine,10,Thursday,17,2,emergency,2.14
+DOC6,General Medicine,10,Wednesday,13,1,normal,15.84
+DOC4,Pediatrics,12,Wednesday,18,7,normal,123.4
+DOC4,Pediatrics,12,Monday,15,5,normal,123.67
+DOC2,General Medicine,10,Tuesday,16,2,normal,36.83
+DOC3,Orthopedics,20,Friday,11,6,normal,193.79
+DOC4,Pediatrics,12,Tuesday,16,5,normal,95.76
+DOC2,General Medicine,10,Wednesday,19,5,emergency,4.63
+DOC4,Pediatrics,12,Sunday,10,3,normal,46.07
+DOC6,General Medicine,10,Tuesday,13,3,normal,26.99
+DOC2,General Medicine,10,Thursday,14,3,normal,35.18
+DOC4,Pediatrics,12,Monday,9,5,normal,128.63
+DOC6,General Medicine,10,Saturday,9,3,normal,38.07
+DOC1,Cardiology,15,Saturday,10,4,normal,70.04
+DOC6,General Medicine,10,Sunday,16,8,normal,82.43
+DOC1,Cardiology,15,Thursday,15,4,emergency,4.82
+DOC2,General Medicine,10,Friday,9,4,normal,72.93
+DOC3,Orthopedics,20,Friday,19,2,normal,54.35
+DOC5,Dermatology,8,Thursday,17,4,normal,51.49
+DOC2,General Medicine,10,Tuesday,11,3,emergency,5.39
+DOC6,General Medicine,10,Wednesday,18,4,normal,62.29
+DOC1,Cardiology,15,Tuesday,9,4,normal,102.9
+DOC3,Orthopedics,20,Friday,13,1,emergency,7.32
+DOC1,Cardiology,15,Friday,14,6,normal,82.04
+DOC3,Orthopedics,20,Sunday,17,2,normal,57.73
+DOC6,General Medicine,10,Wednesday,9,1,normal,27.59
+DOC1,Cardiology,15,Wednesday,14,4,normal,63.18
+DOC2,General Medicine,10,Sunday,14,2,normal,13.81
+DOC3,Orthopedics,20,Thursday,9,2,normal,84.19
+DOC3,Orthopedics,20,Saturday,18,1,normal,33.83
+DOC4,Pediatrics,12,Wednesday,19,4,normal,50.92
+DOC3,Orthopedics,20,Sunday,12,5,normal,63.02
+DOC5,Dermatology,8,Monday,18,6,normal,91.61
+DOC6,General Medicine,10,Monday,18,3,normal,65.58
+DOC2,General Medicine,10,Thursday,15,2,normal,37.79
+DOC4,Pediatrics,12,Saturday,13,4,normal,31.3
+DOC2,General Medicine,10,Thursday,14,2,normal,24.02
+DOC6,General Medicine,10,Sunday,11,3,normal,39.62
+DOC2,General Medicine,10,Wednesday,15,2,normal,43.77
+DOC2,General Medicine,10,Thursday,11,2,normal,45.27
+DOC4,Pediatrics,12,Sunday,12,0,emergency,4.25
+DOC5,Dermatology,8,Wednesday,17,3,emergency,5.35
+DOC5,Dermatology,8,Thursday,9,8,normal,96.79
+DOC3,Orthopedics,20,Saturday,13,4,emergency,7.31
+DOC3,Orthopedics,20,Sunday,17,1,normal,40.56
+DOC6,General Medicine,10,Monday,10,4,normal,87.22
+DOC2,General Medicine,10,Sunday,10,6,normal,70.12
+DOC6,General Medicine,10,Saturday,16,5,normal,59.74
+DOC3,Orthopedics,20,Thursday,19,1,normal,30.76
+DOC3,Orthopedics,20,Tuesday,11,4,normal,134.81
+DOC5,Dermatology,8,Monday,17,4,normal,73.25
+DOC3,Orthopedics,20,Tuesday,15,3,normal,103.45
+DOC4,Pediatrics,12,Wednesday,14,4,normal,42.99
+DOC1,Cardiology,15,Sunday,12,4,emergency,1.32
+DOC6,General Medicine,10,Saturday,19,4,normal,31.4
+DOC1,Cardiology,15,Thursday,16,3,normal,80.81
+DOC2,General Medicine,10,Friday,11,4,normal,70.55
+DOC4,Pediatrics,12,Sunday,10,5,normal,70.77
+DOC4,Pediatrics,12,Tuesday,16,2,normal,42.92
+DOC1,Cardiology,15,Friday,17,3,normal,81.19
+DOC2,General Medicine,10,Friday,12,4,normal,41.69
+DOC1,Cardiology,15,Saturday,13,0,normal,2.96
+DOC4,Pediatrics,12,Monday,12,5,normal,71.7
+DOC2,General Medicine,10,Wednesday,13,5,normal,43.88
+DOC6,General Medicine,10,Wednesday,18,2,normal,40.05
+DOC6,General Medicine,10,Wednesday,11,7,normal,111.43
+DOC1,Cardiology,15,Monday,14,2,normal,46.97
+DOC2,General Medicine,10,Monday,15,6,normal,118.78
+DOC3,Orthopedics,20,Saturday,10,1,emergency,9.43
+DOC3,Orthopedics,20,Tuesday,13,8,normal,147.8
+DOC3,Orthopedics,20,Saturday,16,3,normal,77.26
+DOC3,Orthopedics,20,Wednesday,18,5,normal,157.6
+DOC6,General Medicine,10,Wednesday,12,4,normal,42.52
+DOC2,General Medicine,10,Tuesday,14,4,normal,42.99
+DOC5,Dermatology,8,Saturday,12,5,normal,24.69
+DOC5,Dermatology,8,Sunday,17,3,normal,24.46
+DOC5,Dermatology,8,Friday,13,5,emergency,8.49
+DOC4,Pediatrics,12,Friday,15,6,normal,104.97
+DOC1,Cardiology,15,Wednesday,12,7,normal,94.77
+DOC4,Pediatrics,12,Thursday,10,3,normal,69.49
+DOC1,Cardiology,15,Friday,16,7,normal,153.56
+DOC2,General Medicine,10,Thursday,11,6,normal,98.77
+DOC1,Cardiology,15,Wednesday,18,4,normal,92.35
+DOC1,Cardiology,15,Monday,16,3,normal,98.7
+DOC3,Orthopedics,20,Thursday,11,3,normal,105.99
+DOC1,Cardiology,15,Saturday,15,2,normal,41.49
+DOC5,Dermatology,8,Monday,11,4,normal,76.71
+DOC4,Pediatrics,12,Monday,12,6,normal,90.16
+DOC3,Orthopedics,20,Tuesday,18,5,normal,149.3
+DOC2,General Medicine,10,Saturday,11,2,normal,28.25
+DOC5,Dermatology,8,Sunday,19,3,normal,19.79
+DOC6,General Medicine,10,Friday,18,10,normal,143.56
+DOC2,General Medicine,10,Tuesday,12,7,normal,66.02
+DOC6,General Medicine,10,Wednesday,9,3,normal,52.05
+DOC4,Pediatrics,12,Saturday,18,1,normal,20.7
+DOC3,Orthopedics,20,Friday,14,3,normal,63.04
+DOC4,Pediatrics,12,Saturday,16,4,normal,57.85
+DOC5,Dermatology,8,Tuesday,15,3,normal,37.73
+DOC6,General Medicine,10,Monday,12,5,normal,63.69
+DOC5,Dermatology,8,Sunday,11,3,normal,30.06
+DOC1,Cardiology,15,Tuesday,11,6,normal,148.39
+DOC5,Dermatology,8,Saturday,15,2,normal,20.73
+DOC6,General Medicine,10,Tuesday,16,5,normal,77.88
+DOC1,Cardiology,15,Tuesday,17,6,normal,142.07
+DOC6,General Medicine,10,Tuesday,18,2,emergency,5.45
+DOC5,Dermatology,8,Sunday,9,6,normal,49.3
+DOC5,Dermatology,8,Saturday,14,2,normal,16.03
+DOC6,General Medicine,10,Saturday,13,5,normal,32.61
+DOC3,Orthopedics,20,Tuesday,13,4,emergency,5.72
+DOC5,Dermatology,8,Monday,19,6,normal,69.46
+DOC1,Cardiology,15,Monday,11,4,normal,136.9
+DOC6,General Medicine,10,Monday,12,2,normal,29.56
+DOC3,Orthopedics,20,Sunday,17,5,normal,106.17
+DOC4,Pediatrics,12,Friday,18,5,normal,93.61
+DOC1,Cardiology,15,Tuesday,14,4,emergency,6.64
+DOC3,Orthopedics,20,Tuesday,14,4,normal,71.89
+DOC4,Pediatrics,12,Monday,12,4,emergency,3.74
+DOC2,General Medicine,10,Monday,19,7,normal,98.35
+DOC3,Orthopedics,20,Tuesday,14,5,normal,91.66
+DOC2,General Medicine,10,Tuesday,18,6,normal,88.11
+DOC2,General Medicine,10,Friday,17,5,normal,74.54
+DOC3,Orthopedics,20,Tuesday,18,6,normal,180.76
+DOC6,General Medicine,10,Thursday,17,5,normal,80.83
+DOC2,General Medicine,10,Sunday,15,5,normal,53.26
+DOC5,Dermatology,8,Friday,9,3,normal,45.14
+DOC4,Pediatrics,12,Sunday,13,1,normal,5.77
+DOC4,Pediatrics,12,Saturday,16,3,normal,44.1
+DOC2,General Medicine,10,Saturday,19,6,normal,43.7
+DOC3,Orthopedics,20,Saturday,11,3,normal,78.62
+DOC4,Pediatrics,12,Tuesday,12,7,normal,75.66
+DOC4,Pediatrics,12,Tuesday,12,3,normal,36.77
+DOC3,Orthopedics,20,Wednesday,18,1,normal,53.91
+DOC2,General Medicine,10,Monday,16,4,normal,79.63
+DOC1,Cardiology,15,Thursday,18,8,normal,173.2
+DOC5,Dermatology,8,Thursday,18,4,normal,51.9
+DOC2,General Medicine,10,Friday,11,2,normal,41.54
+DOC1,Cardiology,15,Thursday,13,5,normal,76.52
+DOC2,General Medicine,10,Tuesday,14,3,normal,35.84
+DOC1,Cardiology,15,Monday,9,4,emergency,6.31
+DOC4,Pediatrics,12,Tuesday,9,5,normal,100.99
+DOC3,Orthopedics,20,Friday,16,4,normal,130.27
+DOC6,General Medicine,10,Monday,11,3,normal,72.18
+DOC6,General Medicine,10,Friday,15,1,normal,22.48
+DOC6,General Medicine,10,Wednesday,13,2,normal,23.04
+DOC2,General Medicine,10,Sunday,12,6,emergency,5.05
+DOC1,Cardiology,15,Friday,12,6,normal,82.17
+DOC1,Cardiology,15,Monday,17,6,normal,178.96
+DOC1,Cardiology,15,Tuesday,19,0,normal,4.79
+DOC6,General Medicine,10,Wednesday,10,6,normal,99.77
+DOC3,Orthopedics,20,Sunday,17,5,normal,109.02
+DOC4,Pediatrics,12,Tuesday,19,2,normal,33.88
+DOC4,Pediatrics,12,Sunday,16,2,normal,33.02
+DOC2,General Medicine,10,Tuesday,18,2,normal,43.78
+DOC3,Orthopedics,20,Sunday,15,4,normal,86.55
+DOC6,General Medicine,10,Saturday,18,1,normal,17.57
+DOC1,Cardiology,15,Sunday,16,3,normal,51.17
+DOC6,General Medicine,10,Thursday,16,3,normal,52.09
+DOC4,Pediatrics,12,Monday,16,2,normal,59.17
+DOC1,Cardiology,15,Monday,10,0,normal,25.32
+DOC4,Pediatrics,12,Thursday,19,8,normal,100.62
+DOC2,General Medicine,10,Monday,17,5,normal,108.9
+DOC2,General Medicine,10,Tuesday,12,2,normal,21.18
+DOC4,Pediatrics,12,Monday,10,2,normal,63.84
+DOC3,Orthopedics,20,Saturday,15,4,normal,91.83
+DOC4,Pediatrics,12,Monday,14,3,normal,53.51
+DOC3,Orthopedics,20,Sunday,18,4,normal,100.28
+DOC5,Dermatology,8,Monday,19,5,normal,51.77
+DOC2,General Medicine,10,Sunday,18,5,normal,56.75
+DOC6,General Medicine,10,Friday,18,5,normal,78.36
+DOC3,Orthopedics,20,Monday,13,2,normal,64.66
+DOC3,Orthopedics,20,Wednesday,15,4,emergency,5.72
+DOC5,Dermatology,8,Tuesday,13,7,normal,52.92
+DOC2,General Medicine,10,Saturday,18,3,normal,38.58
+DOC4,Pediatrics,12,Sunday,16,6,normal,74.24
+DOC6,General Medicine,10,Friday,16,5,normal,71.94
+DOC1,Cardiology,15,Sunday,18,6,normal,92.59
+DOC6,General Medicine,10,Friday,9,5,normal,84.19
+DOC5,Dermatology,8,Friday,18,2,normal,33.75
+DOC1,Cardiology,15,Sunday,18,4,normal,69.5
+DOC2,General Medicine,10,Tuesday,10,4,normal,70.6
+DOC4,Pediatrics,12,Friday,17,3,normal,62.16
+DOC2,General Medicine,10,Friday,9,0,normal,15.99
+DOC3,Orthopedics,20,Saturday,17,6,normal,125.11
+DOC1,Cardiology,15,Tuesday,10,5,normal,125.85
+DOC4,Pediatrics,12,Thursday,9,3,normal,68.67
+DOC2,General Medicine,10,Wednesday,9,3,normal,53.44
+DOC4,Pediatrics,12,Friday,10,6,emergency,5.19
+DOC5,Dermatology,8,Monday,11,8,normal,131.69
+DOC5,Dermatology,8,Tuesday,12,7,normal,50.29
+DOC1,Cardiology,15,Monday,9,3,normal,105.19
+DOC2,General Medicine,10,Friday,12,3,normal,28.73
+DOC3,Orthopedics,20,Tuesday,18,1,normal,54.38
+DOC1,Cardiology,15,Monday,14,3,normal,60.69
+DOC2,General Medicine,10,Thursday,13,4,normal,42.43
+DOC1,Cardiology,15,Friday,17,4,normal,95.75
+DOC1,Cardiology,15,Tuesday,14,1,normal,23.98
+DOC6,General Medicine,10,Friday,18,3,normal,54.35
+DOC6,General Medicine,10,Sunday,14,2,normal,15.62
+DOC4,Pediatrics,12,Tuesday,9,5,normal,103.53
+DOC6,General Medicine,10,Thursday,14,3,normal,33.84
+DOC3,Orthopedics,20,Friday,19,2,emergency,3.26
+DOC2,General Medicine,10,Wednesday,11,1,normal,26.64
+DOC3,Orthopedics,20,Monday,15,3,emergency,8.45
+DOC1,Cardiology,15,Tuesday,13,5,normal,65.95
+DOC6,General Medicine,10,Tuesday,9,2,normal,33.5
+DOC1,Cardiology,15,Thursday,18,1,normal,38.58
+DOC2,General Medicine,10,Sunday,11,5,normal,62.59
+DOC3,Orthopedics,20,Monday,12,5,normal,121.1
+DOC1,Cardiology,15,Wednesday,11,5,normal,128.87
+DOC4,Pediatrics,12,Sunday,10,2,normal,35.82
+DOC3,Orthopedics,20,Sunday,18,2,normal,50.08
+DOC2,General Medicine,10,Monday,19,3,normal,47.68
+DOC2,General Medicine,10,Saturday,17,1,normal,18.03
+DOC2,General Medicine,10,Monday,14,9,normal,105.47
+DOC6,General Medicine,10,Saturday,15,3,normal,38.04
+DOC1,Cardiology,15,Sunday,13,5,emergency,1.64
+DOC4,Pediatrics,12,Friday,13,2,normal,31.96
+DOC2,General Medicine,10,Monday,18,3,normal,64.35
+DOC3,Orthopedics,20,Wednesday,13,2,normal,49.07
+DOC4,Pediatrics,12,Friday,12,4,normal,47.5
+DOC5,Dermatology,8,Tuesday,15,5,emergency,3.35
+DOC2,General Medicine,10,Friday,19,3,normal,38.13
+DOC2,General Medicine,10,Sunday,12,3,normal,24.25
+DOC5,Dermatology,8,Saturday,9,1,normal,11.55
+DOC5,Dermatology,8,Thursday,11,4,normal,51.96
+DOC1,Cardiology,15,Monday,14,4,normal,75.35
+DOC5,Dermatology,8,Saturday,9,1,normal,14.12
+DOC6,General Medicine,10,Thursday,11,4,normal,67.78
+DOC4,Pediatrics,12,Friday,14,4,normal,49.96
+DOC5,Dermatology,8,Tuesday,17,4,normal,51.53
+DOC4,Pediatrics,12,Tuesday,16,9,normal,155.45
+DOC3,Orthopedics,20,Saturday,13,5,normal,72.44
+DOC5,Dermatology,8,Sunday,10,4,normal,41.96
+DOC3,Orthopedics,20,Tuesday,11,2,normal,82.31
+DOC2,General Medicine,10,Saturday,14,4,normal,29.44
+DOC4,Pediatrics,12,Wednesday,15,6,normal,104.96
+DOC3,Orthopedics,20,Friday,13,1,normal,31.28
+DOC1,Cardiology,15,Wednesday,10,1,normal,36.46
+DOC5,Dermatology,8,Monday,15,2,emergency,6.57
+DOC6,General Medicine,10,Wednesday,16,2,normal,36.44
+DOC1,Cardiology,15,Tuesday,17,2,normal,59.93
+DOC3,Orthopedics,20,Saturday,18,3,normal,72.78
+DOC5,Dermatology,8,Friday,16,3,normal,39.63
+DOC2,General Medicine,10,Monday,13,4,normal,50.45
+DOC6,General Medicine,10,Thursday,13,5,normal,51.98
+DOC5,Dermatology,8,Sunday,10,6,normal,51.01
+DOC3,Orthopedics,20,Tuesday,12,5,normal,95.57
+DOC3,Orthopedics,20,Friday,17,4,normal,130.51
+DOC2,General Medicine,10,Friday,9,9,normal,141.32
+DOC6,General Medicine,10,Friday,9,4,normal,72.4
+DOC1,Cardiology,15,Wednesday,15,2,normal,57.32
+DOC3,Orthopedics,20,Wednesday,9,3,normal,115.26
+DOC1,Cardiology,15,Sunday,12,3,normal,34.55
+DOC2,General Medicine,10,Friday,13,1,normal,9.7
+DOC6,General Medicine,10,Tuesday,17,3,emergency,6.37
+DOC3,Orthopedics,20,Saturday,14,2,normal,38.0
+DOC5,Dermatology,8,Saturday,16,6,normal,49.53
+DOC2,General Medicine,10,Friday,19,1,normal,17.14
+DOC2,General Medicine,10,Monday,17,6,normal,122.77
+DOC4,Pediatrics,12,Wednesday,16,6,emergency,6.46
+DOC2,General Medicine,10,Wednesday,14,2,normal,25.62
+DOC6,General Medicine,10,Wednesday,15,2,normal,41.48
+DOC2,General Medicine,10,Thursday,19,5,normal,57.21
+DOC1,Cardiology,15,Wednesday,16,4,normal,96.58
+DOC1,Cardiology,15,Sunday,18,6,normal,98.69
+DOC6,General Medicine,10,Monday,13,9,normal,98.8
+DOC3,Orthopedics,20,Thursday,11,3,normal,112.66
+DOC3,Orthopedics,20,Saturday,10,1,emergency,10.06
+DOC6,General Medicine,10,Monday,11,9,normal,181.94
+DOC1,Cardiology,15,Thursday,15,6,normal,139.03
+DOC3,Orthopedics,20,Tuesday,13,1,normal,34.78
+DOC2,General Medicine,10,Thursday,19,5,normal,53.02
+DOC1,Cardiology,15,Sunday,18,2,normal,38.14
+DOC3,Orthopedics,20,Monday,11,5,normal,219.58
+DOC5,Dermatology,8,Saturday,10,6,normal,56.24
+DOC5,Dermatology,8,Thursday,11,3,normal,41.51
+DOC1,Cardiology,15,Sunday,11,7,normal,115.55
+DOC1,Cardiology,15,Monday,9,3,normal,108.92
+DOC2,General Medicine,10,Monday,19,1,normal,23.45
+DOC2,General Medicine,10,Friday,9,3,normal,57.65
+DOC5,Dermatology,8,Sunday,17,6,emergency,8.6
+DOC5,Dermatology,8,Thursday,16,6,normal,72.12
+DOC3,Orthopedics,20,Sunday,11,4,normal,102.32
+DOC1,Cardiology,15,Monday,13,4,normal,80.17
+DOC3,Orthopedics,20,Sunday,15,2,normal,54.78
+DOC2,General Medicine,10,Saturday,17,4,normal,54.31
+DOC4,Pediatrics,12,Saturday,12,2,normal,16.94
+DOC3,Orthopedics,20,Thursday,12,4,normal,78.28
+DOC2,General Medicine,10,Saturday,11,4,normal,44.48
+DOC6,General Medicine,10,Sunday,17,4,normal,40.92
+DOC6,General Medicine,10,Saturday,18,6,normal,62.19
+DOC4,Pediatrics,12,Saturday,12,2,normal,16.15
+DOC2,General Medicine,10,Tuesday,14,5,normal,50.17
+DOC4,Pediatrics,12,Friday,19,4,normal,59.41
+DOC1,Cardiology,15,Friday,18,2,emergency,4.71
+DOC3,Orthopedics,20,Monday,14,6,normal,148.17
+DOC3,Orthopedics,20,Sunday,17,3,normal,74.46
+DOC3,Orthopedics,20,Friday,15,4,normal,125.47
+DOC1,Cardiology,15,Tuesday,16,3,normal,77.34
+DOC2,General Medicine,10,Monday,18,5,normal,102.83
+DOC1,Cardiology,15,Sunday,15,3,normal,49.36
+DOC1,Cardiology,15,Thursday,9,4,normal,112.21
+DOC2,General Medicine,10,Thursday,13,4,normal,41.31
+DOC5,Dermatology,8,Sunday,10,4,normal,43.29
+DOC2,General Medicine,10,Thursday,9,4,normal,68.53
+DOC1,Cardiology,15,Thursday,15,2,emergency,4.53
+DOC3,Orthopedics,20,Friday,19,6,emergency,4.34
+DOC3,Orthopedics,20,Thursday,17,2,normal,81.76
+DOC4,Pediatrics,12,Tuesday,10,5,normal,101.99
+DOC5,Dermatology,8,Tuesday,13,4,normal,34.0
+DOC2,General Medicine,10,Monday,10,1,normal,31.47
+DOC3,Orthopedics,20,Sunday,18,5,normal,106.55
+DOC5,Dermatology,8,Wednesday,17,5,normal,63.09
+DOC5,Dermatology,8,Monday,10,2,normal,41.09
+DOC2,General Medicine,10,Wednesday,17,4,emergency,7.46
+DOC2,General Medicine,10,Sunday,12,5,normal,36.38
+DOC2,General Medicine,10,Thursday,10,2,normal,41.73
+DOC2,General Medicine,10,Saturday,17,2,normal,29.36
+DOC3,Orthopedics,20,Monday,13,1,normal,39.76
+DOC5,Dermatology,8,Sunday,19,6,normal,35.69
+DOC5,Dermatology,8,Monday,12,4,normal,44.7
+DOC3,Orthopedics,20,Wednesday,9,4,normal,141.17
+DOC4,Pediatrics,12,Sunday,9,4,normal,61.28
+DOC3,Orthopedics,20,Thursday,11,5,normal,173.22
+DOC6,General Medicine,10,Monday,15,1,normal,31.67
+DOC6,General Medicine,10,Monday,14,3,normal,41.91
+DOC1,Cardiology,15,Monday,17,4,emergency,9.12
+DOC4,Pediatrics,12,Friday,9,3,normal,66.44
+DOC1,Cardiology,15,Wednesday,17,4,normal,99.52
+DOC5,Dermatology,8,Sunday,12,1,normal,13.61
+DOC3,Orthopedics,20,Friday,17,3,normal,106.37
+DOC2,General Medicine,10,Sunday,11,3,normal,36.03
+DOC1,Cardiology,15,Tuesday,12,5,normal,70.94
+DOC4,Pediatrics,12,Monday,13,4,normal,65.56
+DOC5,Dermatology,8,Monday,11,5,normal,87.25
+DOC1,Cardiology,15,Sunday,18,4,normal,68.67
+DOC1,Cardiology,15,Thursday,15,3,normal,77.74
+DOC1,Cardiology,15,Monday,18,6,normal,172.89
+DOC1,Cardiology,15,Wednesday,17,4,normal,100.34
+DOC2,General Medicine,10,Sunday,14,5,normal,39.9
+DOC2,General Medicine,10,Friday,15,2,normal,38.46
+DOC5,Dermatology,8,Thursday,13,5,normal,41.52
+DOC2,General Medicine,10,Tuesday,9,2,normal,42.28
+DOC2,General Medicine,10,Tuesday,16,6,normal,88.78
+DOC1,Cardiology,15,Wednesday,16,3,normal,80.59
+DOC4,Pediatrics,12,Sunday,13,5,normal,38.5
+DOC4,Pediatrics,12,Friday,15,4,normal,82.7
+DOC5,Dermatology,8,Friday,19,4,normal,33.88
+DOC2,General Medicine,10,Friday,9,4,normal,71.98
+DOC2,General Medicine,10,Monday,17,5,normal,98.15
+DOC3,Orthopedics,20,Sunday,16,4,normal,91.37
+DOC3,Orthopedics,20,Saturday,13,4,normal,56.21
+DOC6,General Medicine,10,Monday,12,1,normal,15.56
+DOC3,Orthopedics,20,Sunday,17,7,normal,143.32
+DOC4,Pediatrics,12,Tuesday,17,4,normal,78.33
+DOC2,General Medicine,10,Saturday,15,4,normal,43.98
+DOC1,Cardiology,15,Monday,19,4,emergency,3.11
+DOC5,Dermatology,8,Friday,17,3,normal,40.64
+DOC2,General Medicine,10,Friday,18,2,normal,31.78
+DOC2,General Medicine,10,Monday,13,4,normal,48.26
+DOC6,General Medicine,10,Monday,9,6,normal,128.97
+DOC2,General Medicine,10,Tuesday,11,3,normal,51.03
+DOC1,Cardiology,15,Monday,12,4,normal,76.46
+DOC1,Cardiology,15,Wednesday,15,0,normal,19.73
+DOC2,General Medicine,10,Monday,16,5,normal,102.44
+DOC2,General Medicine,10,Friday,18,2,normal,39.09
+DOC6,General Medicine,10,Saturday,15,4,normal,42.03
+DOC3,Orthopedics,20,Wednesday,13,1,normal,29.12
+DOC2,General Medicine,10,Saturday,15,7,normal,74.39
+DOC5,Dermatology,8,Wednesday,10,4,normal,52.05
+DOC1,Cardiology,15,Wednesday,14,5,normal,69.82
+DOC1,Cardiology,15,Saturday,15,1,normal,22.01
+DOC3,Orthopedics,20,Wednesday,9,3,normal,112.87
+DOC6,General Medicine,10,Saturday,13,4,normal,22.16
+DOC1,Cardiology,15,Friday,11,3,normal,81.32
+DOC2,General Medicine,10,Sunday,13,2,normal,21.97
+DOC2,General Medicine,10,Sunday,18,3,normal,37.0
+DOC4,Pediatrics,12,Monday,11,2,emergency,5.21
+DOC1,Cardiology,15,Saturday,10,5,normal,88.68
+DOC5,Dermatology,8,Tuesday,17,3,normal,42.64
+DOC3,Orthopedics,20,Saturday,9,6,normal,140.43
+DOC1,Cardiology,15,Saturday,9,2,normal,38.13
+DOC2,General Medicine,10,Monday,11,7,normal,143.58
+DOC5,Dermatology,8,Sunday,10,6,normal,57.52
+DOC2,General Medicine,10,Tuesday,9,6,normal,95.98
+DOC2,General Medicine,10,Saturday,12,10,normal,56.69
+DOC5,Dermatology,8,Wednesday,17,6,normal,71.24
+DOC1,Cardiology,15,Monday,10,7,normal,218.47
+DOC1,Cardiology,15,Sunday,13,5,normal,58.73
+DOC1,Cardiology,15,Sunday,15,5,normal,86.32
+DOC6,General Medicine,10,Thursday,19,8,normal,83.62
+DOC2,General Medicine,10,Friday,19,3,normal,34.57
+DOC2,General Medicine,10,Monday,18,4,normal,88.02
+DOC1,Cardiology,15,Sunday,14,6,normal,56.91
+DOC3,Orthopedics,20,Wednesday,9,8,normal,252.82
+DOC6,General Medicine,10,Wednesday,15,2,normal,38.6
+DOC5,Dermatology,8,Friday,14,4,normal,30.73
+DOC5,Dermatology,8,Wednesday,14,4,normal,32.6
+DOC5,Dermatology,8,Friday,9,2,normal,33.01
+DOC2,General Medicine,10,Friday,16,5,emergency,5.1
+DOC3,Orthopedics,20,Sunday,16,3,normal,74.97
+DOC1,Cardiology,15,Friday,18,4,normal,100.21
+DOC5,Dermatology,8,Friday,19,4,normal,32.98
+DOC1,Cardiology,15,Friday,15,2,normal,59.29
+DOC2,General Medicine,10,Thursday,11,2,normal,41.88
+DOC6,General Medicine,10,Sunday,19,5,normal,38.33
+DOC2,General Medicine,10,Wednesday,11,3,normal,59.1
+DOC3,Orthopedics,20,Tuesday,17,2,normal,77.54
+DOC4,Pediatrics,12,Monday,14,5,normal,71.7
+DOC5,Dermatology,8,Sunday,19,5,normal,35.85
+DOC1,Cardiology,15,Friday,13,1,normal,24.1
+DOC6,General Medicine,10,Wednesday,18,1,normal,19.58
+DOC6,General Medicine,10,Friday,13,5,emergency,4.71
+DOC6,General Medicine,10,Saturday,15,4,normal,42.5
+DOC4,Pediatrics,12,Thursday,10,1,normal,29.01
+DOC1,Cardiology,15,Wednesday,10,3,normal,84.43
+DOC2,General Medicine,10,Monday,10,7,normal,148.21
+DOC2,General Medicine,10,Sunday,12,2,normal,9.41
+DOC3,Orthopedics,20,Tuesday,11,3,normal,109.6
+DOC2,General Medicine,10,Sunday,12,3,normal,23.02
+DOC5,Dermatology,8,Monday,19,1,normal,15.51
+DOC5,Dermatology,8,Thursday,17,4,emergency,9.58
+DOC2,General Medicine,10,Thursday,14,2,normal,29.6
+DOC1,Cardiology,15,Thursday,11,2,normal,60.32
+DOC1,Cardiology,15,Monday,19,6,normal,117.93
+DOC2,General Medicine,10,Monday,11,3,normal,75.49
+DOC4,Pediatrics,12,Sunday,19,7,normal,58.69
+DOC6,General Medicine,10,Monday,15,2,normal,52.68
+DOC3,Orthopedics,20,Friday,16,5,normal,154.66
+DOC5,Dermatology,8,Friday,14,3,normal,27.48
+DOC2,General Medicine,10,Thursday,11,2,normal,45.34
+DOC2,General Medicine,10,Sunday,15,1,normal,15.88
+DOC4,Pediatrics,12,Friday,13,1,normal,18.04
+DOC3,Orthopedics,20,Tuesday,13,5,normal,98.43
+DOC6,General Medicine,10,Sunday,13,3,normal,25.1
+DOC5,Dermatology,8,Wednesday,14,7,normal,54.29
+DOC1,Cardiology,15,Saturday,10,4,normal,70.37
+DOC5,Dermatology,8,Tuesday,16,4,normal,47.16
+DOC6,General Medicine,10,Sunday,14,6,normal,36.81
+DOC5,Dermatology,8,Thursday,16,3,normal,39.41
+DOC6,General Medicine,10,Tuesday,19,3,normal,38.63
+DOC4,Pediatrics,12,Monday,13,3,normal,52.84
+DOC1,Cardiology,15,Wednesday,14,4,normal,61.87
+DOC3,Orthopedics,20,Friday,13,1,normal,30.46
+DOC2,General Medicine,10,Wednesday,10,2,normal,43.69
+DOC2,General Medicine,10,Tuesday,18,3,normal,52.94
+DOC3,Orthopedics,20,Monday,15,4,normal,166.97
+DOC6,General Medicine,10,Tuesday,19,4,normal,46.8
+DOC1,Cardiology,15,Wednesday,12,6,normal,86.1
+DOC2,General Medicine,10,Monday,14,9,normal,103.09
+DOC1,Cardiology,15,Friday,12,6,normal,82.49
+DOC1,Cardiology,15,Friday,14,4,normal,58.09
+DOC3,Orthopedics,20,Wednesday,17,4,normal,131.04
+DOC3,Orthopedics,20,Tuesday,10,4,normal,133.02
+DOC6,General Medicine,10,Sunday,11,4,normal,47.92
+DOC4,Pediatrics,12,Monday,14,3,normal,47.91
+DOC4,Pediatrics,12,Monday,16,5,normal,118.2
+DOC6,General Medicine,10,Tuesday,9,6,normal,97.34
+DOC2,General Medicine,10,Saturday,9,1,normal,16.85
+DOC2,General Medicine,10,Thursday,15,1,normal,26.39
+DOC3,Orthopedics,20,Tuesday,13,3,normal,56.86
+DOC1,Cardiology,15,Tuesday,11,4,normal,98.97
+DOC6,General Medicine,10,Friday,19,2,emergency,5.61
+DOC2,General Medicine,10,Tuesday,16,1,normal,22.69
+DOC5,Dermatology,8,Wednesday,11,3,normal,46.78
+DOC1,Cardiology,15,Tuesday,16,2,normal,48.1
+DOC4,Pediatrics,12,Sunday,11,0,normal,10.76
+DOC4,Pediatrics,12,Friday,17,3,normal,67.48
+DOC3,Orthopedics,20,Sunday,9,1,normal,39.63
+DOC1,Cardiology,15,Sunday,11,4,normal,75.0
+DOC2,General Medicine,10,Thursday,16,5,normal,78.03
+DOC2,General Medicine,10,Monday,14,1,normal,19.25
+DOC3,Orthopedics,20,Wednesday,15,2,normal,74.93
+DOC2,General Medicine,10,Thursday,15,2,emergency,6.11
+DOC5,Dermatology,8,Saturday,13,6,normal,25.26
+DOC5,Dermatology,8,Tuesday,10,3,normal,41.23
+DOC5,Dermatology,8,Wednesday,15,0,normal,11.2
+DOC6,General Medicine,10,Thursday,16,3,normal,47.86
+DOC6,General Medicine,10,Wednesday,19,6,normal,63.66
+DOC4,Pediatrics,12,Tuesday,14,4,normal,50.43
+DOC2,General Medicine,10,Saturday,10,3,normal,46.07
+DOC5,Dermatology,8,Wednesday,15,6,normal,75.55
+DOC3,Orthopedics,20,Thursday,14,4,normal,82.06
+DOC5,Dermatology,8,Tuesday,15,4,normal,54.2
+DOC2,General Medicine,10,Thursday,16,4,normal,67.3
+DOC6,General Medicine,10,Wednesday,18,3,normal,53.15
+DOC1,Cardiology,15,Thursday,11,3,normal,80.06
+DOC5,Dermatology,8,Monday,17,4,normal,69.22
+DOC1,Cardiology,15,Sunday,11,4,normal,72.59
+DOC5,Dermatology,8,Sunday,16,5,normal,42.34
+DOC5,Dermatology,8,Wednesday,18,4,normal,46.81
+DOC4,Pediatrics,12,Friday,19,3,normal,42.25
+DOC5,Dermatology,8,Friday,19,3,emergency,5.54
+DOC3,Orthopedics,20,Thursday,11,3,normal,111.29
+DOC5,Dermatology,8,Wednesday,10,3,normal,46.2
+DOC5,Dermatology,8,Tuesday,11,4,normal,54.76
+DOC1,Cardiology,15,Wednesday,12,4,normal,60.1
+DOC5,Dermatology,8,Monday,18,4,normal,70.7
+DOC3,Orthopedics,20,Sunday,12,4,normal,57.78
+DOC5,Dermatology,8,Wednesday,9,3,normal,46.64
+DOC5,Dermatology,8,Thursday,17,7,normal,84.73
+DOC6,General Medicine,10,Saturday,12,3,normal,18.57
+DOC4,Pediatrics,12,Tuesday,10,7,normal,137.36
+DOC3,Orthopedics,20,Thursday,11,3,normal,111.45
+DOC1,Cardiology,15,Wednesday,18,6,normal,134.71
+DOC2,General Medicine,10,Thursday,17,4,normal,68.61
+DOC4,Pediatrics,12,Thursday,10,4,normal,84.03
+DOC5,Dermatology,8,Monday,14,6,normal,53.32
+DOC5,Dermatology,8,Monday,17,6,normal,93.0
+DOC4,Pediatrics,12,Saturday,10,3,normal,46.52
+DOC6,General Medicine,10,Wednesday,19,3,normal,39.0
+DOC2,General Medicine,10,Saturday,11,3,emergency,3.27
+DOC4,Pediatrics,12,Monday,11,1,normal,42.41
+DOC3,Orthopedics,20,Sunday,9,3,normal,77.5
+DOC1,Cardiology,15,Thursday,10,0,normal,17.1
+DOC1,Cardiology,15,Tuesday,11,3,normal,87.76
+DOC1,Cardiology,15,Saturday,13,8,normal,77.29
+DOC1,Cardiology,15,Thursday,13,9,normal,116.57
+DOC2,General Medicine,10,Thursday,16,3,normal,51.26
+DOC4,Pediatrics,12,Wednesday,15,3,normal,62.04
+DOC1,Cardiology,15,Sunday,11,3,normal,63.62
+DOC2,General Medicine,10,Wednesday,12,4,normal,37.47
+DOC3,Orthopedics,20,Saturday,13,3,normal,42.31
+DOC3,Orthopedics,20,Saturday,14,4,normal,53.3
+DOC4,Pediatrics,12,Thursday,18,3,normal,61.18
+DOC5,Dermatology,8,Wednesday,18,2,normal,25.1
+DOC2,General Medicine,10,Thursday,10,3,normal,52.04
+DOC2,General Medicine,10,Saturday,16,3,normal,35.11
+DOC3,Orthopedics,20,Saturday,9,3,normal,74.5
+DOC5,Dermatology,8,Saturday,14,1,normal,11.99
+DOC5,Dermatology,8,Friday,14,4,normal,28.01
+DOC5,Dermatology,8,Sunday,15,5,emergency,5.1
+DOC6,General Medicine,10,Monday,13,2,normal,27.12
+DOC4,Pediatrics,12,Saturday,16,1,normal,22.17
+DOC2,General Medicine,10,Tuesday,16,7,normal,111.11
+DOC4,Pediatrics,12,Sunday,10,0,normal,8.38
+DOC5,Dermatology,8,Saturday,9,5,emergency,2.03
+DOC1,Cardiology,15,Sunday,12,4,emergency,4.17
+DOC6,General Medicine,10,Monday,15,3,emergency,3.32
+DOC2,General Medicine,10,Wednesday,19,3,normal,35.25
+DOC5,Dermatology,8,Thursday,9,6,emergency,5.46
+DOC6,General Medicine,10,Saturday,17,3,normal,39.54
+DOC6,General Medicine,10,Thursday,16,2,normal,43.81
+DOC4,Pediatrics,12,Thursday,17,8,normal,140.44
+DOC5,Dermatology,8,Friday,12,1,normal,12.52
+DOC2,General Medicine,10,Sunday,14,3,normal,25.35
+DOC6,General Medicine,10,Saturday,19,5,normal,42.99
+DOC4,Pediatrics,12,Saturday,15,5,normal,68.06
+DOC2,General Medicine,10,Friday,9,5,normal,85.53
+DOC5,Dermatology,8,Monday,16,5,normal,77.28
+DOC4,Pediatrics,12,Monday,19,6,normal,95.2
+DOC6,General Medicine,10,Monday,11,5,normal,106.26
+DOC5,Dermatology,8,Sunday,10,3,normal,31.85
+DOC2,General Medicine,10,Saturday,9,5,normal,58.41
+DOC5,Dermatology,8,Saturday,12,6,normal,37.68
+DOC6,General Medicine,10,Sunday,15,7,normal,75.71
+DOC1,Cardiology,15,Wednesday,13,5,normal,70.9
+DOC5,Dermatology,8,Sunday,14,4,normal,18.83
+DOC2,General Medicine,10,Friday,14,6,normal,61.97
+DOC6,General Medicine,10,Thursday,11,2,normal,41.08
+DOC1,Cardiology,15,Friday,15,3,normal,82.09
+DOC6,General Medicine,10,Thursday,11,4,normal,71.88
+DOC2,General Medicine,10,Sunday,12,4,normal,32.86
+DOC3,Orthopedics,20,Tuesday,15,4,normal,135.22
+DOC3,Orthopedics,20,Sunday,17,3,normal,73.06
+DOC4,Pediatrics,12,Monday,12,3,normal,52.35
+DOC2,General Medicine,10,Saturday,11,3,normal,38.62
+DOC1,Cardiology,15,Friday,13,2,normal,40.11
+DOC5,Dermatology,8,Tuesday,11,1,emergency,8.3
+DOC1,Cardiology,15,Sunday,17,5,normal,83.21
+DOC3,Orthopedics,20,Thursday,12,4,normal,81.2
+DOC6,General Medicine,10,Wednesday,9,4,normal,69.03
+DOC6,General Medicine,10,Wednesday,11,5,normal,83.8
+DOC3,Orthopedics,20,Wednesday,19,5,normal,113.06
+DOC3,Orthopedics,20,Saturday,12,3,normal,43.81
+DOC3,Orthopedics,20,Sunday,14,2,normal,34.37
+DOC3,Orthopedics,20,Thursday,15,4,normal,124.83
+DOC1,Cardiology,15,Saturday,12,5,normal,48.22
+DOC6,General Medicine,10,Tuesday,18,3,normal,50.65
+DOC4,Pediatrics,12,Thursday,16,10,normal,179.01
+DOC6,General Medicine,10,Monday,13,4,normal,48.71
+DOC3,Orthopedics,20,Wednesday,16,1,normal,55.13
+DOC3,Orthopedics,20,Thursday,13,4,normal,79.95
+DOC1,Cardiology,15,Wednesday,19,5,normal,79.99
+DOC6,General Medicine,10,Sunday,9,4,normal,50.08
+DOC2,General Medicine,10,Saturday,19,4,normal,33.22
+DOC5,Dermatology,8,Saturday,11,3,normal,32.55
+DOC2,General Medicine,10,Monday,19,5,normal,70.33
+DOC2,General Medicine,10,Saturday,13,4,normal,22.49
+DOC2,General Medicine,10,Thursday,19,3,normal,34.49
+DOC3,Orthopedics,20,Friday,18,2,normal,78.38
+DOC1,Cardiology,15,Wednesday,16,1,emergency,3.21
+DOC3,Orthopedics,20,Tuesday,11,3,normal,102.91
+DOC6,General Medicine,10,Monday,13,2,normal,33.1
+DOC5,Dermatology,8,Wednesday,10,6,normal,77.47
+DOC5,Dermatology,8,Thursday,19,3,normal,32.86
+DOC6,General Medicine,10,Monday,14,2,normal,27.54
+DOC6,General Medicine,10,Saturday,10,3,normal,35.96
+DOC6,General Medicine,10,Thursday,17,3,normal,52.55
+DOC4,Pediatrics,12,Tuesday,17,4,normal,72.74
+DOC1,Cardiology,15,Monday,11,5,normal,157.16
+DOC4,Pediatrics,12,Saturday,19,5,normal,49.05
+DOC3,Orthopedics,20,Saturday,15,1,normal,37.78
+DOC5,Dermatology,8,Thursday,12,1,normal,11.25
+DOC6,General Medicine,10,Tuesday,19,6,normal,69.37
+DOC6,General Medicine,10,Tuesday,9,3,normal,58.77
+DOC3,Orthopedics,20,Thursday,18,3,normal,108.44
+DOC3,Orthopedics,20,Saturday,13,4,normal,53.84
+DOC1,Cardiology,15,Wednesday,19,2,normal,38.36
+DOC3,Orthopedics,20,Thursday,15,3,normal,103.9
+DOC3,Orthopedics,20,Sunday,9,6,normal,135.65
+DOC5,Dermatology,8,Tuesday,12,3,normal,28.17
+DOC1,Cardiology,15,Wednesday,10,4,normal,105.79
+DOC1,Cardiology,15,Saturday,18,4,normal,66.11
+DOC3,Orthopedics,20,Saturday,12,4,normal,55.61
+DOC5,Dermatology,8,Sunday,18,1,normal,14.69
+DOC5,Dermatology,8,Saturday,10,3,normal,34.03
+DOC2,General Medicine,10,Monday,16,6,normal,113.37
+DOC3,Orthopedics,20,Monday,13,4,normal,102.28
+DOC3,Orthopedics,20,Friday,10,3,normal,111.87
+DOC2,General Medicine,10,Wednesday,16,2,normal,37.98
+DOC2,General Medicine,10,Friday,15,4,normal,62.59
+DOC5,Dermatology,8,Tuesday,18,7,normal,81.0
+DOC2,General Medicine,10,Friday,19,6,normal,63.13
+DOC3,Orthopedics,20,Sunday,12,2,normal,30.16
+DOC4,Pediatrics,12,Thursday,11,3,normal,67.01
+DOC5,Dermatology,8,Sunday,10,4,normal,40.65
+DOC1,Cardiology,15,Sunday,13,8,normal,72.66
+DOC2,General Medicine,10,Friday,10,3,normal,61.55
+DOC6,General Medicine,10,Friday,18,5,normal,77.39
+DOC6,General Medicine,10,Friday,14,6,normal,60.96
+DOC1,Cardiology,15,Friday,18,8,normal,174.78
+DOC1,Cardiology,15,Monday,17,1,normal,50.27
+DOC1,Cardiology,15,Sunday,10,2,normal,43.58
+DOC1,Cardiology,15,Wednesday,10,4,normal,99.8
+DOC5,Dermatology,8,Thursday,19,2,normal,25.33
+DOC1,Cardiology,15,Monday,17,2,normal,80.08
+DOC6,General Medicine,10,Thursday,14,4,normal,39.9
+DOC1,Cardiology,15,Thursday,17,6,normal,137.92
+DOC3,Orthopedics,20,Tuesday,13,5,normal,92.92
+DOC3,Orthopedics,20,Friday,12,4,normal,81.82
+DOC4,Pediatrics,12,Monday,13,2,normal,39.9
+DOC3,Orthopedics,20,Sunday,18,5,normal,106.47
+DOC1,Cardiology,15,Tuesday,15,8,normal,178.21
+DOC6,General Medicine,10,Thursday,18,1,normal,19.92
+DOC5,Dermatology,8,Friday,16,4,normal,43.93
+DOC3,Orthopedics,20,Monday,16,5,normal,202.43
+DOC2,General Medicine,10,Sunday,12,3,normal,24.29
+DOC4,Pediatrics,12,Friday,18,5,normal,95.9
+DOC2,General Medicine,10,Monday,14,5,normal,61.85
+DOC2,General Medicine,10,Tuesday,14,5,normal,52.88
+DOC1,Cardiology,15,Tuesday,19,6,normal,94.3
+DOC5,Dermatology,8,Sunday,9,1,normal,12.73
+DOC5,Dermatology,8,Thursday,16,4,normal,47.75
+DOC4,Pediatrics,12,Thursday,19,6,normal,73.67
+DOC6,General Medicine,10,Thursday,13,3,emergency,4.82
+DOC4,Pediatrics,12,Tuesday,11,3,normal,65.13
+DOC4,Pediatrics,12,Saturday,15,5,normal,67.32
+DOC5,Dermatology,8,Saturday,9,6,normal,55.22
+DOC6,General Medicine,10,Wednesday,19,4,normal,47.32
+DOC6,General Medicine,10,Wednesday,10,1,emergency,8.21
+DOC6,General Medicine,10,Friday,13,5,emergency,2.89
+DOC4,Pediatrics,12,Wednesday,14,6,normal,70.1
+DOC4,Pediatrics,12,Saturday,16,2,normal,31.06
+DOC6,General Medicine,10,Friday,11,1,normal,34.82
+DOC5,Dermatology,8,Thursday,11,6,normal,74.07
+DOC5,Dermatology,8,Friday,14,6,normal,46.13
+DOC3,Orthopedics,20,Sunday,15,2,normal,58.66
+DOC6,General Medicine,10,Saturday,14,4,normal,34.3
+DOC4,Pediatrics,12,Thursday,17,5,normal,92.82
+DOC1,Cardiology,15,Saturday,14,5,normal,57.8
+DOC6,General Medicine,10,Sunday,19,6,normal,47.34
+DOC3,Orthopedics,20,Sunday,16,1,normal,40.53
+DOC2,General Medicine,10,Monday,15,1,emergency,5.65
+DOC2,General Medicine,10,Friday,14,5,normal,45.49
+DOC4,Pediatrics,12,Thursday,13,3,normal,34.08
+DOC3,Orthopedics,20,Monday,17,6,normal,235.28
+DOC1,Cardiology,15,Tuesday,16,3,normal,76.76
+DOC6,General Medicine,10,Tuesday,11,4,normal,74.51
+DOC4,Pediatrics,12,Sunday,17,3,normal,46.54
+DOC3,Orthopedics,20,Sunday,11,7,normal,159.17
+DOC5,Dermatology,8,Friday,12,5,normal,39.7
+DOC2,General Medicine,10,Sunday,15,5,normal,48.84
+DOC2,General Medicine,10,Friday,9,4,normal,74.32
+DOC2,General Medicine,10,Monday,17,3,normal,68.87
+DOC6,General Medicine,10,Monday,17,3,normal,69.58
+DOC2,General Medicine,10,Sunday,16,3,normal,35.96
+DOC1,Cardiology,15,Friday,9,4,normal,106.29
+DOC3,Orthopedics,20,Friday,18,5,normal,159.61
+DOC2,General Medicine,10,Tuesday,15,3,normal,52.72
+DOC6,General Medicine,10,Sunday,19,7,normal,47.98
+DOC3,Orthopedics,20,Sunday,11,3,emergency,1.63
+DOC1,Cardiology,15,Friday,9,4,normal,102.94
+DOC5,Dermatology,8,Saturday,13,2,normal,11.96
+DOC1,Cardiology,15,Sunday,12,5,normal,45.95
+DOC2,General Medicine,10,Saturday,14,9,emergency,11.42
+DOC1,Cardiology,15,Sunday,12,3,normal,31.17
+DOC2,General Medicine,10,Saturday,14,5,normal,32.19
+DOC6,General Medicine,10,Thursday,13,6,normal,59.36
+DOC2,General Medicine,10,Wednesday,10,6,normal,98.32
+DOC2,General Medicine,10,Friday,16,6,normal,93.99
+DOC1,Cardiology,15,Wednesday,19,4,normal,68.06
+DOC5,Dermatology,8,Friday,9,4,normal,59.24
+DOC3,Orthopedics,20,Saturday,11,4,normal,99.96
+DOC4,Pediatrics,12,Friday,12,1,normal,20.59
+DOC3,Orthopedics,20,Friday,10,4,normal,140.55
+DOC6,General Medicine,10,Tuesday,16,6,normal,92.9
+DOC5,Dermatology,8,Sunday,17,3,normal,28.3
+DOC5,Dermatology,8,Saturday,13,5,normal,23.25
+DOC2,General Medicine,10,Saturday,10,6,normal,66.07
+DOC3,Orthopedics,20,Friday,9,1,normal,58.53
+DOC2,General Medicine,10,Friday,18,1,normal,30.73
+DOC3,Orthopedics,20,Sunday,18,3,emergency,6.5
+DOC3,Orthopedics,20,Saturday,17,3,normal,71.04
+DOC1,Cardiology,15,Tuesday,9,5,normal,126.57
+DOC2,General Medicine,10,Thursday,16,3,normal,51.51
+DOC3,Orthopedics,20,Friday,13,3,normal,67.27
+DOC6,General Medicine,10,Thursday,13,2,normal,24.73
+DOC4,Pediatrics,12,Monday,12,5,normal,72.33
+DOC6,General Medicine,10,Thursday,11,4,normal,69.52
+DOC5,Dermatology,8,Monday,17,4,normal,66.87
+DOC3,Orthopedics,20,Saturday,10,7,normal,164.55
+DOC5,Dermatology,8,Friday,18,2,normal,27.21
+DOC6,General Medicine,10,Saturday,12,6,normal,35.03
+DOC2,General Medicine,10,Monday,9,7,normal,145.24
+DOC3,Orthopedics,20,Monday,13,6,emergency,5.35
+DOC4,Pediatrics,12,Sunday,15,5,normal,62.69
+DOC5,Dermatology,8,Friday,10,6,normal,80.43
+DOC4,Pediatrics,12,Saturday,10,6,normal,82.21
+DOC4,Pediatrics,12,Friday,12,4,normal,48.29
+DOC5,Dermatology,8,Wednesday,17,2,normal,36.47
+DOC1,Cardiology,15,Wednesday,16,2,normal,59.36
+DOC6,General Medicine,10,Monday,17,5,normal,104.23
+DOC2,General Medicine,10,Thursday,14,1,normal,16.66
+DOC4,Pediatrics,12,Thursday,15,4,normal,78.54
+DOC6,General Medicine,10,Friday,11,4,normal,67.34
+DOC2,General Medicine,10,Saturday,18,5,normal,52.73
+DOC1,Cardiology,15,Thursday,15,5,normal,112.37
+DOC5,Dermatology,8,Friday,19,7,emergency,4.85
+DOC6,General Medicine,10,Tuesday,18,4,normal,68.8
+DOC5,Dermatology,8,Friday,17,5,normal,59.49
+DOC3,Orthopedics,20,Monday,14,1,normal,44.25
+DOC5,Dermatology,8,Thursday,18,4,normal,48.36
+DOC2,General Medicine,10,Saturday,17,0,normal,12.55
+DOC5,Dermatology,8,Friday,16,2,normal,29.33
+DOC4,Pediatrics,12,Saturday,13,3,normal,24.23
+DOC6,General Medicine,10,Wednesday,10,4,normal,65.67
+DOC3,Orthopedics,20,Sunday,13,3,normal,45.97
+DOC6,General Medicine,10,Monday,12,2,normal,29.0
+DOC5,Dermatology,8,Sunday,11,4,normal,43.08
+DOC1,Cardiology,15,Wednesday,13,5,normal,70.73
+DOC1,Cardiology,15,Saturday,13,2,normal,25.4
+DOC3,Orthopedics,20,Saturday,10,3,normal,83.19
+DOC2,General Medicine,10,Wednesday,10,3,normal,51.14
+DOC2,General Medicine,10,Friday,13,4,normal,41.89
+DOC3,Orthopedics,20,Thursday,14,3,normal,62.69
+DOC4,Pediatrics,12,Monday,17,1,normal,43.7
+DOC1,Cardiology,15,Wednesday,16,5,normal,116.21
+DOC4,Pediatrics,12,Monday,10,3,normal,83.53
+DOC2,General Medicine,10,Saturday,10,0,normal,7.07
+DOC2,General Medicine,10,Monday,14,2,normal,30.61
+DOC3,Orthopedics,20,Friday,15,3,emergency,3.45
+DOC2,General Medicine,10,Wednesday,9,7,normal,108.6
+DOC1,Cardiology,15,Wednesday,11,7,normal,168.74
+DOC4,Pediatrics,12,Tuesday,14,7,normal,73.42
+DOC2,General Medicine,10,Thursday,14,6,normal,58.33
+DOC3,Orthopedics,20,Wednesday,16,7,normal,206.1
+DOC4,Pediatrics,12,Monday,18,3,normal,80.53
+DOC6,General Medicine,10,Tuesday,17,8,normal,116.07
+DOC4,Pediatrics,12,Wednesday,13,2,normal,28.51
+DOC1,Cardiology,15,Sunday,11,8,normal,137.93
+DOC5,Dermatology,8,Monday,10,4,normal,73.57
+DOC5,Dermatology,8,Tuesday,18,5,normal,67.3
+DOC6,General Medicine,10,Friday,14,2,normal,20.98
+DOC1,Cardiology,15,Friday,12,4,normal,57.82
+DOC6,General Medicine,10,Friday,19,1,normal,10.83
+DOC6,General Medicine,10,Thursday,13,6,normal,56.38
+DOC3,Orthopedics,20,Sunday,11,2,emergency,4.73
+DOC6,General Medicine,10,Wednesday,11,1,normal,26.77
+DOC3,Orthopedics,20,Tuesday,9,1,normal,60.89
+DOC5,Dermatology,8,Thursday,13,3,normal,26.15
+DOC6,General Medicine,10,Monday,9,9,normal,185.67
+DOC6,General Medicine,10,Sunday,9,1,normal,17.86
+DOC1,Cardiology,15,Tuesday,17,3,normal,74.52
+DOC5,Dermatology,8,Wednesday,10,6,normal,72.95
+DOC1,Cardiology,15,Friday,11,5,normal,132.41
+DOC6,General Medicine,10,Friday,17,3,normal,55.49
+DOC3,Orthopedics,20,Sunday,18,3,normal,69.97
+DOC6,General Medicine,10,Sunday,12,8,normal,51.32
+DOC1,Cardiology,15,Friday,14,3,normal,46.74
+DOC5,Dermatology,8,Tuesday,16,3,normal,36.92
+DOC4,Pediatrics,12,Sunday,18,6,normal,76.57
+DOC3,Orthopedics,20,Saturday,10,1,normal,35.1
+DOC1,Cardiology,15,Thursday,11,4,normal,106.17
+DOC1,Cardiology,15,Friday,9,3,normal,84.24
+DOC1,Cardiology,15,Friday,11,5,normal,128.59
+DOC5,Dermatology,8,Tuesday,15,1,normal,21.73
+DOC3,Orthopedics,20,Sunday,11,2,normal,59.64
+DOC2,General Medicine,10,Tuesday,15,2,normal,41.46
+DOC5,Dermatology,8,Friday,10,2,emergency,2.82
+DOC1,Cardiology,15,Saturday,9,2,normal,43.73
+DOC3,Orthopedics,20,Saturday,12,7,normal,91.11
+DOC4,Pediatrics,12,Sunday,13,3,normal,29.09
+DOC1,Cardiology,15,Monday,10,2,normal,79.65
+DOC2,General Medicine,10,Tuesday,16,7,normal,105.54
+DOC3,Orthopedics,20,Wednesday,17,3,normal,107.88
+DOC4,Pediatrics,12,Sunday,19,7,normal,61.75
+DOC1,Cardiology,15,Saturday,9,7,normal,112.98
+DOC4,Pediatrics,12,Tuesday,10,2,normal,49.84
+DOC1,Cardiology,15,Friday,12,5,normal,78.18
+DOC2,General Medicine,10,Wednesday,15,3,normal,49.47
+DOC6,General Medicine,10,Wednesday,12,7,normal,62.17
+DOC3,Orthopedics,20,Sunday,17,6,normal,128.18
+DOC1,Cardiology,15,Friday,12,5,normal,74.53
+DOC2,General Medicine,10,Thursday,14,4,normal,40.88
+DOC3,Orthopedics,20,Friday,15,1,normal,53.27
+DOC1,Cardiology,15,Friday,12,3,normal,44.61
+DOC1,Cardiology,15,Thursday,15,2,normal,55.41
+DOC3,Orthopedics,20,Tuesday,12,4,normal,82.01
+DOC4,Pediatrics,12,Saturday,9,4,normal,55.6
+DOC5,Dermatology,8,Thursday,18,6,normal,67.75
+DOC6,General Medicine,10,Saturday,13,7,normal,43.87
+DOC2,General Medicine,10,Tuesday,14,3,normal,31.67
+DOC5,Dermatology,8,Sunday,13,2,normal,13.8
+DOC2,General Medicine,10,Saturday,16,4,normal,43.31
+DOC5,Dermatology,8,Tuesday,11,6,normal,69.99
+DOC2,General Medicine,10,Monday,13,8,normal,90.41
+DOC5,Dermatology,8,Thursday,16,3,normal,44.7
+DOC5,Dermatology,8,Saturday,18,3,normal,23.95
+DOC2,General Medicine,10,Monday,10,4,normal,91.22
+DOC4,Pediatrics,12,Saturday,12,7,normal,58.89
+DOC6,General Medicine,10,Sunday,14,7,normal,44.51
+DOC6,General Medicine,10,Thursday,18,2,normal,37.83
+DOC6,General Medicine,10,Saturday,10,3,normal,43.31
+DOC2,General Medicine,10,Sunday,10,7,normal,84.14
+DOC4,Pediatrics,12,Monday,14,7,normal,105.83
+DOC2,General Medicine,10,Wednesday,17,2,normal,39.89
+DOC4,Pediatrics,12,Friday,10,1,normal,32.25
+DOC5,Dermatology,8,Thursday,19,2,normal,25.14
+DOC4,Pediatrics,12,Thursday,9,1,normal,32.37
+DOC1,Cardiology,15,Tuesday,10,4,normal,103.36
+DOC2,General Medicine,10,Sunday,17,4,normal,50.51
+DOC5,Dermatology,8,Friday,16,6,normal,71.66
+DOC1,Cardiology,15,Sunday,14,5,normal,57.57
+DOC3,Orthopedics,20,Monday,9,4,normal,186.33
+DOC4,Pediatrics,12,Wednesday,12,5,normal,54.8
+DOC5,Dermatology,8,Friday,13,9,normal,66.02
+DOC1,Cardiology,15,Friday,14,4,normal,61.47
+DOC1,Cardiology,15,Monday,10,3,normal,113.71
+DOC3,Orthopedics,20,Friday,19,3,emergency,3.48
+DOC2,General Medicine,10,Saturday,13,1,normal,9.07
+DOC6,General Medicine,10,Friday,17,6,normal,94.43
+DOC4,Pediatrics,12,Saturday,11,3,normal,46.28
+DOC2,General Medicine,10,Friday,12,6,normal,58.98
+DOC6,General Medicine,10,Wednesday,15,3,normal,55.17
+DOC1,Cardiology,15,Friday,12,3,normal,49.55
+DOC2,General Medicine,10,Sunday,15,10,normal,98.52
+DOC2,General Medicine,10,Monday,14,4,normal,53.56
+DOC5,Dermatology,8,Tuesday,12,3,normal,18.99
+DOC1,Cardiology,15,Friday,9,0,normal,21.14
+DOC6,General Medicine,10,Tuesday,12,3,normal,31.49
+DOC3,Orthopedics,20,Monday,9,5,emergency,3.82
+DOC1,Cardiology,15,Thursday,12,5,normal,72.99
+DOC5,Dermatology,8,Thursday,11,6,normal,75.74
+DOC6,General Medicine,10,Saturday,13,4,emergency,6.5
+DOC4,Pediatrics,12,Sunday,10,4,normal,53.01
+DOC2,General Medicine,10,Wednesday,17,2,normal,37.37
+DOC5,Dermatology,8,Thursday,18,3,normal,43.28
+DOC4,Pediatrics,12,Thursday,15,1,normal,29.99
+DOC5,Dermatology,8,Saturday,10,1,normal,16.36
+DOC6,General Medicine,10,Friday,18,7,normal,104.68
+DOC4,Pediatrics,12,Monday,13,3,normal,50.26
+DOC6,General Medicine,10,Monday,13,4,normal,51.67
+DOC6,General Medicine,10,Friday,15,4,normal,63.86
+DOC6,General Medicine,10,Saturday,17,5,normal,56.82
+DOC2,General Medicine,10,Tuesday,12,7,normal,62.93
+DOC6,General Medicine,10,Saturday,16,6,normal,64.8
+DOC6,General Medicine,10,Wednesday,10,6,normal,93.77
+DOC2,General Medicine,10,Friday,15,4,normal,65.83
+DOC1,Cardiology,15,Tuesday,13,5,normal,67.82
+DOC3,Orthopedics,20,Saturday,14,9,normal,110.54
+DOC6,General Medicine,10,Wednesday,15,5,normal,83.54
+DOC6,General Medicine,10,Tuesday,16,2,normal,42.57
+DOC2,General Medicine,10,Friday,17,6,normal,90.57
+DOC2,General Medicine,10,Thursday,10,7,normal,110.7
+DOC4,Pediatrics,12,Sunday,15,6,normal,75.42
+DOC2,General Medicine,10,Wednesday,12,5,normal,48.96
+DOC1,Cardiology,15,Wednesday,14,3,normal,49.41
+DOC2,General Medicine,10,Tuesday,13,2,normal,24.31
+DOC1,Cardiology,15,Monday,14,4,normal,74.75
+DOC6,General Medicine,10,Tuesday,9,5,normal,82.98
+DOC6,General Medicine,10,Saturday,10,2,normal,33.16
+DOC3,Orthopedics,20,Tuesday,15,2,normal,81.41
+DOC3,Orthopedics,20,Friday,18,5,normal,154.2
+DOC6,General Medicine,10,Monday,12,3,normal,39.31
+DOC1,Cardiology,15,Friday,13,2,normal,30.52
+DOC4,Pediatrics,12,Monday,15,7,normal,165.25
+DOC6,General Medicine,10,Sunday,17,2,normal,20.9
+DOC1,Cardiology,15,Monday,17,3,normal,94.81
+DOC4,Pediatrics,12,Thursday,14,2,normal,29.64
+DOC1,Cardiology,15,Thursday,16,1,normal,37.04
+DOC1,Cardiology,15,Wednesday,9,2,normal,65.2
+DOC4,Pediatrics,12,Sunday,15,6,emergency,1.36
+DOC2,General Medicine,10,Sunday,10,5,normal,59.07
+DOC1,Cardiology,15,Wednesday,16,4,normal,97.82
+DOC4,Pediatrics,12,Tuesday,14,2,normal,29.29
+DOC2,General Medicine,10,Tuesday,11,6,normal,97.91
+DOC3,Orthopedics,20,Saturday,10,4,normal,95.98
+DOC5,Dermatology,8,Wednesday,15,1,normal,14.15
+DOC1,Cardiology,15,Sunday,13,2,normal,24.23
+DOC2,General Medicine,10,Saturday,13,1,normal,11.91
+DOC6,General Medicine,10,Thursday,9,2,normal,40.61
+DOC1,Cardiology,15,Friday,15,4,normal,98.66
+DOC1,Cardiology,15,Thursday,17,7,normal,160.5
+DOC3,Orthopedics,20,Monday,12,3,normal,82.84
+DOC1,Cardiology,15,Monday,16,10,normal,278.15
+DOC2,General Medicine,10,Monday,9,7,normal,144.4
+DOC4,Pediatrics,12,Sunday,16,3,normal,38.99
+DOC4,Pediatrics,12,Sunday,11,1,normal,21.72
+DOC5,Dermatology,8,Thursday,11,4,normal,60.28
+DOC5,Dermatology,8,Friday,17,6,normal,73.91
+DOC6,General Medicine,10,Wednesday,16,4,normal,58.78
+DOC2,General Medicine,10,Saturday,14,2,normal,16.19
+DOC1,Cardiology,15,Tuesday,9,2,normal,62.52
+DOC4,Pediatrics,12,Friday,10,2,normal,54.76
+DOC2,General Medicine,10,Saturday,11,8,normal,83.85
+DOC5,Dermatology,8,Friday,10,4,normal,55.3
+DOC2,General Medicine,10,Sunday,14,1,normal,11.38
+DOC2,General Medicine,10,Wednesday,18,4,normal,63.8
+DOC4,Pediatrics,12,Tuesday,17,5,normal,89.99
+DOC6,General Medicine,10,Sunday,19,5,normal,42.3
+DOC3,Orthopedics,20,Saturday,15,4,normal,87.67
+DOC5,Dermatology,8,Tuesday,15,0,normal,15.54
+DOC1,Cardiology,15,Thursday,13,2,normal,41.43
+DOC5,Dermatology,8,Sunday,12,1,normal,11.65
+DOC6,General Medicine,10,Thursday,14,2,normal,26.8
+DOC4,Pediatrics,12,Monday,13,7,normal,100.95
+DOC5,Dermatology,8,Sunday,13,6,normal,30.33
+DOC3,Orthopedics,20,Sunday,17,3,normal,81.93
+DOC1,Cardiology,15,Sunday,12,4,normal,41.82
+DOC5,Dermatology,8,Sunday,18,6,normal,46.2
+DOC3,Orthopedics,20,Saturday,12,7,emergency,3.22
+DOC2,General Medicine,10,Monday,16,1,normal,30.92
+DOC1,Cardiology,15,Thursday,14,4,normal,60.44
+DOC6,General Medicine,10,Wednesday,16,3,normal,54.44
+DOC2,General Medicine,10,Sunday,17,7,normal,71.46
+DOC2,General Medicine,10,Thursday,17,1,normal,24.49
+DOC2,General Medicine,10,Wednesday,11,6,normal,97.7
+DOC1,Cardiology,15,Sunday,13,6,normal,59.12
+DOC5,Dermatology,8,Tuesday,11,6,normal,84.06
+DOC4,Pediatrics,12,Tuesday,14,3,normal,33.9
+DOC2,General Medicine,10,Thursday,11,3,normal,58.01
+DOC3,Orthopedics,20,Wednesday,19,5,normal,110.42
+DOC3,Orthopedics,20,Wednesday,9,4,emergency,5.02
+DOC5,Dermatology,8,Wednesday,18,4,normal,50.47
+DOC2,General Medicine,10,Monday,11,5,emergency,8.05
+DOC1,Cardiology,15,Monday,18,2,emergency,5.73
+DOC1,Cardiology,15,Sunday,9,1,normal,28.19
+DOC2,General Medicine,10,Friday,16,5,normal,81.22
+DOC3,Orthopedics,20,Thursday,12,5,normal,88.63
+DOC6,General Medicine,10,Tuesday,13,3,normal,29.06
+DOC4,Pediatrics,12,Friday,13,7,normal,72.59
+DOC6,General Medicine,10,Monday,19,3,normal,46.68
+DOC6,General Medicine,10,Friday,18,5,normal,73.09
+DOC1,Cardiology,15,Friday,13,4,normal,62.25
+DOC1,Cardiology,15,Saturday,12,6,normal,59.41
+DOC4,Pediatrics,12,Thursday,11,5,normal,98.75
+DOC4,Pediatrics,12,Sunday,11,4,normal,57.43
+DOC4,Pediatrics,12,Monday,11,4,normal,104.98
+DOC2,General Medicine,10,Saturday,16,6,normal,61.67
+DOC1,Cardiology,15,Monday,9,4,normal,136.16
+DOC2,General Medicine,10,Thursday,16,4,normal,65.72
+DOC3,Orthopedics,20,Monday,19,5,normal,140.1
+DOC3,Orthopedics,20,Sunday,12,0,normal,15.56
+DOC1,Cardiology,15,Tuesday,16,7,normal,161.64
+DOC6,General Medicine,10,Saturday,14,5,normal,35.67
+DOC6,General Medicine,10,Sunday,10,2,normal,23.82
+DOC4,Pediatrics,12,Tuesday,16,3,normal,59.72
+DOC5,Dermatology,8,Tuesday,16,4,normal,48.69
+DOC2,General Medicine,10,Sunday,16,5,normal,51.86
+DOC6,General Medicine,10,Sunday,11,5,normal,59.91
+DOC6,General Medicine,10,Saturday,9,2,normal,32.87
+DOC6,General Medicine,10,Sunday,12,4,normal,27.44
+DOC6,General Medicine,10,Wednesday,9,5,normal,84.79
+DOC5,Dermatology,8,Wednesday,12,1,normal,8.95
+DOC6,General Medicine,10,Wednesday,15,8,emergency,3.91
+DOC1,Cardiology,15,Sunday,18,3,normal,53.04
+DOC3,Orthopedics,20,Friday,12,6,normal,113.13
+DOC6,General Medicine,10,Tuesday,13,4,normal,38.9
+DOC4,Pediatrics,12,Sunday,19,4,normal,41.47
+DOC6,General Medicine,10,Wednesday,16,6,normal,85.99
+DOC2,General Medicine,10,Wednesday,16,4,normal,61.22
+DOC6,General Medicine,10,Thursday,19,3,emergency,4.19
+DOC5,Dermatology,8,Wednesday,12,6,normal,44.41
+DOC6,General Medicine,10,Monday,18,5,emergency,4.24
+DOC2,General Medicine,10,Sunday,17,4,normal,44.39
+DOC6,General Medicine,10,Tuesday,10,5,normal,87.12
+DOC5,Dermatology,8,Monday,14,2,normal,25.39
+DOC1,Cardiology,15,Sunday,11,1,normal,31.13
+DOC2,General Medicine,10,Saturday,10,5,normal,59.44
+DOC5,Dermatology,8,Sunday,18,3,normal,24.85
+DOC5,Dermatology,8,Wednesday,16,6,normal,75.96
+DOC5,Dermatology,8,Friday,13,7,normal,51.82
+DOC6,General Medicine,10,Monday,17,4,normal,83.61
+DOC2,General Medicine,10,Sunday,15,4,normal,43.65
+DOC1,Cardiology,15,Monday,18,1,normal,53.56
+DOC1,Cardiology,15,Thursday,13,7,normal,97.39
+DOC6,General Medicine,10,Friday,10,3,normal,53.77
+DOC4,Pediatrics,12,Sunday,9,2,normal,30.9
+DOC5,Dermatology,8,Wednesday,15,3,normal,35.77
+DOC2,General Medicine,10,Saturday,14,2,emergency,3.59
+DOC4,Pediatrics,12,Monday,16,2,normal,63.28
+DOC3,Orthopedics,20,Friday,18,4,normal,126.68
+DOC2,General Medicine,10,Wednesday,15,4,normal,62.32
+DOC4,Pediatrics,12,Saturday,16,4,normal,48.28
+DOC2,General Medicine,10,Saturday,18,7,normal,70.47
+DOC4,Pediatrics,12,Thursday,10,1,normal,31.0
+DOC4,Pediatrics,12,Friday,13,3,normal,38.9
+DOC1,Cardiology,15,Tuesday,17,5,normal,119.9
+DOC6,General Medicine,10,Sunday,15,2,normal,26.61
+DOC2,General Medicine,10,Wednesday,17,1,normal,27.5
+DOC2,General Medicine,10,Wednesday,11,3,normal,52.67
+DOC2,General Medicine,10,Wednesday,10,3,normal,58.18
+DOC5,Dermatology,8,Friday,14,0,normal,9.39
+DOC2,General Medicine,10,Sunday,17,7,normal,79.91
+DOC2,General Medicine,10,Tuesday,14,7,normal,66.1
+DOC4,Pediatrics,12,Wednesday,17,2,emergency,5.17
+DOC4,Pediatrics,12,Thursday,12,5,normal,56.76
+DOC5,Dermatology,8,Monday,9,1,normal,28.01
+DOC3,Orthopedics,20,Wednesday,13,9,normal,157.83
+DOC1,Cardiology,15,Sunday,16,7,normal,108.25
+DOC3,Orthopedics,20,Monday,14,0,normal,24.24
+DOC2,General Medicine,10,Tuesday,13,1,normal,17.36
+DOC3,Orthopedics,20,Friday,10,1,normal,59.9
+DOC1,Cardiology,15,Tuesday,10,2,normal,60.86
+DOC3,Orthopedics,20,Friday,17,2,normal,75.94
+DOC3,Orthopedics,20,Saturday,16,3,normal,78.18
+DOC6,General Medicine,10,Sunday,11,3,normal,44.48
+DOC1,Cardiology,15,Monday,14,3,normal,61.04
+DOC3,Orthopedics,20,Thursday,10,5,normal,166.65
+DOC6,General Medicine,10,Monday,19,4,normal,57.28
+DOC6,General Medicine,10,Tuesday,17,3,normal,51.93
+DOC1,Cardiology,15,Thursday,18,5,emergency,5.29
+DOC6,General Medicine,10,Tuesday,10,7,normal,115.13
+DOC6,General Medicine,10,Monday,19,3,normal,49.6
+DOC4,Pediatrics,12,Monday,13,6,normal,91.98
+DOC3,Orthopedics,20,Wednesday,19,5,normal,105.8
+DOC5,Dermatology,8,Sunday,10,5,emergency,6.85
+DOC5,Dermatology,8,Wednesday,18,3,normal,46.41
+DOC1,Cardiology,15,Sunday,13,5,normal,55.43
+DOC4,Pediatrics,12,Monday,13,0,emergency,4.85
+DOC1,Cardiology,15,Monday,19,6,normal,127.31
+DOC6,General Medicine,10,Friday,16,4,normal,58.88
+DOC5,Dermatology,8,Sunday,14,8,normal,41.49
+DOC5,Dermatology,8,Thursday,18,1,normal,21.02
+DOC1,Cardiology,15,Saturday,12,7,emergency,4.48
+DOC4,Pediatrics,12,Saturday,18,7,normal,85.87
+DOC2,General Medicine,10,Friday,16,2,normal,40.29
+DOC3,Orthopedics,20,Sunday,14,4,normal,52.76
+DOC3,Orthopedics,20,Wednesday,14,3,normal,62.83
+DOC6,General Medicine,10,Sunday,12,3,normal,26.39
+DOC4,Pediatrics,12,Tuesday,19,3,normal,41.55
+DOC1,Cardiology,15,Friday,11,2,normal,61.22
+DOC3,Orthopedics,20,Sunday,16,3,normal,71.95
+DOC4,Pediatrics,12,Thursday,16,3,normal,60.51
+DOC3,Orthopedics,20,Tuesday,18,4,emergency,3.63
+DOC1,Cardiology,15,Monday,16,3,normal,101.32
+DOC5,Dermatology,8,Friday,9,10,normal,120.28
+DOC1,Cardiology,15,Monday,15,7,normal,200.11
+DOC5,Dermatology,8,Tuesday,12,4,emergency,1.67
+DOC6,General Medicine,10,Friday,13,5,normal,52.36
+DOC6,General Medicine,10,Tuesday,12,3,normal,31.78
+DOC2,General Medicine,10,Thursday,19,1,normal,19.03
+DOC6,General Medicine,10,Sunday,9,4,normal,46.65
+DOC3,Orthopedics,20,Thursday,11,2,normal,86.14
+DOC5,Dermatology,8,Tuesday,16,3,normal,43.66
+DOC1,Cardiology,15,Wednesday,10,4,normal,103.81
+DOC5,Dermatology,8,Friday,13,0,normal,6.08
+DOC5,Dermatology,8,Monday,14,3,normal,32.45
+DOC6,General Medicine,10,Wednesday,11,3,normal,57.91
+DOC2,General Medicine,10,Friday,9,4,normal,66.92
+DOC2,General Medicine,10,Tuesday,17,7,normal,105.69
+DOC6,General Medicine,10,Friday,15,1,normal,24.7
+DOC6,General Medicine,10,Thursday,9,4,normal,70.55
+DOC5,Dermatology,8,Sunday,13,2,normal,10.07
+DOC1,Cardiology,15,Sunday,10,7,normal,117.43
+DOC5,Dermatology,8,Tuesday,15,9,normal,103.76
+DOC5,Dermatology,8,Monday,18,6,normal,98.05
+DOC2,General Medicine,10,Thursday,11,6,emergency,7.27
+DOC2,General Medicine,10,Wednesday,16,6,normal,89.66
+DOC6,General Medicine,10,Wednesday,12,2,normal,24.21
+DOC1,Cardiology,15,Tuesday,16,2,normal,62.91
+DOC6,General Medicine,10,Sunday,14,8,normal,50.2
+DOC3,Orthopedics,20,Sunday,16,5,normal,105.42
+DOC6,General Medicine,10,Wednesday,9,3,normal,56.15
+DOC1,Cardiology,15,Saturday,17,3,emergency,5.75
+DOC3,Orthopedics,20,Monday,11,2,normal,106.1
+DOC6,General Medicine,10,Sunday,16,3,emergency,2.28
+DOC1,Cardiology,15,Monday,16,10,normal,286.16
+DOC4,Pediatrics,12,Sunday,10,1,normal,19.86
+DOC4,Pediatrics,12,Wednesday,10,4,normal,80.54
+DOC4,Pediatrics,12,Saturday,12,2,normal,14.49
+DOC4,Pediatrics,12,Saturday,11,7,normal,95.68
+DOC4,Pediatrics,12,Saturday,15,3,normal,40.0
+DOC6,General Medicine,10,Saturday,9,2,normal,30.61
+DOC6,General Medicine,10,Tuesday,9,7,normal,107.43
+DOC2,General Medicine,10,Tuesday,14,2,normal,18.14
+DOC6,General Medicine,10,Thursday,10,5,normal,86.36
+DOC3,Orthopedics,20,Monday,11,7,normal,291.01
+DOC5,Dermatology,8,Tuesday,11,2,normal,33.23
+DOC5,Dermatology,8,Sunday,12,5,normal,27.29
+DOC1,Cardiology,15,Sunday,12,6,normal,58.77
+DOC4,Pediatrics,12,Wednesday,11,3,normal,63.93
+DOC1,Cardiology,15,Thursday,14,6,emergency,4.43
+DOC3,Orthopedics,20,Saturday,11,3,normal,81.27
+DOC1,Cardiology,15,Sunday,11,8,normal,135.99
+DOC2,General Medicine,10,Thursday,18,6,normal,88.88
+DOC4,Pediatrics,12,Tuesday,11,4,normal,83.83
+DOC4,Pediatrics,12,Thursday,14,2,normal,29.2
+DOC3,Orthopedics,20,Tuesday,12,4,normal,79.76
+DOC5,Dermatology,8,Friday,15,6,normal,71.8
+DOC1,Cardiology,15,Monday,16,4,normal,128.87
+DOC2,General Medicine,10,Monday,13,3,normal,43.93
+DOC2,General Medicine,10,Tuesday,16,8,normal,117.47
+DOC2,General Medicine,10,Friday,12,1,normal,16.96
+DOC3,Orthopedics,20,Saturday,9,3,normal,76.04
+DOC6,General Medicine,10,Saturday,15,1,normal,15.03
+DOC6,General Medicine,10,Thursday,15,3,normal,48.14
+DOC4,Pediatrics,12,Sunday,10,3,normal,46.1
+DOC5,Dermatology,8,Tuesday,13,1,normal,14.39
+DOC2,General Medicine,10,Saturday,17,6,normal,70.9
+DOC6,General Medicine,10,Saturday,18,4,normal,40.49
+DOC2,General Medicine,10,Monday,15,4,normal,86.64
+DOC4,Pediatrics,12,Sunday,12,3,normal,24.81
+DOC6,General Medicine,10,Thursday,18,2,normal,38.67
+DOC6,General Medicine,10,Sunday,17,7,normal,78.78
+DOC6,General Medicine,10,Tuesday,13,1,normal,17.33
+DOC6,General Medicine,10,Thursday,16,3,normal,51.32
+DOC3,Orthopedics,20,Sunday,19,4,normal,64.95
+DOC5,Dermatology,8,Saturday,13,5,normal,27.57
+DOC4,Pediatrics,12,Friday,12,2,normal,28.17
+DOC6,General Medicine,10,Tuesday,17,1,normal,22.15
+DOC5,Dermatology,8,Wednesday,14,3,normal,22.34
+DOC3,Orthopedics,20,Tuesday,10,5,emergency,5.5
+DOC1,Cardiology,15,Saturday,13,4,normal,43.42
+DOC5,Dermatology,8,Monday,18,5,emergency,6.94
+DOC1,Cardiology,15,Saturday,15,5,normal,78.55
+DOC2,General Medicine,10,Thursday,10,4,normal,67.08
+DOC1,Cardiology,15,Friday,14,6,normal,79.56
+DOC1,Cardiology,15,Wednesday,9,4,normal,103.26
+DOC6,General Medicine,10,Tuesday,11,5,normal,81.43
+DOC4,Pediatrics,12,Tuesday,18,4,normal,77.84
+DOC1,Cardiology,15,Saturday,16,5,normal,79.74
+DOC4,Pediatrics,12,Friday,14,3,normal,37.81
+DOC6,General Medicine,10,Saturday,19,4,normal,30.82
+DOC6,General Medicine,10,Tuesday,17,10,normal,142.28
+DOC3,Orthopedics,20,Sunday,15,8,normal,162.5
+DOC4,Pediatrics,12,Friday,16,4,normal,76.78
+DOC1,Cardiology,15,Monday,19,4,normal,87.27
+DOC6,General Medicine,10,Thursday,15,4,normal,67.66
+DOC6,General Medicine,10,Friday,13,5,normal,47.13
+DOC4,Pediatrics,12,Friday,13,1,normal,10.75
+DOC1,Cardiology,15,Monday,11,3,normal,106.87
+DOC4,Pediatrics,12,Saturday,11,4,normal,57.27
+DOC2,General Medicine,10,Wednesday,18,5,normal,82.28
+DOC2,General Medicine,10,Sunday,11,5,normal,59.63
+DOC6,General Medicine,10,Monday,14,4,normal,48.3
+DOC6,General Medicine,10,Saturday,19,2,normal,22.33
+DOC2,General Medicine,10,Tuesday,17,8,normal,112.27
+DOC6,General Medicine,10,Friday,16,2,normal,42.71
+DOC2,General Medicine,10,Tuesday,12,3,normal,28.13
+DOC3,Orthopedics,20,Monday,16,7,normal,272.56
+DOC3,Orthopedics,20,Friday,10,4,normal,139.52
+DOC6,General Medicine,10,Monday,10,0,normal,13.83
+DOC1,Cardiology,15,Thursday,14,6,normal,90.31
+DOC4,Pediatrics,12,Friday,19,4,normal,55.04
+DOC5,Dermatology,8,Monday,18,4,normal,71.94
+DOC2,General Medicine,10,Thursday,16,4,normal,66.31
+DOC5,Dermatology,8,Saturday,9,3,normal,32.71
+DOC5,Dermatology,8,Monday,9,5,normal,88.69
+DOC3,Orthopedics,20,Sunday,9,5,normal,122.48
+DOC3,Orthopedics,20,Sunday,19,6,normal,87.16
+DOC6,General Medicine,10,Friday,13,3,normal,33.32
+DOC3,Orthopedics,20,Sunday,15,4,normal,89.5
+DOC4,Pediatrics,12,Thursday,17,4,normal,79.6
+DOC1,Cardiology,15,Saturday,16,2,emergency,2.55
+DOC5,Dermatology,8,Saturday,14,1,normal,9.36
+DOC2,General Medicine,10,Tuesday,9,1,emergency,5.6
+DOC2,General Medicine,10,Friday,15,3,normal,47.03
+DOC5,Dermatology,8,Thursday,16,3,normal,39.35
+DOC3,Orthopedics,20,Saturday,17,8,normal,161.37
+DOC1,Cardiology,15,Sunday,14,6,normal,56.38
+DOC6,General Medicine,10,Sunday,13,3,normal,27.78
+DOC3,Orthopedics,20,Thursday,16,4,normal,130.0
+DOC5,Dermatology,8,Saturday,18,5,normal,43.78
+DOC6,General Medicine,10,Sunday,19,5,normal,45.98
+DOC1,Cardiology,15,Saturday,9,3,normal,55.14
+DOC4,Pediatrics,12,Saturday,12,1,normal,14.74
+DOC1,Cardiology,15,Monday,13,4,emergency,1.79
+DOC3,Orthopedics,20,Monday,19,6,normal,160.42
+DOC4,Pediatrics,12,Tuesday,19,7,emergency,3.16
+DOC1,Cardiology,15,Wednesday,11,1,normal,46.07
+DOC5,Dermatology,8,Monday,15,6,normal,97.3
+DOC2,General Medicine,10,Thursday,19,3,normal,39.26
+DOC4,Pediatrics,12,Tuesday,16,2,normal,41.25
+DOC1,Cardiology,15,Sunday,12,3,normal,31.13
+DOC2,General Medicine,10,Monday,13,7,normal,81.49
+DOC2,General Medicine,10,Sunday,11,3,normal,40.39
+DOC2,General Medicine,10,Wednesday,10,3,emergency,4.14
+DOC1,Cardiology,15,Wednesday,10,4,normal,103.51
+DOC4,Pediatrics,12,Tuesday,9,8,normal,151.42
+DOC6,General Medicine,10,Friday,19,9,normal,91.03
+DOC2,General Medicine,10,Monday,18,6,normal,116.36
+DOC6,General Medicine,10,Friday,10,3,normal,51.26
+DOC4,Pediatrics,12,Thursday,16,4,normal,74.43
+DOC4,Pediatrics,12,Monday,11,3,normal,89.65
+DOC3,Orthopedics,20,Sunday,13,2,normal,36.42
+DOC1,Cardiology,15,Wednesday,16,5,normal,109.43
+DOC1,Cardiology,15,Sunday,13,2,normal,24.3
+DOC4,Pediatrics,12,Wednesday,9,2,normal,49.72
+DOC2,General Medicine,10,Thursday,17,2,emergency,4.3
+DOC6,General Medicine,10,Saturday,11,11,normal,118.36
+DOC5,Dermatology,8,Thursday,17,3,normal,43.06
+DOC5,Dermatology,8,Monday,13,5,normal,52.9
+DOC1,Cardiology,15,Thursday,17,3,emergency,5.9
+DOC3,Orthopedics,20,Saturday,19,5,normal,75.31
+DOC2,General Medicine,10,Saturday,9,5,normal,61.23
+DOC2,General Medicine,10,Sunday,12,3,normal,25.57
+DOC1,Cardiology,15,Monday,13,5,normal,89.27
+DOC3,Orthopedics,20,Sunday,19,3,normal,49.17
+DOC1,Cardiology,15,Thursday,18,2,normal,50.83
+DOC6,General Medicine,10,Monday,17,3,normal,61.61
+DOC1,Cardiology,15,Wednesday,17,3,emergency,4.22
+DOC4,Pediatrics,12,Wednesday,18,6,normal,111.19
+DOC6,General Medicine,10,Saturday,14,5,normal,34.28
+DOC6,General Medicine,10,Monday,16,5,normal,99.36
+DOC5,Dermatology,8,Sunday,17,5,normal,46.37
+DOC1,Cardiology,15,Wednesday,14,3,normal,48.86
+DOC5,Dermatology,8,Tuesday,10,7,normal,88.68
+DOC2,General Medicine,10,Sunday,15,3,normal,33.79
+DOC2,General Medicine,10,Friday,16,2,normal,38.0
+DOC2,General Medicine,10,Tuesday,10,4,normal,70.67
+DOC2,General Medicine,10,Saturday,9,2,normal,27.66
+DOC1,Cardiology,15,Wednesday,11,1,normal,42.15
+DOC4,Pediatrics,12,Friday,17,3,normal,58.71
+DOC2,General Medicine,10,Monday,18,4,normal,80.73
+DOC1,Cardiology,15,Sunday,15,8,normal,123.4
+DOC2,General Medicine,10,Saturday,9,4,normal,50.52
+DOC1,Cardiology,15,Saturday,10,0,normal,10.84
+DOC4,Pediatrics,12,Tuesday,16,4,normal,76.87
+DOC5,Dermatology,8,Friday,9,1,normal,26.2
+DOC6,General Medicine,10,Tuesday,9,5,normal,84.93
+DOC3,Orthopedics,20,Monday,14,7,normal,168.03
+DOC1,Cardiology,15,Thursday,13,4,normal,61.36
+DOC4,Pediatrics,12,Friday,15,4,normal,77.2
+DOC3,Orthopedics,20,Monday,17,2,normal,95.56
+DOC3,Orthopedics,20,Sunday,9,6,normal,136.93
+DOC2,General Medicine,10,Friday,15,2,normal,36.33
+DOC5,Dermatology,8,Saturday,15,3,normal,27.74
+DOC3,Orthopedics,20,Monday,19,7,normal,187.25
+DOC2,General Medicine,10,Wednesday,17,0,normal,12.77
+DOC3,Orthopedics,20,Wednesday,17,7,normal,210.05
+DOC1,Cardiology,15,Wednesday,15,9,normal,198.13
+DOC4,Pediatrics,12,Thursday,18,7,normal,126.04
+DOC5,Dermatology,8,Friday,12,4,normal,31.91
+DOC4,Pediatrics,12,Tuesday,9,4,emergency,6.51
+DOC3,Orthopedics,20,Tuesday,19,3,normal,69.82
+DOC1,Cardiology,15,Wednesday,14,5,normal,72.44
+DOC3,Orthopedics,20,Monday,14,5,normal,123.11
+DOC3,Orthopedics,20,Wednesday,19,5,normal,109.61
+DOC4,Pediatrics,12,Saturday,18,6,normal,73.58
+DOC1,Cardiology,15,Tuesday,14,3,normal,49.1
+DOC4,Pediatrics,12,Friday,9,4,normal,91.61
+DOC1,Cardiology,15,Saturday,19,2,normal,30.44
+DOC2,General Medicine,10,Saturday,16,4,normal,43.22
+DOC2,General Medicine,10,Friday,18,6,normal,90.51
+DOC3,Orthopedics,20,Monday,16,5,emergency,3.39
+DOC6,General Medicine,10,Monday,18,2,normal,54.75
+DOC5,Dermatology,8,Thursday,14,2,normal,23.81
+DOC1,Cardiology,15,Wednesday,18,4,normal,95.46
+DOC4,Pediatrics,12,Monday,15,5,normal,126.14
+DOC1,Cardiology,15,Friday,11,7,normal,170.27
+DOC5,Dermatology,8,Tuesday,12,6,normal,39.63
+DOC6,General Medicine,10,Thursday,14,5,normal,47.98
+DOC5,Dermatology,8,Sunday,13,5,normal,30.28
+DOC5,Dermatology,8,Sunday,16,2,emergency,5.49
+DOC5,Dermatology,8,Saturday,9,4,normal,33.86
+DOC5,Dermatology,8,Thursday,11,4,normal,56.02
+DOC5,Dermatology,8,Tuesday,14,5,normal,39.79
+DOC4,Pediatrics,12,Tuesday,16,1,emergency,1.02
+DOC3,Orthopedics,20,Thursday,9,3,normal,112.09
+DOC3,Orthopedics,20,Saturday,16,6,normal,124.04
+DOC4,Pediatrics,12,Tuesday,12,3,normal,36.2
+DOC1,Cardiology,15,Tuesday,12,1,normal,18.72
+DOC6,General Medicine,10,Friday,15,7,normal,106.6
+DOC1,Cardiology,15,Tuesday,11,2,normal,61.75
+DOC1,Cardiology,15,Friday,12,5,normal,71.75
+DOC2,General Medicine,10,Saturday,14,5,normal,30.98
+DOC2,General Medicine,10,Tuesday,14,1,normal,14.65
+DOC1,Cardiology,15,Tuesday,10,5,normal,127.83
+DOC4,Pediatrics,12,Tuesday,14,6,normal,68.24
+DOC5,Dermatology,8,Sunday,9,6,normal,54.95
+DOC6,General Medicine,10,Saturday,18,7,normal,70.41
+DOC5,Dermatology,8,Sunday,13,1,normal,11.54
+DOC3,Orthopedics,20,Saturday,17,8,normal,162.53
+DOC2,General Medicine,10,Saturday,17,4,normal,48.62
+DOC1,Cardiology,15,Tuesday,12,4,emergency,4.6
+DOC6,General Medicine,10,Friday,17,1,normal,28.6
+DOC2,General Medicine,10,Saturday,18,8,normal,79.13
+DOC1,Cardiology,15,Tuesday,18,1,normal,40.51
+DOC2,General Medicine,10,Tuesday,19,3,normal,31.13
+DOC2,General Medicine,10,Thursday,17,1,normal,25.83
+DOC6,General Medicine,10,Friday,10,7,normal,108.52
+DOC4,Pediatrics,12,Wednesday,15,2,emergency,3.63
+DOC6,General Medicine,10,Tuesday,19,3,normal,39.33
+DOC4,Pediatrics,12,Monday,12,5,normal,73.02
+DOC4,Pediatrics,12,Thursday,17,6,normal,105.2
+DOC3,Orthopedics,20,Tuesday,15,4,normal,130.38
+DOC2,General Medicine,10,Monday,10,5,emergency,2.57
+DOC2,General Medicine,10,Monday,12,7,normal,83.64
+DOC1,Cardiology,15,Saturday,18,6,normal,94.27
+DOC2,General Medicine,10,Thursday,14,3,normal,35.48
+DOC3,Orthopedics,20,Friday,17,6,normal,186.09
+DOC3,Orthopedics,20,Friday,15,2,normal,73.62
+DOC3,Orthopedics,20,Thursday,17,4,emergency,6.36
+DOC4,Pediatrics,12,Thursday,14,6,normal,64.27
+DOC6,General Medicine,10,Monday,12,6,normal,75.73
+DOC5,Dermatology,8,Saturday,14,3,normal,13.52
+DOC1,Cardiology,15,Friday,10,3,emergency,1.69
+DOC3,Orthopedics,20,Wednesday,17,6,emergency,5.2
+DOC2,General Medicine,10,Monday,11,3,normal,73.15
+DOC6,General Medicine,10,Friday,16,9,normal,132.6
+DOC4,Pediatrics,12,Friday,9,2,normal,52.67
+DOC3,Orthopedics,20,Saturday,10,1,normal,38.36
+DOC2,General Medicine,10,Sunday,15,7,emergency,5.77
+DOC1,Cardiology,15,Tuesday,11,5,normal,129.29
+DOC5,Dermatology,8,Saturday,17,6,normal,50.48
+DOC5,Dermatology,8,Saturday,19,6,normal,35.34
+DOC4,Pediatrics,12,Saturday,12,2,normal,21.91
+DOC4,Pediatrics,12,Monday,9,1,normal,39.93
+DOC6,General Medicine,10,Wednesday,12,0,normal,10.36
+DOC3,Orthopedics,20,Tuesday,9,2,normal,92.32
+DOC5,Dermatology,8,Sunday,10,2,normal,18.32
+DOC4,Pediatrics,12,Tuesday,12,2,emergency,3.34
+DOC5,Dermatology,8,Saturday,9,3,normal,28.11
+DOC2,General Medicine,10,Saturday,12,0,normal,7.84
+DOC3,Orthopedics,20,Friday,10,3,normal,110.8
+DOC2,General Medicine,10,Wednesday,9,8,normal,125.15
+DOC1,Cardiology,15,Wednesday,19,10,normal,149.81
+DOC4,Pediatrics,12,Tuesday,18,3,normal,61.03
+DOC3,Orthopedics,20,Saturday,9,1,normal,36.2
+DOC3,Orthopedics,20,Tuesday,9,4,normal,141.57
+DOC6,General Medicine,10,Sunday,19,6,normal,41.46
+DOC6,General Medicine,10,Tuesday,11,1,normal,31.9
+DOC2,General Medicine,10,Thursday,11,2,normal,35.09
+DOC3,Orthopedics,20,Tuesday,12,2,normal,47.67
+DOC1,Cardiology,15,Monday,18,2,normal,76.84
+DOC2,General Medicine,10,Sunday,19,4,normal,29.32
+DOC4,Pediatrics,12,Monday,14,8,normal,112.69
+DOC5,Dermatology,8,Friday,19,8,normal,66.15
+DOC3,Orthopedics,20,Tuesday,15,3,normal,105.24
+DOC1,Cardiology,15,Saturday,12,3,normal,32.48
+DOC1,Cardiology,15,Tuesday,13,4,normal,56.74
+DOC2,General Medicine,10,Wednesday,19,1,normal,19.44
+DOC3,Orthopedics,20,Saturday,11,5,normal,115.52
+DOC3,Orthopedics,20,Saturday,13,3,normal,47.86
+DOC1,Cardiology,15,Tuesday,19,9,normal,136.6
+DOC5,Dermatology,8,Wednesday,17,1,emergency,3.72
+DOC3,Orthopedics,20,Tuesday,19,3,normal,69.88
+DOC1,Cardiology,15,Monday,17,3,normal,104.58
+DOC1,Cardiology,15,Sunday,13,7,normal,70.81
+DOC1,Cardiology,15,Tuesday,9,1,normal,46.11
+DOC1,Cardiology,15,Tuesday,12,6,normal,82.8
+DOC4,Pediatrics,12,Thursday,13,7,normal,79.91
+DOC3,Orthopedics,20,Wednesday,18,8,normal,225.47
+DOC2,General Medicine,10,Saturday,9,5,normal,59.36
+DOC4,Pediatrics,12,Sunday,10,2,normal,37.18
+DOC3,Orthopedics,20,Sunday,9,5,normal,123.83
+DOC1,Cardiology,15,Friday,17,1,normal,38.31
+DOC6,General Medicine,10,Wednesday,9,4,normal,71.67
+DOC6,General Medicine,10,Wednesday,17,3,normal,55.39
+DOC6,General Medicine,10,Thursday,10,5,normal,76.9
+DOC4,Pediatrics,12,Friday,19,3,normal,43.52
+DOC2,General Medicine,10,Tuesday,10,2,normal,41.32
+DOC2,General Medicine,10,Thursday,17,6,normal,94.65
+DOC2,General Medicine,10,Sunday,11,3,normal,37.44
+DOC4,Pediatrics,12,Friday,10,5,normal,102.68
+DOC3,Orthopedics,20,Saturday,11,5,normal,125.48
+DOC5,Dermatology,8,Monday,14,5,normal,49.41
+DOC5,Dermatology,8,Sunday,18,2,normal,19.76
+DOC4,Pediatrics,12,Thursday,17,5,normal,94.01
+DOC6,General Medicine,10,Friday,13,6,normal,57.99
+DOC2,General Medicine,10,Thursday,13,1,normal,19.1
+DOC4,Pediatrics,12,Tuesday,12,5,normal,60.89
+DOC5,Dermatology,8,Thursday,13,2,normal,16.6
+DOC6,General Medicine,10,Saturday,9,2,normal,29.49
+DOC6,General Medicine,10,Sunday,17,3,normal,36.6
+DOC5,Dermatology,8,Saturday,10,4,normal,38.76
+DOC4,Pediatrics,12,Sunday,19,5,normal,44.54
+DOC3,Orthopedics,20,Thursday,19,6,normal,127.08
+DOC1,Cardiology,15,Thursday,12,2,normal,39.07
+DOC4,Pediatrics,12,Friday,16,5,normal,94.44
+DOC4,Pediatrics,12,Wednesday,19,2,normal,36.2
+DOC5,Dermatology,8,Wednesday,14,8,normal,54.63
+DOC1,Cardiology,15,Thursday,14,1,normal,22.6
+DOC6,General Medicine,10,Tuesday,19,4,normal,46.12
+DOC6,General Medicine,10,Monday,13,7,normal,81.67
+DOC3,Orthopedics,20,Friday,12,8,normal,145.87
+DOC5,Dermatology,8,Wednesday,19,5,normal,46.08
+DOC2,General Medicine,10,Monday,13,0,normal,12.15
+DOC1,Cardiology,15,Friday,15,2,normal,57.52
+DOC4,Pediatrics,12,Tuesday,15,4,normal,78.89
+DOC2,General Medicine,10,Monday,18,5,normal,107.65
+DOC6,General Medicine,10,Thursday,12,5,normal,50.54
+DOC4,Pediatrics,12,Friday,13,5,emergency,4.12
+DOC6,General Medicine,10,Tuesday,19,5,normal,54.43
+DOC1,Cardiology,15,Monday,14,3,normal,59.96
+DOC4,Pediatrics,12,Monday,12,4,normal,64.49
+DOC1,Cardiology,15,Thursday,18,9,normal,191.68
+DOC4,Pediatrics,12,Thursday,13,4,normal,52.31
+DOC4,Pediatrics,12,Friday,17,0,normal,17.82
+DOC5,Dermatology,8,Friday,17,3,normal,41.73
+DOC5,Dermatology,8,Wednesday,18,2,normal,31.42
+DOC4,Pediatrics,12,Wednesday,12,2,emergency,4.5
+DOC2,General Medicine,10,Wednesday,16,4,normal,62.89
+DOC3,Orthopedics,20,Wednesday,16,5,normal,158.13
+DOC5,Dermatology,8,Saturday,15,10,normal,74.41
+DOC3,Orthopedics,20,Friday,11,2,normal,84.25
+DOC2,General Medicine,10,Sunday,19,6,normal,44.08
+DOC6,General Medicine,10,Saturday,17,2,normal,28.06
+DOC2,General Medicine,10,Monday,19,0,normal,16.23
+DOC5,Dermatology,8,Friday,10,7,normal,88.31
+DOC6,General Medicine,10,Tuesday,9,2,emergency,2.28
+DOC4,Pediatrics,12,Sunday,13,2,normal,20.47
+DOC2,General Medicine,10,Friday,10,2,normal,41.57
+DOC6,General Medicine,10,Friday,13,3,normal,31.52
+DOC3,Orthopedics,20,Thursday,15,1,normal,55.16
+DOC2,General Medicine,10,Saturday,13,4,normal,32.43
+DOC1,Cardiology,15,Wednesday,11,2,normal,65.16
+DOC2,General Medicine,10,Monday,17,3,normal,70.66
+DOC2,General Medicine,10,Saturday,14,4,normal,27.93
+DOC3,Orthopedics,20,Tuesday,9,6,normal,199.42
+DOC1,Cardiology,15,Tuesday,10,4,normal,105.87
+DOC1,Cardiology,15,Saturday,16,2,normal,33.87
+DOC6,General Medicine,10,Tuesday,18,3,normal,47.85
+DOC2,General Medicine,10,Monday,9,2,normal,55.98
+DOC3,Orthopedics,20,Saturday,9,7,normal,155.25
+DOC6,General Medicine,10,Wednesday,18,0,normal,13.88
+DOC6,General Medicine,10,Sunday,14,4,normal,26.76
+DOC5,Dermatology,8,Thursday,14,3,normal,30.15
+DOC1,Cardiology,15,Tuesday,13,4,normal,62.76
+DOC4,Pediatrics,12,Tuesday,13,7,normal,70.8
+DOC1,Cardiology,15,Wednesday,11,6,emergency,4.7
+DOC6,General Medicine,10,Saturday,10,6,normal,62.01
+DOC1,Cardiology,15,Wednesday,12,5,normal,72.04
+DOC3,Orthopedics,20,Friday,14,2,normal,48.99
+DOC2,General Medicine,10,Wednesday,10,5,normal,84.2
+DOC4,Pediatrics,12,Friday,19,2,normal,25.27
+DOC5,Dermatology,8,Saturday,12,1,normal,11.06
+DOC1,Cardiology,15,Saturday,15,3,normal,49.37
+DOC2,General Medicine,10,Saturday,19,2,normal,20.01
+DOC6,General Medicine,10,Wednesday,16,6,normal,84.37
+DOC5,Dermatology,8,Sunday,12,2,normal,9.43
+DOC5,Dermatology,8,Monday,13,2,normal,23.05
+DOC4,Pediatrics,12,Wednesday,16,5,normal,94.12
+DOC5,Dermatology,8,Wednesday,17,2,normal,34.77
+DOC3,Orthopedics,20,Monday,12,6,normal,143.18
+DOC2,General Medicine,10,Sunday,12,5,normal,34.73
+DOC6,General Medicine,10,Monday,15,4,normal,83.89
+DOC5,Dermatology,8,Friday,13,4,normal,36.71
+DOC2,General Medicine,10,Saturday,12,7,normal,42.28
+DOC1,Cardiology,15,Monday,9,6,normal,191.79
+DOC5,Dermatology,8,Saturday,18,2,normal,18.75
+DOC5,Dermatology,8,Sunday,10,3,normal,36.48
+DOC1,Cardiology,15,Tuesday,13,4,normal,67.55
+DOC1,Cardiology,15,Tuesday,12,6,emergency,5.26
+DOC2,General Medicine,10,Wednesday,10,3,normal,55.27
+DOC3,Orthopedics,20,Monday,14,6,normal,147.04
+DOC2,General Medicine,10,Sunday,11,3,normal,40.65
+DOC1,Cardiology,15,Monday,15,6,normal,175.92
+DOC3,Orthopedics,20,Tuesday,12,1,normal,33.93
+DOC2,General Medicine,10,Friday,14,7,normal,61.99
+DOC2,General Medicine,10,Wednesday,10,4,normal,76.34
+DOC5,Dermatology,8,Friday,10,1,normal,20.53
+DOC1,Cardiology,15,Saturday,10,3,normal,61.42
+DOC6,General Medicine,10,Tuesday,18,5,normal,82.4
+DOC4,Pediatrics,12,Monday,18,5,normal,130.57
+DOC6,General Medicine,10,Wednesday,11,6,normal,100.99
+DOC2,General Medicine,10,Monday,18,3,normal,69.81
+DOC3,Orthopedics,20,Monday,13,3,normal,82.7
+DOC3,Orthopedics,20,Sunday,13,2,normal,35.01
+DOC1,Cardiology,15,Wednesday,18,3,normal,80.5
+DOC1,Cardiology,15,Thursday,18,3,normal,78.68
+DOC1,Cardiology,15,Friday,19,4,normal,73.0
+DOC6,General Medicine,10,Thursday,12,2,normal,21.94
+DOC6,General Medicine,10,Wednesday,9,8,normal,118.42
+DOC6,General Medicine,10,Friday,17,0,normal,11.7
+DOC5,Dermatology,8,Friday,11,3,emergency,3.96
+DOC3,Orthopedics,20,Friday,13,3,normal,68.21
+DOC6,General Medicine,10,Monday,11,3,normal,70.99
+DOC3,Orthopedics,20,Thursday,9,6,normal,195.0
+DOC5,Dermatology,8,Wednesday,10,3,normal,51.28
+DOC2,General Medicine,10,Saturday,18,7,emergency,4.76
+DOC1,Cardiology,15,Thursday,12,5,normal,71.59
+DOC3,Orthopedics,20,Thursday,16,2,normal,79.38
+DOC1,Cardiology,15,Saturday,17,3,normal,54.03
+DOC4,Pediatrics,12,Monday,16,6,normal,136.98
+DOC6,General Medicine,10,Saturday,17,4,normal,44.79
+DOC3,Orthopedics,20,Tuesday,13,3,emergency,4.02
+DOC3,Orthopedics,20,Wednesday,18,1,normal,54.09
+DOC6,General Medicine,10,Sunday,9,2,normal,31.65
+DOC3,Orthopedics,20,Tuesday,15,5,normal,148.82
+DOC6,General Medicine,10,Thursday,16,1,normal,27.04
+DOC6,General Medicine,10,Monday,14,2,normal,28.16
+DOC5,Dermatology,8,Saturday,12,3,normal,15.51
+DOC1,Cardiology,15,Wednesday,9,4,emergency,2.77
+DOC2,General Medicine,10,Friday,18,1,emergency,4.94
+DOC1,Cardiology,15,Sunday,12,7,normal,61.94
+DOC2,General Medicine,10,Tuesday,12,7,normal,69.41
+DOC2,General Medicine,10,Friday,15,1,normal,23.56
+DOC1,Cardiology,15,Tuesday,13,1,normal,23.82
+DOC1,Cardiology,15,Sunday,11,3,normal,58.26
+DOC3,Orthopedics,20,Sunday,17,2,emergency,7.82
+DOC5,Dermatology,8,Thursday,9,1,normal,22.5
+DOC4,Pediatrics,12,Friday,15,4,normal,76.92
+DOC5,Dermatology,8,Wednesday,17,4,normal,58.97
+DOC6,General Medicine,10,Wednesday,13,1,normal,15.71
+DOC1,Cardiology,15,Thursday,14,3,normal,53.35
+DOC6,General Medicine,10,Thursday,12,8,normal,74.4
+DOC2,General Medicine,10,Saturday,11,4,emergency,5.96
+DOC4,Pediatrics,12,Friday,14,3,normal,39.78
+DOC2,General Medicine,10,Wednesday,10,11,normal,163.25
+DOC3,Orthopedics,20,Friday,9,4,normal,144.27
+DOC3,Orthopedics,20,Monday,12,9,normal,207.76
+DOC3,Orthopedics,20,Tuesday,12,1,normal,26.04
+DOC2,General Medicine,10,Thursday,16,2,normal,38.76
+DOC3,Orthopedics,20,Saturday,15,8,normal,166.37
+DOC2,General Medicine,10,Friday,12,6,emergency,3.46
+DOC5,Dermatology,8,Friday,17,4,emergency,4.34
+DOC5,Dermatology,8,Friday,15,3,emergency,5.73
+DOC6,General Medicine,10,Saturday,13,7,normal,46.87
+DOC1,Cardiology,15,Monday,12,6,normal,109.56
+DOC3,Orthopedics,20,Friday,9,3,normal,111.93
+DOC2,General Medicine,10,Monday,9,6,normal,129.58
+DOC4,Pediatrics,12,Wednesday,12,5,normal,52.17
+DOC1,Cardiology,15,Saturday,14,1,normal,11.24
+DOC4,Pediatrics,12,Friday,13,5,normal,61.42
+DOC6,General Medicine,10,Thursday,15,2,emergency,4.35
+DOC3,Orthopedics,20,Friday,17,6,normal,184.52
+DOC3,Orthopedics,20,Monday,12,7,normal,166.36
+DOC5,Dermatology,8,Friday,14,2,normal,19.49
+DOC2,General Medicine,10,Tuesday,13,3,emergency,8.76
+DOC3,Orthopedics,20,Saturday,10,3,normal,79.74
+DOC6,General Medicine,10,Monday,11,4,normal,89.88
+DOC5,Dermatology,8,Saturday,18,2,normal,19.23
+DOC2,General Medicine,10,Saturday,12,5,normal,30.92
+DOC1,Cardiology,15,Wednesday,13,3,normal,43.83
+DOC5,Dermatology,8,Thursday,19,4,normal,38.49
+DOC4,Pediatrics,12,Tuesday,12,5,normal,52.7
+DOC3,Orthopedics,20,Sunday,15,2,normal,52.98
+DOC1,Cardiology,15,Wednesday,16,9,normal,198.22
+DOC3,Orthopedics,20,Friday,17,1,normal,49.63
+DOC1,Cardiology,15,Friday,13,8,normal,107.15
+DOC2,General Medicine,10,Sunday,18,2,normal,28.15
+DOC2,General Medicine,10,Friday,18,2,normal,36.85
+DOC3,Orthopedics,20,Saturday,10,4,normal,101.33
+DOC2,General Medicine,10,Saturday,16,4,emergency,2.75
+DOC3,Orthopedics,20,Friday,19,8,normal,159.55
+DOC4,Pediatrics,12,Sunday,11,3,normal,47.46
+DOC2,General Medicine,10,Wednesday,15,3,normal,55.64
+DOC6,General Medicine,10,Sunday,17,4,normal,45.13
+DOC5,Dermatology,8,Thursday,10,3,normal,43.13
+DOC3,Orthopedics,20,Friday,19,6,normal,124.08
+DOC1,Cardiology,15,Thursday,17,4,normal,97.99
+DOC6,General Medicine,10,Wednesday,19,8,normal,83.59
+DOC6,General Medicine,10,Thursday,13,5,normal,48.49
+DOC3,Orthopedics,20,Friday,12,5,normal,96.17
+DOC4,Pediatrics,12,Friday,13,7,normal,76.17
+DOC4,Pediatrics,12,Wednesday,12,5,emergency,3.94
+DOC2,General Medicine,10,Saturday,9,4,normal,52.09
+DOC6,General Medicine,10,Monday,10,5,normal,106.43
+DOC2,General Medicine,10,Sunday,11,5,normal,60.16
+DOC5,Dermatology,8,Wednesday,15,7,normal,83.77
+DOC6,General Medicine,10,Thursday,14,7,normal,63.91
+DOC4,Pediatrics,12,Wednesday,19,2,normal,30.44
+DOC3,Orthopedics,20,Sunday,16,1,normal,33.62
+DOC2,General Medicine,10,Saturday,12,3,normal,18.7
+DOC1,Cardiology,15,Thursday,19,6,normal,90.65
+DOC4,Pediatrics,12,Friday,19,4,normal,52.31
+DOC2,General Medicine,10,Sunday,19,5,normal,38.92
+DOC2,General Medicine,10,Monday,16,3,normal,68.7
+DOC2,General Medicine,10,Sunday,9,4,normal,48.13
+DOC5,Dermatology,8,Sunday,11,5,normal,47.26
+DOC2,General Medicine,10,Monday,11,7,normal,148.98
+DOC5,Dermatology,8,Friday,9,3,normal,44.23
+DOC4,Pediatrics,12,Thursday,15,6,normal,108.0
+DOC3,Orthopedics,20,Tuesday,9,4,normal,142.58
+DOC4,Pediatrics,12,Monday,17,2,emergency,5.84
+DOC1,Cardiology,15,Wednesday,13,2,normal,35.62
+DOC6,General Medicine,10,Sunday,11,0,normal,9.86
+DOC6,General Medicine,10,Thursday,19,7,normal,67.45
+DOC4,Pediatrics,12,Thursday,9,3,normal,68.74
+DOC4,Pediatrics,12,Monday,10,3,normal,85.38
+DOC5,Dermatology,8,Wednesday,17,1,normal,15.22
+DOC1,Cardiology,15,Saturday,13,2,normal,22.91
+DOC1,Cardiology,15,Sunday,14,5,normal,51.91
+DOC5,Dermatology,8,Wednesday,17,4,normal,53.43
+DOC3,Orthopedics,20,Tuesday,12,6,normal,115.85
+DOC6,General Medicine,10,Tuesday,16,5,normal,78.14
+DOC5,Dermatology,8,Sunday,12,4,normal,13.09
+DOC4,Pediatrics,12,Saturday,15,9,normal,110.22
+DOC1,Cardiology,15,Friday,15,3,normal,79.06
+DOC5,Dermatology,8,Friday,12,3,normal,30.21
+DOC1,Cardiology,15,Wednesday,13,4,normal,61.95
+DOC4,Pediatrics,12,Wednesday,9,3,normal,62.02
+DOC3,Orthopedics,20,Thursday,17,3,emergency,8.5
+DOC2,General Medicine,10,Sunday,18,3,normal,32.7
+DOC6,General Medicine,10,Tuesday,18,5,normal,77.82
+DOC4,Pediatrics,12,Wednesday,10,2,normal,47.37
+DOC4,Pediatrics,12,Sunday,18,3,normal,44.97
+DOC3,Orthopedics,20,Wednesday,18,4,normal,135.68
+DOC6,General Medicine,10,Saturday,15,5,normal,49.88
+DOC1,Cardiology,15,Sunday,14,6,normal,56.38
+DOC3,Orthopedics,20,Monday,12,3,normal,84.24
+DOC4,Pediatrics,12,Saturday,10,6,normal,78.5
+DOC6,General Medicine,10,Saturday,13,1,normal,12.08
+DOC4,Pediatrics,12,Sunday,15,6,normal,65.58
+DOC4,Pediatrics,12,Sunday,10,5,normal,70.13
+DOC5,Dermatology,8,Tuesday,13,1,normal,12.7
+DOC4,Pediatrics,12,Wednesday,16,4,normal,74.68
+DOC3,Orthopedics,20,Friday,9,2,normal,80.39
+DOC2,General Medicine,10,Wednesday,16,3,normal,51.75
+DOC4,Pediatrics,12,Wednesday,12,2,normal,28.48
+DOC3,Orthopedics,20,Wednesday,12,4,normal,76.99
+DOC4,Pediatrics,12,Sunday,13,4,normal,32.0
+DOC5,Dermatology,8,Wednesday,10,3,normal,45.6
+DOC5,Dermatology,8,Saturday,12,5,normal,24.8
+DOC3,Orthopedics,20,Monday,19,3,normal,98.36
+DOC2,General Medicine,10,Saturday,10,6,emergency,5.08
+DOC1,Cardiology,15,Tuesday,17,4,normal,99.29
+DOC6,General Medicine,10,Thursday,17,3,emergency,5.44
+DOC4,Pediatrics,12,Sunday,12,8,emergency,6.06
+DOC2,General Medicine,10,Tuesday,13,4,normal,42.89
+DOC5,Dermatology,8,Tuesday,13,5,normal,38.9
+DOC6,General Medicine,10,Thursday,10,8,normal,127.55
+DOC2,General Medicine,10,Thursday,19,2,normal,33.48
+DOC6,General Medicine,10,Wednesday,15,3,normal,46.62
+DOC1,Cardiology,15,Saturday,12,3,normal,31.6
+DOC6,General Medicine,10,Sunday,19,6,normal,44.2
+DOC1,Cardiology,15,Wednesday,13,6,normal,91.12
+DOC4,Pediatrics,12,Sunday,13,2,normal,16.05
+DOC5,Dermatology,8,Thursday,15,3,normal,45.62
+DOC3,Orthopedics,20,Thursday,13,4,normal,79.35
+DOC2,General Medicine,10,Saturday,17,3,normal,34.01
+DOC2,General Medicine,10,Thursday,10,4,normal,74.04
+DOC3,Orthopedics,20,Thursday,11,2,normal,84.42
+DOC4,Pediatrics,12,Friday,13,4,normal,49.16
+DOC2,General Medicine,10,Sunday,17,1,normal,19.84
+DOC5,Dermatology,8,Sunday,16,3,normal,34.76
+DOC4,Pediatrics,12,Friday,11,3,normal,69.61
+DOC5,Dermatology,8,Monday,10,8,normal,130.75
+DOC6,General Medicine,10,Sunday,17,7,normal,75.17
+DOC2,General Medicine,10,Sunday,15,4,normal,48.32
+DOC5,Dermatology,8,Saturday,13,4,normal,23.05
+DOC6,General Medicine,10,Thursday,11,1,normal,31.43
+DOC2,General Medicine,10,Friday,17,2,normal,41.57
+DOC1,Cardiology,15,Sunday,14,8,normal,76.18
+DOC2,General Medicine,10,Thursday,19,3,normal,39.59
+DOC4,Pediatrics,12,Sunday,17,3,normal,42.55
+DOC5,Dermatology,8,Monday,10,2,emergency,6.18
+DOC3,Orthopedics,20,Thursday,11,7,normal,225.63
+DOC6,General Medicine,10,Saturday,15,0,normal,5.98
+DOC1,Cardiology,15,Wednesday,12,8,normal,111.51
+DOC5,Dermatology,8,Tuesday,18,4,normal,45.57
+DOC5,Dermatology,8,Friday,19,1,normal,14.71
+DOC2,General Medicine,10,Wednesday,14,6,normal,55.33
+DOC6,General Medicine,10,Sunday,18,5,normal,54.54
+DOC1,Cardiology,15,Sunday,9,2,normal,40.57
+DOC4,Pediatrics,12,Saturday,12,4,normal,34.45
+DOC2,General Medicine,10,Monday,11,3,emergency,4.28
+DOC2,General Medicine,10,Tuesday,11,6,normal,97.34
+DOC1,Cardiology,15,Tuesday,19,1,normal,28.92
+DOC1,Cardiology,15,Tuesday,19,4,normal,70.03
+DOC5,Dermatology,8,Thursday,13,5,normal,34.06
+DOC2,General Medicine,10,Sunday,18,4,normal,43.87
+DOC2,General Medicine,10,Monday,10,10,emergency,6.34
+DOC3,Orthopedics,20,Monday,14,3,normal,79.81
+DOC5,Dermatology,8,Sunday,19,6,normal,40.23
+DOC3,Orthopedics,20,Friday,11,3,normal,111.64
+DOC2,General Medicine,10,Friday,18,5,normal,80.22
+DOC5,Dermatology,8,Thursday,11,8,normal,100.52
+DOC2,General Medicine,10,Wednesday,15,5,normal,78.82
+DOC2,General Medicine,10,Tuesday,17,5,normal,73.98
+DOC4,Pediatrics,12,Saturday,13,3,normal,27.2
+DOC6,General Medicine,10,Friday,10,6,normal,97.98
+DOC3,Orthopedics,20,Friday,12,3,emergency,7.72
+DOC1,Cardiology,15,Friday,10,3,normal,81.86
+DOC6,General Medicine,10,Saturday,19,5,normal,30.94
+DOC1,Cardiology,15,Wednesday,18,2,normal,54.5
+DOC5,Dermatology,8,Friday,10,5,normal,66.71
+DOC3,Orthopedics,20,Tuesday,15,3,normal,98.33
+DOC4,Pediatrics,12,Friday,15,6,normal,111.0
+DOC5,Dermatology,8,Saturday,14,1,emergency,2.72
+DOC2,General Medicine,10,Thursday,9,1,normal,27.48
+DOC6,General Medicine,10,Tuesday,14,4,emergency,8.98
+DOC6,General Medicine,10,Friday,17,3,normal,50.16
+DOC3,Orthopedics,20,Saturday,18,4,normal,89.84
+DOC6,General Medicine,10,Friday,14,6,normal,54.67
+DOC5,Dermatology,8,Thursday,14,5,normal,44.61
+DOC3,Orthopedics,20,Sunday,9,3,normal,86.05
+DOC1,Cardiology,15,Sunday,9,7,normal,116.51
+DOC1,Cardiology,15,Friday,12,2,normal,35.43
+DOC4,Pediatrics,12,Thursday,11,4,normal,91.94
+DOC6,General Medicine,10,Sunday,16,1,normal,15.95
+DOC6,General Medicine,10,Friday,17,5,normal,72.59
+DOC6,General Medicine,10,Sunday,11,3,normal,36.48
+DOC2,General Medicine,10,Thursday,17,6,normal,91.79
+DOC4,Pediatrics,12,Monday,9,5,normal,126.81
+DOC5,Dermatology,8,Tuesday,13,6,normal,44.68
+DOC4,Pediatrics,12,Monday,9,5,normal,132.39
+DOC3,Orthopedics,20,Friday,11,1,normal,58.16
+DOC3,Orthopedics,20,Wednesday,10,3,normal,113.86
+DOC5,Dermatology,8,Saturday,10,2,normal,23.26
+DOC6,General Medicine,10,Monday,17,0,normal,17.55
+DOC6,General Medicine,10,Friday,13,7,normal,64.35
+DOC6,General Medicine,10,Wednesday,9,1,normal,29.94
+DOC1,Cardiology,15,Sunday,11,4,normal,73.44
+DOC2,General Medicine,10,Wednesday,10,2,normal,39.41
+DOC5,Dermatology,8,Saturday,13,3,normal,20.69
+DOC4,Pediatrics,12,Sunday,16,6,normal,74.34
+DOC1,Cardiology,15,Friday,10,3,normal,83.3
+DOC1,Cardiology,15,Tuesday,19,4,normal,65.08
+DOC2,General Medicine,10,Wednesday,18,5,normal,80.35
+DOC6,General Medicine,10,Wednesday,11,4,normal,74.85
+DOC3,Orthopedics,20,Wednesday,9,5,normal,159.93
+DOC5,Dermatology,8,Saturday,18,1,normal,14.71
+DOC5,Dermatology,8,Friday,12,4,normal,33.38
+DOC4,Pediatrics,12,Tuesday,12,5,normal,61.77
+DOC5,Dermatology,8,Thursday,16,4,normal,50.93
+DOC3,Orthopedics,20,Wednesday,19,3,normal,71.24
+DOC1,Cardiology,15,Wednesday,15,3,normal,77.45
+DOC3,Orthopedics,20,Saturday,11,6,normal,133.74
+DOC2,General Medicine,10,Sunday,11,2,normal,25.8
+DOC3,Orthopedics,20,Wednesday,16,4,normal,125.57
+DOC6,General Medicine,10,Saturday,12,4,normal,29.33
+DOC6,General Medicine,10,Sunday,17,3,normal,41.11
+DOC5,Dermatology,8,Tuesday,11,5,normal,65.76
+DOC2,General Medicine,10,Saturday,16,3,normal,38.8
+DOC6,General Medicine,10,Wednesday,16,5,normal,79.01
+DOC1,Cardiology,15,Friday,13,4,normal,62.95
+DOC4,Pediatrics,12,Tuesday,10,7,normal,128.42
+DOC3,Orthopedics,20,Sunday,10,9,normal,193.94
+DOC3,Orthopedics,20,Tuesday,12,4,normal,79.68
+DOC3,Orthopedics,20,Monday,15,7,normal,270.53
+DOC5,Dermatology,8,Thursday,16,6,normal,73.46
+DOC2,General Medicine,10,Friday,17,4,normal,69.32
+DOC6,General Medicine,10,Tuesday,16,6,normal,88.09
+DOC5,Dermatology,8,Sunday,18,2,normal,18.94
+DOC3,Orthopedics,20,Tuesday,14,5,normal,95.09
+DOC2,General Medicine,10,Wednesday,17,5,normal,76.66
+DOC2,General Medicine,10,Saturday,16,3,normal,32.15
+DOC6,General Medicine,10,Thursday,11,6,normal,95.96
+DOC2,General Medicine,10,Thursday,15,4,emergency,1.47
+DOC3,Orthopedics,20,Tuesday,14,4,normal,82.91
+DOC6,General Medicine,10,Wednesday,18,0,normal,11.46
+DOC6,General Medicine,10,Friday,12,6,normal,58.05
+DOC1,Cardiology,15,Monday,14,4,normal,76.22
+DOC5,Dermatology,8,Friday,10,4,normal,54.43
+DOC6,General Medicine,10,Sunday,12,4,normal,21.61
+DOC3,Orthopedics,20,Wednesday,13,2,normal,44.27
+DOC5,Dermatology,8,Wednesday,19,1,normal,16.31
+DOC4,Pediatrics,12,Thursday,13,5,normal,56.15
+DOC1,Cardiology,15,Thursday,16,8,normal,177.91
+DOC3,Orthopedics,20,Wednesday,14,6,normal,109.55
+DOC4,Pediatrics,12,Monday,9,6,normal,149.96
+DOC3,Orthopedics,20,Thursday,15,4,normal,130.5
+DOC1,Cardiology,15,Saturday,10,0,normal,12.54
+DOC4,Pediatrics,12,Friday,14,4,normal,44.24
+DOC3,Orthopedics,20,Friday,10,5,normal,166.8
+DOC6,General Medicine,10,Wednesday,9,1,normal,34.61
+DOC4,Pediatrics,12,Saturday,9,4,emergency,1.89
+DOC2,General Medicine,10,Sunday,15,3,emergency,6.34
+DOC6,General Medicine,10,Thursday,12,6,normal,54.74
+DOC6,General Medicine,10,Monday,18,5,normal,100.43
+DOC4,Pediatrics,12,Saturday,10,5,emergency,6.41
+DOC4,Pediatrics,12,Sunday,17,3,normal,36.61
+DOC5,Dermatology,8,Tuesday,11,1,normal,21.2
+DOC2,General Medicine,10,Wednesday,10,2,normal,44.47
+DOC2,General Medicine,10,Thursday,11,5,normal,84.05
+DOC6,General Medicine,10,Monday,16,2,normal,49.67
+DOC2,General Medicine,10,Saturday,13,2,normal,15.18
+DOC6,General Medicine,10,Thursday,10,6,normal,97.17
+DOC6,General Medicine,10,Thursday,13,6,normal,53.31
+DOC1,Cardiology,15,Monday,14,3,normal,67.47
+DOC2,General Medicine,10,Sunday,18,2,normal,25.54
+DOC5,Dermatology,8,Thursday,18,7,normal,86.9
+DOC6,General Medicine,10,Wednesday,16,3,normal,52.31
+DOC2,General Medicine,10,Thursday,10,3,normal,55.0
+DOC3,Orthopedics,20,Saturday,9,1,normal,41.04
+DOC3,Orthopedics,20,Wednesday,11,0,normal,25.43
+DOC2,General Medicine,10,Thursday,10,2,normal,47.02
+DOC1,Cardiology,15,Saturday,18,2,normal,42.39
+DOC5,Dermatology,8,Wednesday,17,3,normal,45.43
+DOC3,Orthopedics,20,Thursday,15,2,normal,79.16
+DOC6,General Medicine,10,Friday,11,4,normal,69.9
+DOC1,Cardiology,15,Wednesday,13,4,normal,61.66
+DOC6,General Medicine,10,Thursday,16,4,normal,65.73
+DOC5,Dermatology,8,Wednesday,14,7,normal,51.05
+DOC2,General Medicine,10,Thursday,19,4,normal,46.13
+DOC3,Orthopedics,20,Wednesday,17,3,normal,100.98
+DOC1,Cardiology,15,Tuesday,12,2,emergency,3.2
+DOC1,Cardiology,15,Tuesday,11,2,emergency,6.85
+DOC6,General Medicine,10,Friday,17,3,normal,56.51
+DOC1,Cardiology,15,Monday,11,3,normal,110.53
+DOC1,Cardiology,15,Monday,14,2,normal,46.88
+DOC1,Cardiology,15,Thursday,18,3,normal,75.58
+DOC2,General Medicine,10,Monday,12,7,normal,80.8
+DOC4,Pediatrics,12,Saturday,12,8,normal,61.12
+DOC5,Dermatology,8,Friday,15,5,normal,63.41
+DOC5,Dermatology,8,Saturday,15,2,normal,18.57
+DOC6,General Medicine,10,Tuesday,19,5,normal,60.45
+DOC6,General Medicine,10,Monday,15,1,normal,36.66
+DOC3,Orthopedics,20,Monday,14,4,normal,107.9
+DOC3,Orthopedics,20,Friday,17,4,emergency,3.06
+DOC4,Pediatrics,12,Tuesday,12,4,normal,44.87
+DOC4,Pediatrics,12,Tuesday,11,1,normal,38.96
+DOC1,Cardiology,15,Thursday,16,5,normal,115.83
+DOC3,Orthopedics,20,Tuesday,15,4,normal,134.33
+DOC3,Orthopedics,20,Friday,10,4,normal,136.92
+DOC4,Pediatrics,12,Monday,10,4,normal,110.46
+DOC2,General Medicine,10,Thursday,16,3,normal,49.6
+DOC3,Orthopedics,20,Friday,18,8,normal,228.88
+DOC5,Dermatology,8,Friday,14,8,normal,54.68
+DOC1,Cardiology,15,Thursday,12,4,normal,63.08
+DOC2,General Medicine,10,Thursday,10,5,normal,83.73
+DOC3,Orthopedics,20,Saturday,17,3,normal,72.23
+DOC5,Dermatology,8,Thursday,17,3,normal,42.85
+DOC5,Dermatology,8,Thursday,17,3,normal,40.58
+DOC4,Pediatrics,12,Saturday,18,3,normal,43.31
+DOC1,Cardiology,15,Tuesday,17,4,normal,98.18
+DOC1,Cardiology,15,Friday,19,3,normal,58.91
+DOC3,Orthopedics,20,Thursday,10,7,normal,225.03
+DOC4,Pediatrics,12,Monday,11,5,normal,132.09
+DOC2,General Medicine,10,Tuesday,14,5,normal,50.44
+DOC1,Cardiology,15,Monday,9,2,normal,78.17
+DOC1,Cardiology,15,Saturday,18,4,normal,65.75
+DOC6,General Medicine,10,Thursday,16,5,normal,83.35
+DOC5,Dermatology,8,Saturday,14,5,normal,20.05
+DOC5,Dermatology,8,Sunday,18,6,normal,52.08
+DOC5,Dermatology,8,Wednesday,11,2,normal,30.01
+DOC2,General Medicine,10,Saturday,9,7,emergency,8.35
+DOC4,Pediatrics,12,Monday,19,3,normal,54.17
+DOC2,General Medicine,10,Monday,13,4,normal,55.5
+DOC3,Orthopedics,20,Thursday,14,4,normal,80.9
+DOC2,General Medicine,10,Friday,16,6,normal,86.63
+DOC1,Cardiology,15,Friday,14,4,normal,62.24
+DOC1,Cardiology,15,Friday,17,6,emergency,2.54
+DOC4,Pediatrics,12,Sunday,13,2,emergency,5.56
+DOC3,Orthopedics,20,Thursday,11,5,normal,166.83
+DOC4,Pediatrics,12,Friday,13,5,normal,56.85
+DOC3,Orthopedics,20,Friday,14,6,normal,108.61
+DOC6,General Medicine,10,Wednesday,12,3,normal,31.29
+DOC3,Orthopedics,20,Tuesday,12,1,normal,25.84
+DOC4,Pediatrics,12,Tuesday,11,7,normal,137.78
+DOC1,Cardiology,15,Wednesday,12,1,normal,27.48
+DOC1,Cardiology,15,Saturday,9,1,normal,30.39
+DOC5,Dermatology,8,Tuesday,12,5,normal,35.47
+DOC6,General Medicine,10,Thursday,12,9,normal,77.74
+DOC5,Dermatology,8,Monday,19,6,emergency,6.81
+DOC3,Orthopedics,20,Monday,14,3,normal,84.71
+DOC2,General Medicine,10,Saturday,16,8,normal,82.95
+DOC2,General Medicine,10,Thursday,13,3,normal,29.51
+DOC3,Orthopedics,20,Sunday,15,5,normal,115.1
+DOC6,General Medicine,10,Sunday,17,0,normal,11.07
+DOC3,Orthopedics,20,Saturday,10,4,normal,98.0
+DOC1,Cardiology,15,Tuesday,15,4,normal,104.44
+DOC3,Orthopedics,20,Friday,17,5,normal,155.34
+DOC6,General Medicine,10,Wednesday,13,1,normal,12.02
+DOC3,Orthopedics,20,Friday,10,0,emergency,5.86
+DOC6,General Medicine,10,Friday,11,4,normal,69.76
+DOC3,Orthopedics,20,Monday,11,3,normal,146.18
+DOC2,General Medicine,10,Saturday,16,2,normal,26.29
+DOC6,General Medicine,10,Sunday,18,6,normal,64.06
+DOC3,Orthopedics,20,Saturday,13,5,normal,67.57
+DOC4,Pediatrics,12,Tuesday,14,0,normal,10.96
+DOC5,Dermatology,8,Monday,10,2,normal,50.17
+DOC5,Dermatology,8,Monday,12,2,normal,28.91
+DOC2,General Medicine,10,Tuesday,12,4,normal,38.04
+DOC2,General Medicine,10,Wednesday,16,3,normal,51.58
+DOC6,General Medicine,10,Thursday,14,1,normal,14.28
+DOC6,General Medicine,10,Monday,11,6,normal,122.64
+DOC4,Pediatrics,12,Saturday,11,3,normal,49.16
+DOC2,General Medicine,10,Saturday,13,3,normal,19.94
+DOC1,Cardiology,15,Saturday,15,4,normal,68.9
+DOC6,General Medicine,10,Friday,11,6,normal,98.35
+DOC5,Dermatology,8,Saturday,15,2,normal,22.86
+DOC6,General Medicine,10,Sunday,12,4,normal,27.13
+DOC4,Pediatrics,12,Thursday,18,3,normal,64.12
+DOC5,Dermatology,8,Tuesday,17,3,normal,40.75
+DOC4,Pediatrics,12,Friday,19,2,normal,34.33
+DOC6,General Medicine,10,Monday,13,3,normal,40.57
+DOC4,Pediatrics,12,Friday,17,6,normal,109.74
+DOC1,Cardiology,15,Wednesday,14,4,normal,56.69
+DOC6,General Medicine,10,Wednesday,10,7,normal,110.43
+DOC4,Pediatrics,12,Monday,10,2,normal,67.72
+DOC4,Pediatrics,12,Monday,17,2,normal,58.57
+DOC1,Cardiology,15,Saturday,13,2,normal,26.03
+DOC2,General Medicine,10,Sunday,14,2,normal,15.15
+DOC4,Pediatrics,12,Sunday,9,7,normal,94.24
+DOC1,Cardiology,15,Sunday,9,7,normal,115.47
+DOC5,Dermatology,8,Monday,16,3,normal,51.09
+DOC6,General Medicine,10,Friday,10,1,emergency,5.11
+DOC4,Pediatrics,12,Sunday,16,3,normal,44.41
+DOC4,Pediatrics,12,Wednesday,14,5,normal,58.14
+DOC4,Pediatrics,12,Tuesday,11,8,normal,153.93
+DOC4,Pediatrics,12,Tuesday,10,4,normal,81.15
+DOC3,Orthopedics,20,Sunday,12,1,normal,20.39
+DOC3,Orthopedics,20,Monday,14,8,normal,185.69
+DOC6,General Medicine,10,Monday,17,0,normal,17.8
+DOC4,Pediatrics,12,Saturday,16,4,normal,54.69
+DOC2,General Medicine,10,Saturday,10,5,normal,58.99
+DOC4,Pediatrics,12,Wednesday,18,6,normal,114.7
+DOC4,Pediatrics,12,Thursday,9,4,normal,84.94
+DOC6,General Medicine,10,Saturday,17,3,normal,34.05
+DOC1,Cardiology,15,Saturday,12,4,normal,43.68
+DOC1,Cardiology,15,Saturday,14,3,normal,34.77
+DOC4,Pediatrics,12,Friday,16,4,normal,78.74
+DOC3,Orthopedics,20,Thursday,13,4,normal,80.44
+DOC5,Dermatology,8,Thursday,12,4,normal,24.41
+DOC3,Orthopedics,20,Thursday,15,2,emergency,3.43
+DOC5,Dermatology,8,Sunday,14,1,normal,4.27
+DOC2,General Medicine,10,Wednesday,15,1,normal,23.75
+DOC2,General Medicine,10,Sunday,9,3,normal,41.06
+DOC3,Orthopedics,20,Tuesday,9,7,normal,223.18
+DOC5,Dermatology,8,Friday,13,6,normal,44.71
+DOC4,Pediatrics,12,Monday,12,5,normal,73.39
+DOC2,General Medicine,10,Saturday,13,5,normal,33.72
+DOC2,General Medicine,10,Tuesday,12,0,normal,11.95
+DOC3,Orthopedics,20,Tuesday,13,6,normal,109.3
+DOC5,Dermatology,8,Thursday,18,4,normal,54.3
+DOC6,General Medicine,10,Tuesday,10,7,normal,113.11
+DOC4,Pediatrics,12,Saturday,19,4,normal,33.17
+DOC1,Cardiology,15,Saturday,11,3,normal,61.46
+DOC2,General Medicine,10,Saturday,17,5,normal,59.51
+DOC6,General Medicine,10,Thursday,13,8,normal,74.47
+DOC3,Orthopedics,20,Wednesday,9,6,normal,197.21
+DOC5,Dermatology,8,Friday,18,2,normal,33.9
+DOC4,Pediatrics,12,Friday,15,5,normal,94.76
+DOC5,Dermatology,8,Sunday,11,2,normal,27.52
+DOC1,Cardiology,15,Monday,12,8,normal,139.07
+DOC5,Dermatology,8,Wednesday,14,2,normal,16.0
+DOC4,Pediatrics,12,Friday,14,4,normal,54.42
+DOC1,Cardiology,15,Monday,11,8,normal,248.39
+DOC2,General Medicine,10,Sunday,15,10,normal,98.19
+DOC3,Orthopedics,20,Thursday,11,4,normal,137.75
+DOC1,Cardiology,15,Sunday,16,7,normal,105.28
+DOC3,Orthopedics,20,Saturday,18,10,emergency,1.0
+DOC1,Cardiology,15,Friday,18,0,normal,29.45
+DOC1,Cardiology,15,Sunday,17,3,normal,50.96
+DOC6,General Medicine,10,Thursday,17,8,normal,114.97
+DOC5,Dermatology,8,Saturday,11,4,normal,38.68
+DOC2,General Medicine,10,Monday,17,3,normal,66.6
+DOC2,General Medicine,10,Thursday,9,4,normal,75.3
+DOC2,General Medicine,10,Wednesday,13,6,emergency,4.24
+DOC3,Orthopedics,20,Friday,11,2,normal,86.43
+DOC1,Cardiology,15,Saturday,17,3,normal,52.92
+DOC2,General Medicine,10,Monday,11,2,normal,49.95
+DOC3,Orthopedics,20,Sunday,19,2,normal,34.72
+DOC5,Dermatology,8,Thursday,16,9,normal,105.44
+DOC5,Dermatology,8,Sunday,17,2,normal,16.76
+DOC2,General Medicine,10,Saturday,17,2,normal,26.0
+DOC2,General Medicine,10,Tuesday,19,4,normal,44.82
+DOC1,Cardiology,15,Tuesday,14,6,normal,84.57
+DOC6,General Medicine,10,Thursday,13,4,normal,35.71
+DOC3,Orthopedics,20,Wednesday,18,3,normal,104.32
+DOC1,Cardiology,15,Tuesday,9,5,normal,125.09
+DOC1,Cardiology,15,Wednesday,18,6,normal,138.83
+DOC5,Dermatology,8,Wednesday,18,2,normal,26.83
+DOC1,Cardiology,15,Wednesday,13,1,normal,26.61
+DOC1,Cardiology,15,Saturday,11,6,normal,105.28
+DOC1,Cardiology,15,Sunday,10,4,normal,73.39
+DOC6,General Medicine,10,Wednesday,14,4,normal,38.07
+DOC4,Pediatrics,12,Monday,9,6,normal,154.38
+DOC5,Dermatology,8,Thursday,12,4,normal,30.04
+DOC5,Dermatology,8,Sunday,10,4,normal,40.17
+DOC3,Orthopedics,20,Saturday,18,8,normal,161.85
+DOC1,Cardiology,15,Monday,12,8,normal,143.49
+DOC2,General Medicine,10,Tuesday,12,0,normal,8.76
+DOC3,Orthopedics,20,Wednesday,11,5,normal,169.67
+DOC4,Pediatrics,12,Saturday,19,5,normal,45.65
+DOC3,Orthopedics,20,Sunday,12,6,normal,79.51
+DOC1,Cardiology,15,Thursday,14,4,normal,62.5
+DOC5,Dermatology,8,Saturday,13,6,normal,30.9
+DOC3,Orthopedics,20,Thursday,17,3,normal,106.28
+DOC6,General Medicine,10,Saturday,10,5,normal,54.45
+DOC6,General Medicine,10,Sunday,19,3,normal,28.51
+DOC4,Pediatrics,12,Wednesday,16,4,normal,77.9
+DOC1,Cardiology,15,Wednesday,15,3,normal,67.38
+DOC4,Pediatrics,12,Wednesday,11,2,normal,54.74
+DOC6,General Medicine,10,Wednesday,14,4,normal,42.61
+DOC2,General Medicine,10,Monday,15,7,normal,138.68
+DOC3,Orthopedics,20,Wednesday,10,9,normal,276.27
+DOC1,Cardiology,15,Monday,16,7,normal,199.29
+DOC1,Cardiology,15,Friday,10,6,normal,147.54
+DOC1,Cardiology,15,Thursday,9,4,normal,106.55
+DOC3,Orthopedics,20,Saturday,18,7,normal,142.61
+DOC5,Dermatology,8,Saturday,15,6,normal,52.66
+DOC4,Pediatrics,12,Saturday,15,8,normal,97.4
+DOC5,Dermatology,8,Friday,11,5,normal,65.84
+DOC1,Cardiology,15,Wednesday,16,4,normal,100.02
+DOC1,Cardiology,15,Wednesday,9,2,normal,67.33
+DOC3,Orthopedics,20,Tuesday,19,6,normal,125.3
+DOC1,Cardiology,15,Sunday,9,5,normal,83.75
+DOC2,General Medicine,10,Monday,14,8,emergency,4.9
+DOC6,General Medicine,10,Thursday,12,5,normal,51.59
+DOC2,General Medicine,10,Friday,11,6,normal,103.36
+DOC3,Orthopedics,20,Saturday,12,6,normal,76.12
+DOC3,Orthopedics,20,Tuesday,18,3,normal,103.33
+DOC5,Dermatology,8,Monday,17,0,normal,12.06
+DOC1,Cardiology,15,Tuesday,11,6,normal,144.44
+DOC1,Cardiology,15,Saturday,11,3,emergency,8.23
+DOC2,General Medicine,10,Wednesday,16,5,normal,77.64
+DOC3,Orthopedics,20,Friday,13,2,normal,44.94
+DOC5,Dermatology,8,Tuesday,13,5,normal,37.23
+DOC2,General Medicine,10,Friday,13,2,normal,20.96
+DOC6,General Medicine,10,Tuesday,10,5,normal,83.2
+DOC4,Pediatrics,12,Friday,13,4,normal,40.34
+DOC1,Cardiology,15,Sunday,10,2,normal,45.2
+DOC5,Dermatology,8,Saturday,15,2,normal,22.68
+DOC1,Cardiology,15,Monday,19,5,normal,105.33
+DOC3,Orthopedics,20,Saturday,19,2,normal,42.09
+DOC4,Pediatrics,12,Thursday,14,4,normal,50.39
+DOC6,General Medicine,10,Wednesday,15,5,normal,72.92
+DOC2,General Medicine,10,Friday,16,4,normal,63.28
+DOC5,Dermatology,8,Sunday,11,4,normal,34.88
+DOC1,Cardiology,15,Friday,17,7,emergency,1.0
+DOC4,Pediatrics,12,Saturday,13,1,normal,18.07
+DOC5,Dermatology,8,Sunday,12,6,normal,29.23
+DOC6,General Medicine,10,Monday,9,4,normal,96.58
+DOC3,Orthopedics,20,Monday,13,0,normal,21.04
+DOC5,Dermatology,8,Monday,11,4,normal,77.0
+DOC4,Pediatrics,12,Sunday,19,3,normal,30.32
+DOC3,Orthopedics,20,Tuesday,18,7,normal,204.51
+DOC4,Pediatrics,12,Monday,14,3,normal,49.81
+DOC1,Cardiology,15,Tuesday,18,5,normal,112.63
+DOC5,Dermatology,8,Thursday,10,3,normal,53.2
+DOC3,Orthopedics,20,Sunday,10,2,normal,61.08
+DOC4,Pediatrics,12,Thursday,15,7,normal,124.36
+DOC1,Cardiology,15,Tuesday,10,4,normal,99.07
+DOC5,Dermatology,8,Tuesday,10,4,normal,58.33
+DOC6,General Medicine,10,Tuesday,14,4,normal,36.71
+DOC6,General Medicine,10,Thursday,12,5,normal,44.12
+DOC5,Dermatology,8,Saturday,13,4,normal,19.81
+DOC4,Pediatrics,12,Sunday,13,5,normal,35.05
+DOC2,General Medicine,10,Sunday,16,4,normal,47.79
+DOC1,Cardiology,15,Wednesday,18,4,normal,93.55
+DOC3,Orthopedics,20,Tuesday,11,1,normal,53.08
+DOC5,Dermatology,8,Wednesday,10,2,normal,31.96
+DOC5,Dermatology,8,Thursday,17,5,normal,64.32
+DOC4,Pediatrics,12,Tuesday,13,4,normal,46.1
+DOC1,Cardiology,15,Tuesday,11,0,normal,21.67
+DOC4,Pediatrics,12,Thursday,13,5,normal,62.79
+DOC4,Pediatrics,12,Friday,14,3,normal,38.75
+DOC4,Pediatrics,12,Sunday,9,3,normal,50.9
+DOC6,General Medicine,10,Wednesday,13,2,normal,26.51
+DOC1,Cardiology,15,Sunday,17,5,normal,78.26
+DOC5,Dermatology,8,Sunday,16,6,normal,46.6
+DOC3,Orthopedics,20,Tuesday,9,2,normal,83.87
+DOC3,Orthopedics,20,Sunday,12,3,normal,41.42
+DOC5,Dermatology,8,Saturday,16,0,normal,4.58
+DOC1,Cardiology,15,Wednesday,15,4,normal,96.42
+DOC5,Dermatology,8,Wednesday,13,2,normal,21.08
+DOC4,Pediatrics,12,Tuesday,17,3,normal,63.05
+DOC3,Orthopedics,20,Friday,16,6,normal,185.06
+DOC5,Dermatology,8,Friday,15,2,normal,32.65
+DOC5,Dermatology,8,Friday,16,5,normal,67.48
+DOC4,Pediatrics,12,Thursday,15,2,normal,46.49
+DOC5,Dermatology,8,Friday,11,5,normal,67.1
+DOC4,Pediatrics,12,Wednesday,10,6,normal,115.34
+DOC1,Cardiology,15,Tuesday,12,3,normal,51.03
+DOC3,Orthopedics,20,Tuesday,14,6,normal,110.15
+DOC5,Dermatology,8,Wednesday,13,7,normal,51.19
+DOC1,Cardiology,15,Monday,11,3,normal,110.39
+DOC5,Dermatology,8,Monday,9,4,emergency,4.08
+DOC3,Orthopedics,20,Tuesday,14,6,normal,111.59
+DOC1,Cardiology,15,Saturday,15,2,normal,35.46
+DOC2,General Medicine,10,Thursday,11,2,normal,39.3
+DOC2,General Medicine,10,Thursday,17,2,normal,42.55
+DOC5,Dermatology,8,Thursday,10,3,normal,43.28
+DOC1,Cardiology,15,Thursday,13,6,normal,81.68
+DOC2,General Medicine,10,Friday,19,3,normal,35.7
+DOC2,General Medicine,10,Thursday,18,2,normal,39.71
+DOC6,General Medicine,10,Wednesday,12,6,normal,51.89
+DOC2,General Medicine,10,Sunday,9,4,normal,48.73
+DOC1,Cardiology,15,Wednesday,18,7,normal,152.84
+DOC2,General Medicine,10,Saturday,12,6,normal,37.74
+DOC4,Pediatrics,12,Saturday,15,3,normal,44.16
+DOC6,General Medicine,10,Tuesday,16,3,normal,51.28
+DOC3,Orthopedics,20,Wednesday,15,8,normal,233.13
+DOC6,General Medicine,10,Tuesday,13,6,normal,55.74
+DOC4,Pediatrics,12,Saturday,18,3,normal,41.39
+DOC5,Dermatology,8,Thursday,14,4,normal,27.21
+DOC5,Dermatology,8,Wednesday,11,1,emergency,6.06
+DOC1,Cardiology,15,Sunday,10,5,normal,86.57
+DOC5,Dermatology,8,Thursday,14,3,normal,28.59
+DOC1,Cardiology,15,Tuesday,11,7,normal,158.89
+DOC1,Cardiology,15,Saturday,10,5,normal,83.18
+DOC2,General Medicine,10,Tuesday,19,6,normal,64.8
+DOC3,Orthopedics,20,Sunday,17,7,normal,147.31
+DOC6,General Medicine,10,Friday,16,2,normal,39.4
+DOC2,General Medicine,10,Friday,15,3,normal,52.39
+DOC3,Orthopedics,20,Wednesday,19,8,emergency,3.82
+DOC1,Cardiology,15,Monday,13,6,normal,107.45
+DOC5,Dermatology,8,Saturday,9,2,normal,25.64
+DOC5,Dermatology,8,Sunday,19,8,normal,45.83
+DOC2,General Medicine,10,Monday,11,6,normal,121.37
+DOC3,Orthopedics,20,Tuesday,17,8,normal,236.79
+DOC3,Orthopedics,20,Sunday,17,10,normal,201.47
+DOC1,Cardiology,15,Sunday,14,6,normal,65.4
+DOC2,General Medicine,10,Thursday,11,4,normal,70.44
+DOC1,Cardiology,15,Tuesday,17,2,normal,64.94
+DOC4,Pediatrics,12,Saturday,19,5,normal,46.4
+DOC2,General Medicine,10,Wednesday,17,4,normal,65.16
+DOC2,General Medicine,10,Friday,17,0,normal,14.34
+DOC6,General Medicine,10,Monday,15,5,normal,96.62
+DOC6,General Medicine,10,Thursday,9,2,normal,38.89
+DOC4,Pediatrics,12,Monday,17,5,normal,118.82
+DOC3,Orthopedics,20,Sunday,15,3,normal,73.74
+DOC6,General Medicine,10,Saturday,15,4,normal,44.77
+DOC4,Pediatrics,12,Friday,13,4,normal,43.23
+DOC5,Dermatology,8,Thursday,9,7,normal,90.38
+DOC2,General Medicine,10,Friday,14,4,normal,45.15
+DOC4,Pediatrics,12,Sunday,19,5,normal,42.6
+DOC2,General Medicine,10,Wednesday,13,3,normal,34.51
+DOC4,Pediatrics,12,Thursday,15,7,normal,128.78
+DOC2,General Medicine,10,Tuesday,12,8,normal,72.99
+DOC5,Dermatology,8,Tuesday,13,3,normal,25.15
+DOC1,Cardiology,15,Sunday,13,6,normal,55.54
+DOC3,Orthopedics,20,Friday,19,0,normal,19.47
+DOC5,Dermatology,8,Thursday,17,2,normal,27.62
+DOC1,Cardiology,15,Tuesday,15,7,normal,162.98
+DOC3,Orthopedics,20,Friday,13,6,normal,120.33
+DOC2,General Medicine,10,Wednesday,10,2,normal,42.4
+DOC5,Dermatology,8,Saturday,14,5,normal,22.1
+DOC5,Dermatology,8,Saturday,14,5,normal,30.82
+DOC3,Orthopedics,20,Thursday,17,6,normal,181.48
+DOC4,Pediatrics,12,Thursday,13,6,normal,60.43
+DOC2,General Medicine,10,Monday,13,2,normal,35.49
+DOC4,Pediatrics,12,Monday,15,6,normal,152.09
+DOC5,Dermatology,8,Friday,11,4,normal,58.4
+DOC3,Orthopedics,20,Wednesday,14,6,normal,110.78
+DOC3,Orthopedics,20,Thursday,15,5,normal,156.13
+DOC2,General Medicine,10,Tuesday,18,6,normal,90.99
+DOC1,Cardiology,15,Thursday,12,4,normal,58.71
+DOC2,General Medicine,10,Tuesday,15,1,normal,22.23
+DOC3,Orthopedics,20,Friday,13,3,normal,69.58
+DOC2,General Medicine,10,Wednesday,17,7,emergency,3.47
+DOC4,Pediatrics,12,Sunday,11,2,emergency,2.5
+DOC4,Pediatrics,12,Tuesday,16,3,normal,62.42
+DOC3,Orthopedics,20,Saturday,14,1,normal,15.94
+DOC2,General Medicine,10,Tuesday,19,3,normal,36.86
+DOC6,General Medicine,10,Sunday,10,4,normal,48.88
+DOC4,Pediatrics,12,Friday,11,9,normal,168.38
+DOC2,General Medicine,10,Sunday,14,8,normal,52.84
+DOC2,General Medicine,10,Tuesday,9,7,normal,110.5
+DOC1,Cardiology,15,Saturday,9,4,normal,69.63
+DOC6,General Medicine,10,Saturday,11,4,normal,47.84
+DOC4,Pediatrics,12,Tuesday,10,8,normal,147.96
+DOC2,General Medicine,10,Thursday,16,3,normal,49.88
+DOC5,Dermatology,8,Saturday,16,4,normal,35.27
+DOC5,Dermatology,8,Thursday,18,2,emergency,3.42
+DOC4,Pediatrics,12,Saturday,17,4,normal,57.31
+DOC4,Pediatrics,12,Saturday,10,2,normal,39.99
+DOC5,Dermatology,8,Thursday,13,4,normal,32.25
+DOC5,Dermatology,8,Friday,15,2,normal,29.94
+DOC1,Cardiology,15,Wednesday,13,3,normal,50.61
+DOC6,General Medicine,10,Saturday,17,1,normal,15.67
+DOC1,Cardiology,15,Monday,16,3,normal,96.3
+DOC5,Dermatology,8,Friday,19,7,normal,56.73
+DOC3,Orthopedics,20,Monday,14,3,normal,82.29
+DOC5,Dermatology,8,Thursday,11,2,normal,35.45
+DOC3,Orthopedics,20,Saturday,10,1,normal,40.04
+DOC3,Orthopedics,20,Friday,19,4,normal,99.4
+DOC3,Orthopedics,20,Wednesday,15,7,normal,206.99
+DOC5,Dermatology,8,Monday,18,6,normal,91.24
+DOC3,Orthopedics,20,Wednesday,10,6,normal,197.48
+DOC1,Cardiology,15,Monday,17,4,normal,133.97
+DOC3,Orthopedics,20,Wednesday,17,3,normal,104.98
+DOC6,General Medicine,10,Monday,18,3,normal,68.46
+DOC3,Orthopedics,20,Tuesday,14,9,normal,162.72
+DOC2,General Medicine,10,Friday,13,4,normal,44.48
+DOC6,General Medicine,10,Thursday,13,3,normal,34.93
+DOC6,General Medicine,10,Saturday,12,1,normal,11.65
+DOC6,General Medicine,10,Thursday,12,5,normal,53.31
+DOC4,Pediatrics,12,Sunday,19,7,normal,61.0
+DOC4,Pediatrics,12,Wednesday,18,3,normal,60.11
+DOC1,Cardiology,15,Sunday,10,3,normal,53.25
+DOC2,General Medicine,10,Thursday,15,1,normal,29.95
+DOC3,Orthopedics,20,Wednesday,17,0,normal,27.01
+DOC4,Pediatrics,12,Wednesday,18,4,normal,79.15
+DOC6,General Medicine,10,Friday,13,7,normal,60.73
+DOC3,Orthopedics,20,Tuesday,9,6,normal,199.9
+DOC2,General Medicine,10,Wednesday,14,4,normal,35.99
+DOC2,General Medicine,10,Tuesday,15,3,normal,55.59
+DOC4,Pediatrics,12,Friday,16,6,normal,113.97
+DOC6,General Medicine,10,Wednesday,13,5,normal,48.66
+DOC1,Cardiology,15,Wednesday,18,7,emergency,2.01
+DOC3,Orthopedics,20,Saturday,13,6,normal,79.56
+DOC3,Orthopedics,20,Tuesday,10,4,normal,140.62
+DOC4,Pediatrics,12,Tuesday,9,1,normal,34.14
+DOC5,Dermatology,8,Sunday,11,0,normal,10.83
+DOC6,General Medicine,10,Sunday,19,3,normal,20.71
+DOC6,General Medicine,10,Saturday,19,7,normal,48.78
+DOC1,Cardiology,15,Thursday,16,5,normal,114.08
+DOC3,Orthopedics,20,Saturday,9,5,normal,124.0
+DOC4,Pediatrics,12,Monday,13,4,normal,64.0
+DOC1,Cardiology,15,Wednesday,9,2,emergency,6.48
+DOC2,General Medicine,10,Saturday,13,7,normal,39.83
+DOC2,General Medicine,10,Wednesday,15,2,emergency,9.16
+DOC3,Orthopedics,20,Saturday,17,5,normal,109.27
+DOC4,Pediatrics,12,Saturday,18,4,normal,60.65
+DOC1,Cardiology,15,Wednesday,17,7,normal,157.04
+DOC4,Pediatrics,12,Wednesday,14,3,normal,39.26
+DOC2,General Medicine,10,Sunday,15,2,normal,25.13
+DOC3,Orthopedics,20,Saturday,9,5,normal,120.52
+DOC4,Pediatrics,12,Sunday,9,4,normal,61.61
+DOC5,Dermatology,8,Sunday,19,4,normal,23.23
+DOC3,Orthopedics,20,Thursday,11,8,normal,254.7
+DOC5,Dermatology,8,Wednesday,11,6,normal,77.79
+DOC5,Dermatology,8,Tuesday,19,3,normal,28.32
+DOC4,Pediatrics,12,Tuesday,14,8,normal,86.19
+DOC3,Orthopedics,20,Friday,17,7,normal,204.07
+DOC2,General Medicine,10,Thursday,17,6,normal,93.64
+DOC1,Cardiology,15,Monday,14,8,normal,144.27
+DOC5,Dermatology,8,Tuesday,17,1,normal,21.81
+DOC2,General Medicine,10,Saturday,9,3,normal,37.95
+DOC5,Dermatology,8,Saturday,18,5,normal,42.45
+DOC2,General Medicine,10,Sunday,14,6,normal,46.6
+DOC2,General Medicine,10,Tuesday,18,7,normal,104.76
+DOC1,Cardiology,15,Sunday,18,6,normal,96.79
+DOC1,Cardiology,15,Friday,10,7,normal,165.36
+DOC3,Orthopedics,20,Saturday,9,3,normal,78.28
+DOC1,Cardiology,15,Tuesday,13,0,normal,11.52
+DOC6,General Medicine,10,Friday,18,6,normal,89.8
+DOC6,General Medicine,10,Tuesday,17,3,normal,51.73
+DOC1,Cardiology,15,Friday,18,5,normal,117.33
+DOC6,General Medicine,10,Friday,18,4,normal,64.79
+DOC1,Cardiology,15,Sunday,11,5,normal,85.11
+DOC5,Dermatology,8,Wednesday,13,1,normal,10.32
+DOC2,General Medicine,10,Wednesday,15,6,normal,88.65
+DOC6,General Medicine,10,Thursday,9,4,normal,70.84
+DOC5,Dermatology,8,Tuesday,16,12,normal,129.95
+DOC3,Orthopedics,20,Wednesday,16,2,normal,81.76
+DOC4,Pediatrics,12,Sunday,17,4,normal,60.24
+DOC3,Orthopedics,20,Friday,11,6,normal,194.9
+DOC2,General Medicine,10,Sunday,9,3,normal,47.56
+DOC2,General Medicine,10,Monday,11,4,normal,93.95
+DOC3,Orthopedics,20,Saturday,15,2,normal,55.95
+DOC5,Dermatology,8,Saturday,12,1,normal,11.31
+DOC3,Orthopedics,20,Wednesday,9,2,normal,83.45
+DOC4,Pediatrics,12,Wednesday,15,1,normal,30.63
+DOC4,Pediatrics,12,Thursday,16,2,normal,42.54
+DOC6,General Medicine,10,Tuesday,17,1,normal,27.71
+DOC1,Cardiology,15,Tuesday,18,6,emergency,6.17
+DOC5,Dermatology,8,Friday,16,8,normal,93.93
+DOC5,Dermatology,8,Saturday,19,4,normal,23.04
+DOC1,Cardiology,15,Saturday,18,3,normal,50.27
+DOC5,Dermatology,8,Friday,18,3,normal,40.0
+DOC3,Orthopedics,20,Sunday,12,2,normal,29.9
+DOC2,General Medicine,10,Tuesday,13,8,normal,71.64
+DOC5,Dermatology,8,Monday,19,4,normal,46.39
+DOC4,Pediatrics,12,Thursday,13,5,normal,56.01
+DOC2,General Medicine,10,Friday,11,3,normal,59.23
+DOC5,Dermatology,8,Wednesday,13,3,normal,25.86
+DOC1,Cardiology,15,Thursday,13,3,normal,48.37
+DOC2,General Medicine,10,Monday,13,5,normal,60.7
+DOC3,Orthopedics,20,Monday,18,1,emergency,7.42
+DOC4,Pediatrics,12,Thursday,13,7,normal,79.4
+DOC1,Cardiology,15,Sunday,14,3,normal,35.09
+DOC4,Pediatrics,12,Thursday,12,5,normal,58.0
+DOC5,Dermatology,8,Monday,16,5,emergency,1.07
+DOC2,General Medicine,10,Saturday,14,6,normal,42.22
+DOC1,Cardiology,15,Sunday,18,4,normal,70.71
+DOC5,Dermatology,8,Tuesday,11,5,emergency,7.26
+DOC4,Pediatrics,12,Thursday,11,5,normal,102.41
+DOC2,General Medicine,10,Monday,13,3,normal,44.2
+DOC5,Dermatology,8,Friday,17,4,normal,51.01
+DOC2,General Medicine,10,Thursday,12,2,normal,20.21
+DOC1,Cardiology,15,Tuesday,13,5,normal,74.17
+DOC5,Dermatology,8,Wednesday,19,2,normal,25.24
+DOC4,Pediatrics,12,Saturday,17,6,normal,76.74
+DOC5,Dermatology,8,Saturday,19,3,normal,25.31
+DOC3,Orthopedics,20,Tuesday,19,2,normal,50.05
+DOC4,Pediatrics,12,Thursday,12,5,normal,52.32
+DOC6,General Medicine,10,Sunday,17,3,normal,36.23
+DOC3,Orthopedics,20,Monday,9,2,normal,109.77
+DOC4,Pediatrics,12,Thursday,11,2,normal,50.22
+DOC6,General Medicine,10,Thursday,15,3,normal,54.86
+DOC6,General Medicine,10,Tuesday,10,5,normal,82.22
+DOC1,Cardiology,15,Thursday,11,3,normal,86.02
+DOC5,Dermatology,8,Saturday,14,3,normal,21.25
+DOC6,General Medicine,10,Tuesday,13,4,normal,40.9
+DOC1,Cardiology,15,Thursday,12,2,normal,40.89
+DOC1,Cardiology,15,Monday,16,8,normal,229.72
+DOC6,General Medicine,10,Friday,14,3,normal,30.77
+DOC6,General Medicine,10,Saturday,18,1,normal,19.73
+DOC4,Pediatrics,12,Monday,15,7,normal,166.27
+DOC3,Orthopedics,20,Sunday,11,6,normal,133.35
+DOC3,Orthopedics,20,Wednesday,17,4,normal,130.94
+DOC5,Dermatology,8,Thursday,9,2,normal,33.83
+DOC4,Pediatrics,12,Monday,12,8,normal,109.79
+DOC5,Dermatology,8,Sunday,11,3,normal,32.34
+DOC1,Cardiology,15,Thursday,15,4,normal,99.68
+DOC1,Cardiology,15,Friday,15,9,normal,196.04
+DOC5,Dermatology,8,Saturday,13,4,normal,23.25
+DOC3,Orthopedics,20,Wednesday,12,5,normal,93.12
+DOC4,Pediatrics,12,Saturday,18,6,normal,81.9
+DOC4,Pediatrics,12,Sunday,19,2,normal,27.1
+DOC4,Pediatrics,12,Monday,9,6,normal,148.06
+DOC1,Cardiology,15,Monday,18,2,normal,75.98
+DOC5,Dermatology,8,Friday,9,5,normal,65.84
+DOC2,General Medicine,10,Monday,14,6,normal,72.41
+DOC6,General Medicine,10,Friday,19,1,normal,19.34
+DOC1,Cardiology,15,Wednesday,14,3,normal,54.43
+DOC1,Cardiology,15,Monday,10,3,normal,107.58
+DOC4,Pediatrics,12,Sunday,13,4,normal,29.63
+DOC1,Cardiology,15,Thursday,9,3,normal,85.66
+DOC6,General Medicine,10,Thursday,17,2,normal,36.21
+DOC5,Dermatology,8,Sunday,12,2,normal,11.98
+DOC3,Orthopedics,20,Thursday,17,5,normal,156.3
+DOC2,General Medicine,10,Saturday,14,3,normal,23.94
+DOC1,Cardiology,15,Monday,18,2,normal,73.57
+DOC4,Pediatrics,12,Tuesday,11,1,normal,32.87
+DOC1,Cardiology,15,Friday,12,4,normal,60.36
+DOC6,General Medicine,10,Friday,18,3,normal,52.59
+DOC6,General Medicine,10,Wednesday,15,6,normal,92.02
+DOC1,Cardiology,15,Monday,14,5,normal,96.27
+DOC4,Pediatrics,12,Tuesday,15,7,emergency,6.78
+DOC6,General Medicine,10,Sunday,14,6,normal,32.68
+DOC4,Pediatrics,12,Friday,9,1,normal,34.44
+DOC2,General Medicine,10,Wednesday,17,5,normal,77.63
+DOC5,Dermatology,8,Tuesday,19,4,normal,40.08
+DOC5,Dermatology,8,Thursday,15,4,normal,51.72
+DOC4,Pediatrics,12,Tuesday,16,4,normal,77.56
+DOC5,Dermatology,8,Wednesday,12,1,normal,15.65
+DOC4,Pediatrics,12,Tuesday,10,5,emergency,2.77
+DOC6,General Medicine,10,Saturday,11,5,normal,62.17
+DOC4,Pediatrics,12,Tuesday,12,5,normal,56.84
+DOC1,Cardiology,15,Wednesday,10,4,emergency,7.22
+DOC2,General Medicine,10,Friday,17,8,normal,121.42
+DOC3,Orthopedics,20,Saturday,16,5,normal,112.24
+DOC2,General Medicine,10,Wednesday,19,5,normal,50.74
+DOC5,Dermatology,8,Friday,11,3,normal,45.44
+DOC5,Dermatology,8,Wednesday,12,2,normal,23.16
+DOC5,Dermatology,8,Wednesday,9,3,normal,46.33
+DOC4,Pediatrics,12,Thursday,17,4,normal,74.73
+DOC3,Orthopedics,20,Tuesday,17,3,normal,108.39
+DOC6,General Medicine,10,Wednesday,10,4,normal,69.03
+DOC5,Dermatology,8,Thursday,17,5,normal,65.99
+DOC2,General Medicine,10,Sunday,15,5,normal,51.63
+DOC4,Pediatrics,12,Saturday,12,3,normal,24.99
+DOC4,Pediatrics,12,Saturday,12,5,normal,39.36
+DOC3,Orthopedics,20,Friday,18,3,normal,107.2
+DOC1,Cardiology,15,Tuesday,15,4,normal,103.51
+DOC1,Cardiology,15,Tuesday,14,3,normal,47.02
+DOC2,General Medicine,10,Thursday,10,9,normal,139.48
+DOC2,General Medicine,10,Monday,17,6,normal,115.94
+DOC3,Orthopedics,20,Tuesday,11,7,normal,225.28
+DOC4,Pediatrics,12,Tuesday,13,4,normal,46.71
+DOC6,General Medicine,10,Wednesday,15,3,normal,46.68
+DOC4,Pediatrics,12,Tuesday,9,3,normal,65.12
+DOC6,General Medicine,10,Saturday,13,2,normal,19.26
+DOC6,General Medicine,10,Wednesday,13,4,normal,38.49
+DOC6,General Medicine,10,Monday,19,2,normal,34.84
+DOC2,General Medicine,10,Friday,9,3,normal,56.16
+DOC5,Dermatology,8,Friday,16,10,normal,111.08
+DOC4,Pediatrics,12,Sunday,12,6,normal,46.73
+DOC4,Pediatrics,12,Sunday,13,3,normal,29.22
+DOC4,Pediatrics,12,Saturday,19,2,normal,23.03
+DOC3,Orthopedics,20,Thursday,9,7,normal,220.91
+DOC4,Pediatrics,12,Wednesday,19,7,normal,80.9
+DOC1,Cardiology,15,Sunday,17,1,normal,30.72
+DOC1,Cardiology,15,Saturday,12,8,normal,74.68
+DOC1,Cardiology,15,Friday,10,5,normal,129.49
+DOC4,Pediatrics,12,Monday,14,3,normal,48.74
+DOC4,Pediatrics,12,Monday,10,6,normal,156.02
+DOC2,General Medicine,10,Tuesday,13,3,normal,30.24
+DOC5,Dermatology,8,Tuesday,16,3,normal,43.5
+DOC1,Cardiology,15,Saturday,9,4,normal,67.95
+DOC2,General Medicine,10,Tuesday,19,1,normal,16.34
+DOC6,General Medicine,10,Sunday,9,3,normal,40.14
+DOC5,Dermatology,8,Friday,19,2,normal,22.41
+DOC6,General Medicine,10,Tuesday,16,3,normal,49.29
+DOC1,Cardiology,15,Wednesday,10,4,normal,108.32
+DOC6,General Medicine,10,Thursday,15,3,normal,53.53
+DOC4,Pediatrics,12,Friday,9,2,normal,49.91
+DOC1,Cardiology,15,Sunday,19,3,normal,36.59
+DOC3,Orthopedics,20,Monday,10,4,normal,181.73
+DOC2,General Medicine,10,Sunday,9,2,normal,21.91
+DOC4,Pediatrics,12,Sunday,15,5,normal,64.91
+DOC1,Cardiology,15,Wednesday,17,0,normal,20.74
+DOC2,General Medicine,10,Sunday,16,5,normal,54.46
+DOC5,Dermatology,8,Sunday,19,4,normal,27.77
+DOC1,Cardiology,15,Tuesday,17,3,normal,78.84
+DOC6,General Medicine,10,Thursday,15,5,normal,80.22
+DOC5,Dermatology,8,Thursday,18,3,normal,43.01
+DOC2,General Medicine,10,Tuesday,18,4,normal,63.5
+DOC3,Orthopedics,20,Sunday,9,5,normal,117.92
+DOC6,General Medicine,10,Tuesday,17,3,normal,50.97
+DOC6,General Medicine,10,Wednesday,17,2,emergency,9.52
+DOC2,General Medicine,10,Sunday,19,8,normal,55.38
+DOC3,Orthopedics,20,Sunday,12,3,normal,43.09
+DOC6,General Medicine,10,Tuesday,19,6,normal,55.84
+DOC5,Dermatology,8,Friday,18,4,normal,50.42
+DOC4,Pediatrics,12,Wednesday,18,4,normal,76.96
+DOC1,Cardiology,15,Thursday,13,6,normal,80.52
+DOC3,Orthopedics,20,Wednesday,15,3,normal,101.09
+DOC5,Dermatology,8,Friday,13,2,normal,18.3
+DOC4,Pediatrics,12,Monday,18,5,normal,120.79
+DOC6,General Medicine,10,Sunday,19,6,normal,45.28
+DOC6,General Medicine,10,Sunday,10,6,normal,73.68
+DOC6,General Medicine,10,Wednesday,15,3,normal,53.0
+DOC1,Cardiology,15,Tuesday,19,1,normal,24.01
+DOC5,Dermatology,8,Wednesday,9,3,normal,44.02
+DOC1,Cardiology,15,Sunday,9,6,normal,106.39
+DOC5,Dermatology,8,Saturday,10,7,normal,62.44
+DOC2,General Medicine,10,Saturday,17,3,normal,35.16
+DOC6,General Medicine,10,Friday,15,4,normal,64.18
+DOC6,General Medicine,10,Friday,16,2,normal,37.58
+DOC1,Cardiology,15,Friday,17,5,normal,117.47
+DOC5,Dermatology,8,Saturday,15,4,normal,31.48
+DOC4,Pediatrics,12,Saturday,13,3,normal,24.55
+DOC6,General Medicine,10,Friday,18,8,normal,120.5
+DOC2,General Medicine,10,Thursday,10,3,normal,55.39
+DOC2,General Medicine,10,Saturday,19,6,normal,47.62
+DOC4,Pediatrics,12,Monday,17,7,normal,165.62
+DOC3,Orthopedics,20,Tuesday,10,2,normal,82.99
+DOC3,Orthopedics,20,Monday,14,1,normal,44.05
+DOC3,Orthopedics,20,Tuesday,13,3,normal,64.5
+DOC3,Orthopedics,20,Sunday,9,5,normal,118.55
+DOC3,Orthopedics,20,Friday,13,4,normal,72.74
+DOC3,Orthopedics,20,Monday,13,4,normal,103.01
+DOC1,Cardiology,15,Monday,18,6,normal,173.53
+DOC3,Orthopedics,20,Saturday,15,5,normal,103.17
+DOC2,General Medicine,10,Saturday,11,5,normal,59.69
+DOC2,General Medicine,10,Sunday,18,8,normal,80.59
+DOC4,Pediatrics,12,Saturday,14,2,normal,17.84
+DOC1,Cardiology,15,Tuesday,14,4,normal,59.41
+DOC3,Orthopedics,20,Sunday,10,1,normal,36.71
+DOC3,Orthopedics,20,Tuesday,10,6,emergency,5.02
+DOC4,Pediatrics,12,Tuesday,18,4,normal,82.54
+DOC3,Orthopedics,20,Friday,18,3,normal,106.15
+DOC5,Dermatology,8,Sunday,16,4,normal,35.28
+DOC1,Cardiology,15,Monday,10,4,normal,128.73
+DOC5,Dermatology,8,Thursday,18,6,normal,70.78
+DOC3,Orthopedics,20,Thursday,15,2,normal,73.19
+DOC6,General Medicine,10,Saturday,17,1,normal,17.08
+DOC4,Pediatrics,12,Saturday,11,8,normal,107.5
+DOC6,General Medicine,10,Friday,18,7,normal,102.81
+DOC5,Dermatology,8,Monday,10,2,normal,44.27
+DOC3,Orthopedics,20,Wednesday,18,6,normal,182.19
+DOC2,General Medicine,10,Tuesday,12,4,normal,41.03
+DOC5,Dermatology,8,Thursday,15,1,normal,15.82
+DOC3,Orthopedics,20,Tuesday,19,3,normal,71.91
+DOC3,Orthopedics,20,Friday,19,5,normal,111.78
+DOC4,Pediatrics,12,Monday,17,4,emergency,9.01
+DOC1,Cardiology,15,Saturday,12,3,normal,36.1
+DOC6,General Medicine,10,Saturday,10,1,normal,23.91
+DOC2,General Medicine,10,Wednesday,10,3,normal,57.56
+DOC2,General Medicine,10,Saturday,10,5,normal,62.58
+DOC5,Dermatology,8,Saturday,11,7,normal,64.49
+DOC5,Dermatology,8,Friday,16,3,normal,46.95
+DOC6,General Medicine,10,Thursday,18,6,emergency,3.21
+DOC6,General Medicine,10,Thursday,19,4,normal,48.28
+DOC2,General Medicine,10,Saturday,19,5,normal,40.32
+DOC5,Dermatology,8,Thursday,10,6,normal,79.44
+DOC2,General Medicine,10,Saturday,19,1,normal,12.99
+DOC2,General Medicine,10,Thursday,9,2,normal,36.68
+DOC4,Pediatrics,12,Thursday,19,1,normal,24.4
+DOC1,Cardiology,15,Monday,15,4,normal,128.79
+DOC3,Orthopedics,20,Monday,15,3,normal,136.86
+DOC2,General Medicine,10,Friday,9,4,normal,71.62
+DOC4,Pediatrics,12,Monday,12,3,normal,47.84
+DOC3,Orthopedics,20,Tuesday,15,4,normal,129.91
+DOC4,Pediatrics,12,Sunday,13,3,normal,29.05
+DOC1,Cardiology,15,Wednesday,12,5,normal,74.77
+DOC4,Pediatrics,12,Friday,11,7,normal,135.03
+DOC6,General Medicine,10,Friday,16,5,normal,80.46
+DOC5,Dermatology,8,Tuesday,11,4,normal,56.49
+DOC5,Dermatology,8,Wednesday,19,4,normal,33.09
+DOC4,Pediatrics,12,Monday,14,5,normal,76.57
+DOC5,Dermatology,8,Monday,19,2,normal,32.86
+DOC1,Cardiology,15,Monday,16,2,normal,72.94
+DOC5,Dermatology,8,Monday,13,6,normal,57.25
+DOC5,Dermatology,8,Thursday,15,2,normal,30.89
+DOC6,General Medicine,10,Monday,17,2,normal,52.66
+DOC2,General Medicine,10,Saturday,11,6,normal,68.56
+DOC2,General Medicine,10,Wednesday,19,1,normal,18.34
+DOC4,Pediatrics,12,Friday,14,6,normal,69.51
+DOC2,General Medicine,10,Sunday,15,1,normal,18.34
+DOC2,General Medicine,10,Tuesday,16,14,normal,195.99
+DOC5,Dermatology,8,Monday,10,5,normal,90.73
+DOC1,Cardiology,15,Monday,17,6,normal,178.72
+DOC6,General Medicine,10,Wednesday,9,6,normal,92.49
+DOC1,Cardiology,15,Wednesday,19,3,normal,58.21
+DOC6,General Medicine,10,Monday,11,3,normal,71.28
+DOC4,Pediatrics,12,Friday,10,3,normal,62.55
+DOC5,Dermatology,8,Saturday,13,4,normal,21.31
+DOC2,General Medicine,10,Saturday,15,4,normal,45.61
+DOC3,Orthopedics,20,Saturday,19,2,normal,36.89
+DOC5,Dermatology,8,Thursday,13,4,normal,32.01
+DOC6,General Medicine,10,Saturday,19,4,normal,31.49
+DOC2,General Medicine,10,Monday,11,6,normal,122.88
+DOC4,Pediatrics,12,Monday,11,2,normal,65.25
+DOC5,Dermatology,8,Tuesday,16,1,normal,13.29
+DOC3,Orthopedics,20,Saturday,14,7,normal,91.39
+DOC2,General Medicine,10,Sunday,17,2,normal,20.28
+DOC1,Cardiology,15,Sunday,11,4,normal,72.97
+DOC6,General Medicine,10,Wednesday,16,6,emergency,4.16
+DOC6,General Medicine,10,Saturday,18,6,normal,66.82
+DOC1,Cardiology,15,Wednesday,18,9,normal,198.21
+DOC2,General Medicine,10,Monday,12,1,normal,21.5
+DOC6,General Medicine,10,Tuesday,12,7,normal,65.8
+DOC3,Orthopedics,20,Wednesday,13,4,normal,84.33
+DOC6,General Medicine,10,Monday,12,5,normal,62.18
+DOC3,Orthopedics,20,Wednesday,16,6,emergency,2.53
+DOC1,Cardiology,15,Sunday,11,3,normal,63.46
+DOC6,General Medicine,10,Monday,13,3,normal,41.05
+DOC2,General Medicine,10,Sunday,17,5,normal,52.52
+DOC5,Dermatology,8,Sunday,10,2,normal,24.2
+DOC6,General Medicine,10,Tuesday,18,7,emergency,2.35
+DOC1,Cardiology,15,Friday,9,1,normal,40.36
+DOC1,Cardiology,15,Wednesday,9,2,normal,63.26
+DOC4,Pediatrics,12,Thursday,13,3,normal,34.87
+DOC5,Dermatology,8,Friday,12,2,normal,22.68
+DOC1,Cardiology,15,Saturday,18,0,normal,14.07
+DOC1,Cardiology,15,Tuesday,18,5,normal,116.47
+DOC5,Dermatology,8,Monday,13,2,normal,21.89
+DOC2,General Medicine,10,Monday,14,3,normal,43.01
+DOC4,Pediatrics,12,Tuesday,18,3,normal,59.13
+DOC4,Pediatrics,12,Tuesday,19,5,normal,69.11
+DOC5,Dermatology,8,Thursday,16,1,normal,24.49
+DOC6,General Medicine,10,Friday,9,2,normal,43.59
+DOC2,General Medicine,10,Friday,14,2,normal,18.69
+DOC2,General Medicine,10,Tuesday,15,2,normal,35.92
+DOC5,Dermatology,8,Monday,11,4,normal,75.19
+DOC1,Cardiology,15,Monday,10,2,normal,83.54
+DOC5,Dermatology,8,Friday,16,6,normal,73.26
+DOC3,Orthopedics,20,Wednesday,12,4,normal,78.97
+DOC6,General Medicine,10,Monday,18,1,normal,36.05
+DOC6,General Medicine,10,Saturday,13,2,normal,10.89
+DOC1,Cardiology,15,Sunday,18,6,normal,93.52
+DOC2,General Medicine,10,Friday,13,1,normal,11.37
+DOC4,Pediatrics,12,Monday,17,2,normal,59.02
+DOC4,Pediatrics,12,Tuesday,17,9,normal,157.73
+DOC4,Pediatrics,12,Monday,11,3,normal,88.97
+DOC6,General Medicine,10,Wednesday,12,7,normal,64.78
+DOC3,Orthopedics,20,Tuesday,11,6,normal,199.04
+DOC1,Cardiology,15,Monday,16,4,emergency,3.72
+DOC3,Orthopedics,20,Thursday,10,2,normal,83.16
+DOC2,General Medicine,10,Sunday,19,3,normal,25.26
+DOC1,Cardiology,15,Tuesday,11,6,normal,152.99
+DOC5,Dermatology,8,Friday,18,1,normal,17.58
+DOC6,General Medicine,10,Wednesday,19,6,normal,58.39
+DOC5,Dermatology,8,Monday,15,3,normal,50.72
+DOC1,Cardiology,15,Tuesday,15,1,normal,36.46
+DOC4,Pediatrics,12,Thursday,15,3,normal,65.47
+DOC2,General Medicine,10,Tuesday,17,6,normal,91.38
+DOC3,Orthopedics,20,Saturday,12,2,normal,39.78
+DOC2,General Medicine,10,Wednesday,12,6,normal,50.02
+DOC2,General Medicine,10,Saturday,18,4,normal,47.12
+DOC2,General Medicine,10,Monday,11,2,normal,52.25
+DOC3,Orthopedics,20,Sunday,15,2,normal,58.58
+DOC2,General Medicine,10,Wednesday,13,2,normal,18.71
+DOC5,Dermatology,8,Saturday,13,8,normal,37.29
+DOC5,Dermatology,8,Saturday,19,4,normal,25.74
+DOC5,Dermatology,8,Wednesday,13,3,normal,27.85
+DOC6,General Medicine,10,Friday,10,6,normal,95.98
+DOC3,Orthopedics,20,Wednesday,10,2,emergency,6.1
+DOC2,General Medicine,10,Sunday,13,5,normal,30.72
+DOC5,Dermatology,8,Sunday,9,5,normal,45.58
+DOC1,Cardiology,15,Wednesday,16,3,normal,70.85
+DOC5,Dermatology,8,Wednesday,16,4,normal,52.43
+DOC3,Orthopedics,20,Tuesday,18,4,normal,129.71
+DOC4,Pediatrics,12,Friday,19,6,normal,70.44
+DOC3,Orthopedics,20,Monday,14,2,normal,56.41
+DOC3,Orthopedics,20,Friday,10,6,normal,192.75
+DOC5,Dermatology,8,Friday,15,3,normal,39.86
+DOC6,General Medicine,10,Tuesday,12,5,normal,47.07
+DOC4,Pediatrics,12,Saturday,12,1,normal,18.04
+DOC2,General Medicine,10,Sunday,12,4,normal,29.25
+DOC2,General Medicine,10,Tuesday,18,5,normal,81.94
+DOC4,Pediatrics,12,Friday,16,3,normal,68.67
+DOC1,Cardiology,15,Monday,19,2,normal,52.94
+DOC6,General Medicine,10,Friday,13,1,normal,16.84
+DOC6,General Medicine,10,Tuesday,10,5,normal,89.37
+DOC6,General Medicine,10,Monday,15,1,normal,34.48
+DOC4,Pediatrics,12,Friday,12,7,normal,78.45
+DOC1,Cardiology,15,Sunday,18,4,normal,67.9
+DOC2,General Medicine,10,Wednesday,13,3,normal,32.91
+DOC2,General Medicine,10,Tuesday,10,5,normal,82.56
+DOC2,General Medicine,10,Thursday,14,7,normal,63.08
+DOC3,Orthopedics,20,Saturday,12,7,normal,82.95
+DOC5,Dermatology,8,Friday,18,4,normal,52.61
+DOC6,General Medicine,10,Wednesday,16,3,normal,52.04
+DOC2,General Medicine,10,Sunday,10,4,normal,46.68
+DOC6,General Medicine,10,Friday,10,5,normal,82.91
+DOC3,Orthopedics,20,Saturday,12,3,normal,46.7
+DOC3,Orthopedics,20,Wednesday,19,2,normal,50.21
+DOC4,Pediatrics,12,Wednesday,14,2,normal,34.38
+DOC2,General Medicine,10,Saturday,19,3,normal,23.61
+DOC6,General Medicine,10,Wednesday,16,1,normal,21.68
+DOC6,General Medicine,10,Tuesday,19,6,normal,65.76
+DOC2,General Medicine,10,Monday,18,1,normal,27.39
+DOC6,General Medicine,10,Saturday,15,3,normal,35.45
+DOC4,Pediatrics,12,Friday,17,3,normal,56.86
+DOC6,General Medicine,10,Tuesday,19,3,normal,30.8
+DOC5,Dermatology,8,Tuesday,13,3,normal,22.84
+DOC1,Cardiology,15,Saturday,19,4,normal,49.62
+DOC1,Cardiology,15,Monday,19,1,normal,31.85
+DOC4,Pediatrics,12,Friday,10,1,normal,31.25
+DOC3,Orthopedics,20,Tuesday,14,2,normal,48.9
+DOC2,General Medicine,10,Monday,17,4,normal,91.77
+DOC2,General Medicine,10,Wednesday,9,7,normal,116.85
+DOC5,Dermatology,8,Thursday,12,1,normal,11.97
+DOC5,Dermatology,8,Monday,18,2,normal,38.64
+DOC6,General Medicine,10,Thursday,9,1,normal,28.43
+DOC2,General Medicine,10,Saturday,18,3,normal,36.0
+DOC3,Orthopedics,20,Tuesday,15,1,normal,52.28
+DOC4,Pediatrics,12,Wednesday,12,5,normal,56.75
+DOC2,General Medicine,10,Friday,12,2,normal,23.11
+DOC6,General Medicine,10,Tuesday,19,3,normal,36.0
+DOC5,Dermatology,8,Monday,9,6,normal,104.43
+DOC4,Pediatrics,12,Monday,10,2,normal,62.63
+DOC3,Orthopedics,20,Sunday,13,6,normal,77.38
+DOC2,General Medicine,10,Friday,15,7,normal,101.8
+DOC6,General Medicine,10,Tuesday,19,0,normal,4.21
+DOC3,Orthopedics,20,Friday,18,1,normal,56.32
+DOC2,General Medicine,10,Tuesday,11,3,normal,58.08
+DOC5,Dermatology,8,Wednesday,18,2,normal,31.21
+DOC2,General Medicine,10,Monday,10,5,normal,112.34
+DOC1,Cardiology,15,Wednesday,11,5,normal,126.49
+DOC4,Pediatrics,12,Sunday,12,3,normal,28.3
+DOC4,Pediatrics,12,Wednesday,12,2,normal,18.91
+DOC5,Dermatology,8,Saturday,13,3,normal,21.39
+DOC1,Cardiology,15,Tuesday,19,3,normal,56.84
+DOC5,Dermatology,8,Saturday,10,2,normal,27.14
+DOC6,General Medicine,10,Tuesday,14,5,normal,51.65
+DOC2,General Medicine,10,Monday,17,3,normal,70.3
+DOC2,General Medicine,10,Monday,13,2,normal,29.83
+DOC6,General Medicine,10,Friday,15,6,normal,94.26
+DOC6,General Medicine,10,Sunday,18,5,normal,51.5
+DOC3,Orthopedics,20,Thursday,12,5,normal,98.35
+DOC4,Pediatrics,12,Thursday,17,4,normal,72.3
+DOC5,Dermatology,8,Saturday,9,4,normal,36.94
+DOC1,Cardiology,15,Monday,14,5,normal,92.19
+DOC4,Pediatrics,12,Tuesday,12,5,normal,55.22
+DOC4,Pediatrics,12,Thursday,16,8,normal,139.06
+DOC6,General Medicine,10,Friday,18,3,normal,49.87
+DOC2,General Medicine,10,Monday,16,6,normal,114.11
+DOC6,General Medicine,10,Monday,12,5,normal,62.99
+DOC4,Pediatrics,12,Saturday,11,1,normal,19.42
+DOC6,General Medicine,10,Thursday,10,3,normal,56.04
+DOC1,Cardiology,15,Friday,10,2,normal,65.66
+DOC4,Pediatrics,12,Friday,12,1,normal,13.09
+DOC3,Orthopedics,20,Friday,12,5,normal,98.23
+DOC6,General Medicine,10,Thursday,16,5,normal,82.25
+DOC5,Dermatology,8,Monday,17,5,normal,78.03
+DOC4,Pediatrics,12,Friday,12,4,normal,51.67
+DOC4,Pediatrics,12,Monday,14,2,normal,33.89
+DOC6,General Medicine,10,Thursday,19,2,normal,19.83
+DOC2,General Medicine,10,Thursday,18,7,normal,105.78
+DOC4,Pediatrics,12,Wednesday,9,9,normal,168.9
+DOC1,Cardiology,15,Thursday,16,5,normal,123.5
+DOC4,Pediatrics,12,Tuesday,15,3,normal,65.37
+DOC1,Cardiology,15,Wednesday,15,6,normal,134.17
+DOC5,Dermatology,8,Tuesday,16,5,normal,65.5
+DOC1,Cardiology,15,Thursday,16,5,normal,122.42
+DOC3,Orthopedics,20,Tuesday,14,5,emergency,6.32
+DOC4,Pediatrics,12,Friday,9,7,normal,132.81
+DOC4,Pediatrics,12,Tuesday,10,3,normal,67.89
+DOC4,Pediatrics,12,Friday,9,6,emergency,5.21
+DOC4,Pediatrics,12,Wednesday,19,2,normal,35.63
+DOC3,Orthopedics,20,Sunday,15,3,normal,77.54
+DOC1,Cardiology,15,Sunday,16,4,normal,67.03
+DOC6,General Medicine,10,Monday,13,6,normal,74.67
+DOC3,Orthopedics,20,Wednesday,15,2,normal,72.57
+DOC1,Cardiology,15,Wednesday,12,7,normal,98.9
+DOC6,General Medicine,10,Thursday,16,5,normal,78.43
+DOC6,General Medicine,10,Monday,17,2,normal,52.82
+DOC6,General Medicine,10,Monday,19,4,normal,60.94
+DOC4,Pediatrics,12,Saturday,13,6,normal,46.62
+DOC4,Pediatrics,12,Sunday,12,2,normal,20.81
+DOC5,Dermatology,8,Friday,15,6,normal,71.76
+DOC3,Orthopedics,20,Sunday,14,6,normal,80.8
+DOC6,General Medicine,10,Thursday,17,4,normal,64.68
+DOC4,Pediatrics,12,Friday,16,9,normal,154.06
+DOC6,General Medicine,10,Sunday,12,5,normal,31.68
+DOC3,Orthopedics,20,Thursday,10,6,normal,195.46
+DOC4,Pediatrics,12,Friday,15,7,normal,125.29
+DOC1,Cardiology,15,Thursday,15,1,normal,40.25
+DOC4,Pediatrics,12,Sunday,18,1,normal,28.31
+DOC6,General Medicine,10,Thursday,17,5,normal,74.83
+DOC3,Orthopedics,20,Sunday,10,5,normal,120.66
+DOC1,Cardiology,15,Sunday,15,5,normal,78.83
+DOC2,General Medicine,10,Tuesday,19,4,normal,45.74
+DOC1,Cardiology,15,Friday,15,8,normal,174.12
+DOC6,General Medicine,10,Saturday,9,3,normal,34.6
+DOC6,General Medicine,10,Friday,19,2,normal,27.96
+DOC5,Dermatology,8,Thursday,19,1,normal,10.84
+DOC5,Dermatology,8,Tuesday,14,2,normal,21.58
+DOC3,Orthopedics,20,Wednesday,14,0,normal,18.28
+DOC3,Orthopedics,20,Sunday,18,3,normal,66.97
+DOC2,General Medicine,10,Tuesday,18,3,normal,49.29
+DOC1,Cardiology,15,Tuesday,16,7,normal,158.86
+DOC1,Cardiology,15,Thursday,16,6,normal,132.97
+DOC1,Cardiology,15,Friday,18,2,normal,56.44
+DOC6,General Medicine,10,Saturday,14,1,normal,10.62
+DOC4,Pediatrics,12,Thursday,9,3,normal,71.32
+DOC4,Pediatrics,12,Wednesday,12,5,normal,58.27
+DOC3,Orthopedics,20,Friday,18,4,normal,131.15
+DOC6,General Medicine,10,Saturday,17,6,normal,58.36
+DOC2,General Medicine,10,Friday,17,3,normal,52.7
+DOC3,Orthopedics,20,Wednesday,13,4,normal,76.47
+DOC2,General Medicine,10,Sunday,12,1,normal,7.61
+DOC2,General Medicine,10,Saturday,14,4,emergency,1.99
+DOC3,Orthopedics,20,Thursday,14,6,normal,119.42
+DOC3,Orthopedics,20,Wednesday,9,3,normal,106.97
+DOC6,General Medicine,10,Tuesday,12,2,normal,26.31
+DOC1,Cardiology,15,Thursday,19,3,normal,56.33
+DOC3,Orthopedics,20,Saturday,12,4,normal,59.25
+DOC5,Dermatology,8,Friday,9,2,normal,30.28
+DOC4,Pediatrics,12,Tuesday,19,4,normal,54.31
+DOC4,Pediatrics,12,Thursday,16,3,normal,65.43
+DOC1,Cardiology,15,Monday,15,3,emergency,6.24
+DOC1,Cardiology,15,Tuesday,12,3,normal,45.52
+DOC6,General Medicine,10,Thursday,9,8,normal,127.2
+DOC3,Orthopedics,20,Thursday,15,5,normal,156.01
+DOC4,Pediatrics,12,Thursday,12,3,emergency,2.17
+DOC1,Cardiology,15,Thursday,12,3,normal,49.72
+DOC6,General Medicine,10,Monday,15,1,normal,37.26
+DOC6,General Medicine,10,Thursday,16,4,normal,63.7
+DOC6,General Medicine,10,Sunday,12,6,normal,31.93
+DOC6,General Medicine,10,Saturday,15,5,normal,54.75
+DOC6,General Medicine,10,Wednesday,10,3,normal,55.55
+DOC2,General Medicine,10,Wednesday,16,6,emergency,6.76
+DOC6,General Medicine,10,Thursday,18,1,normal,26.01
+DOC6,General Medicine,10,Friday,18,5,normal,78.17
+DOC2,General Medicine,10,Sunday,12,4,normal,31.1
+DOC5,Dermatology,8,Thursday,12,2,normal,22.33
+DOC2,General Medicine,10,Tuesday,16,6,normal,96.0
+DOC3,Orthopedics,20,Thursday,19,3,normal,73.85
+DOC5,Dermatology,8,Monday,15,3,normal,47.04
+DOC4,Pediatrics,12,Wednesday,12,6,normal,73.77
+DOC1,Cardiology,15,Tuesday,15,4,normal,101.9
+DOC3,Orthopedics,20,Wednesday,16,4,normal,126.05
+DOC4,Pediatrics,12,Saturday,19,4,emergency,4.78
+DOC5,Dermatology,8,Wednesday,14,5,normal,36.77
+DOC2,General Medicine,10,Sunday,13,3,normal,23.84
+DOC4,Pediatrics,12,Monday,16,2,normal,67.84
+DOC2,General Medicine,10,Sunday,10,2,normal,30.35
+DOC5,Dermatology,8,Sunday,19,3,normal,15.4
+DOC1,Cardiology,15,Sunday,13,0,normal,10.34
+DOC3,Orthopedics,20,Wednesday,10,3,normal,111.67
+DOC4,Pediatrics,12,Thursday,12,2,normal,27.85
+DOC5,Dermatology,8,Wednesday,11,6,normal,84.19
+DOC1,Cardiology,15,Saturday,9,3,normal,60.32
+DOC6,General Medicine,10,Thursday,15,2,normal,41.78
+DOC5,Dermatology,8,Saturday,9,7,normal,65.63
+DOC1,Cardiology,15,Wednesday,12,7,normal,97.32
+DOC5,Dermatology,8,Thursday,19,3,normal,30.83
+DOC1,Cardiology,15,Monday,18,6,normal,176.61
+DOC1,Cardiology,15,Thursday,17,6,normal,138.87
+DOC4,Pediatrics,12,Sunday,15,6,normal,75.56
+DOC3,Orthopedics,20,Saturday,15,8,normal,161.22
+DOC4,Pediatrics,12,Wednesday,11,4,normal,84.4
+DOC1,Cardiology,15,Sunday,10,5,normal,90.48
+DOC2,General Medicine,10,Tuesday,17,5,normal,76.71
+DOC2,General Medicine,10,Saturday,10,5,normal,61.51
+DOC5,Dermatology,8,Friday,15,8,normal,92.55
+DOC5,Dermatology,8,Friday,19,3,normal,32.31
+DOC2,General Medicine,10,Tuesday,19,6,normal,62.43
+DOC5,Dermatology,8,Saturday,11,7,normal,62.08
+DOC1,Cardiology,15,Wednesday,15,6,normal,139.74
+DOC6,General Medicine,10,Saturday,14,6,normal,44.52
+DOC1,Cardiology,15,Sunday,19,7,normal,78.41
+DOC6,General Medicine,10,Wednesday,17,2,normal,38.88
+DOC1,Cardiology,15,Monday,14,1,normal,27.37
+DOC3,Orthopedics,20,Monday,18,4,emergency,5.14
+DOC4,Pediatrics,12,Wednesday,16,4,normal,77.76
+DOC1,Cardiology,15,Saturday,16,6,normal,101.82
+DOC3,Orthopedics,20,Friday,11,1,normal,59.7
+DOC5,Dermatology,8,Friday,13,3,normal,29.38
+DOC1,Cardiology,15,Sunday,14,4,normal,41.89
+DOC6,General Medicine,10,Thursday,13,6,normal,48.96
+DOC2,General Medicine,10,Friday,17,7,normal,104.13
+DOC3,Orthopedics,20,Monday,16,3,normal,135.3
+DOC3,Orthopedics,20,Sunday,19,3,normal,49.15
+DOC4,Pediatrics,12,Thursday,9,5,normal,100.19
+DOC5,Dermatology,8,Monday,12,5,normal,45.82
+DOC5,Dermatology,8,Friday,17,2,normal,29.33
+DOC4,Pediatrics,12,Wednesday,12,2,normal,26.51
+DOC1,Cardiology,15,Monday,11,4,normal,132.41
+DOC5,Dermatology,8,Sunday,9,1,normal,18.9
+DOC3,Orthopedics,20,Saturday,17,3,normal,71.07
+DOC5,Dermatology,8,Wednesday,13,6,normal,47.55
+DOC3,Orthopedics,20,Saturday,18,5,normal,110.73
+DOC4,Pediatrics,12,Friday,10,3,normal,70.86
+DOC3,Orthopedics,20,Tuesday,11,2,normal,80.16
+DOC6,General Medicine,10,Thursday,14,4,normal,38.57
+DOC1,Cardiology,15,Saturday,15,2,normal,41.99
+DOC5,Dermatology,8,Sunday,9,8,normal,69.37
+DOC6,General Medicine,10,Saturday,18,2,normal,23.6
+DOC2,General Medicine,10,Monday,18,6,normal,111.63
+DOC3,Orthopedics,20,Friday,15,1,emergency,5.15
+DOC5,Dermatology,8,Monday,18,7,normal,110.24
+DOC1,Cardiology,15,Saturday,19,5,normal,56.24
+DOC3,Orthopedics,20,Thursday,9,6,normal,201.23
+DOC4,Pediatrics,12,Sunday,11,7,normal,95.85
+DOC2,General Medicine,10,Monday,19,3,normal,48.69
+DOC6,General Medicine,10,Tuesday,17,3,normal,51.57
+DOC2,General Medicine,10,Wednesday,9,2,normal,39.47
+DOC6,General Medicine,10,Saturday,10,3,emergency,5.8
+DOC4,Pediatrics,12,Monday,18,8,normal,173.09
+DOC1,Cardiology,15,Wednesday,10,4,normal,106.67
+DOC6,General Medicine,10,Wednesday,12,4,normal,43.19
+DOC5,Dermatology,8,Tuesday,18,2,normal,29.96
+DOC1,Cardiology,15,Sunday,12,5,normal,52.73
+DOC2,General Medicine,10,Friday,19,7,normal,75.28
+DOC3,Orthopedics,20,Friday,12,2,normal,44.15
+DOC3,Orthopedics,20,Tuesday,13,3,normal,63.8
+DOC4,Pediatrics,12,Friday,9,5,normal,107.51
+DOC1,Cardiology,15,Friday,12,1,normal,27.26
+DOC1,Cardiology,15,Tuesday,18,2,normal,57.15
+DOC1,Cardiology,15,Sunday,13,2,normal,22.02
+DOC4,Pediatrics,12,Tuesday,18,3,normal,63.99
+DOC6,General Medicine,10,Tuesday,14,5,normal,46.42
+DOC4,Pediatrics,12,Sunday,14,3,normal,22.94
+DOC3,Orthopedics,20,Friday,12,5,emergency,6.03
+DOC1,Cardiology,15,Monday,13,3,normal,64.1
+DOC6,General Medicine,10,Friday,18,11,normal,160.01
+DOC1,Cardiology,15,Saturday,17,4,normal,70.33
+DOC1,Cardiology,15,Monday,10,2,normal,78.28
+DOC1,Cardiology,15,Wednesday,17,2,normal,60.63
+DOC3,Orthopedics,20,Wednesday,9,1,normal,57.2
+DOC2,General Medicine,10,Monday,15,2,emergency,6.75
+DOC1,Cardiology,15,Friday,18,5,normal,115.9
+DOC5,Dermatology,8,Saturday,14,7,normal,33.38
+DOC6,General Medicine,10,Tuesday,10,4,normal,75.73
+DOC5,Dermatology,8,Sunday,11,1,emergency,1.0
+DOC4,Pediatrics,12,Sunday,13,1,normal,19.45
+DOC1,Cardiology,15,Friday,13,2,normal,33.75
+DOC1,Cardiology,15,Thursday,18,8,normal,171.27
+DOC4,Pediatrics,12,Tuesday,13,4,normal,47.83
+DOC3,Orthopedics,20,Monday,9,2,normal,109.56
+DOC1,Cardiology,15,Saturday,12,3,normal,34.37
+DOC2,General Medicine,10,Tuesday,16,3,normal,54.19
+DOC6,General Medicine,10,Sunday,17,3,normal,36.83
+DOC4,Pediatrics,12,Saturday,11,4,normal,61.68
+DOC1,Cardiology,15,Saturday,15,4,normal,65.7
+DOC1,Cardiology,15,Wednesday,18,7,normal,157.69
+DOC3,Orthopedics,20,Monday,18,5,normal,199.91
+DOC5,Dermatology,8,Saturday,10,8,normal,68.43
+DOC2,General Medicine,10,Sunday,15,1,normal,16.19
+DOC4,Pediatrics,12,Saturday,9,4,normal,56.66
+DOC5,Dermatology,8,Sunday,12,5,normal,27.19
+DOC5,Dermatology,8,Tuesday,17,2,normal,31.89
+DOC1,Cardiology,15,Wednesday,9,4,normal,107.42
+DOC3,Orthopedics,20,Monday,15,4,normal,168.74
+DOC3,Orthopedics,20,Wednesday,10,2,normal,84.15
+DOC3,Orthopedics,20,Monday,14,2,normal,64.66
+DOC2,General Medicine,10,Saturday,9,4,normal,48.76
+DOC2,General Medicine,10,Saturday,15,0,normal,5.8
+DOC4,Pediatrics,12,Monday,19,5,normal,83.03
+DOC6,General Medicine,10,Tuesday,10,3,normal,60.34
+DOC6,General Medicine,10,Friday,12,2,normal,23.33
+DOC2,General Medicine,10,Thursday,12,3,normal,30.53
+DOC3,Orthopedics,20,Monday,11,4,normal,181.07
+DOC5,Dermatology,8,Sunday,10,3,normal,33.67
+DOC5,Dermatology,8,Wednesday,13,2,normal,25.41
+DOC4,Pediatrics,12,Sunday,13,7,normal,51.45
+DOC4,Pediatrics,12,Saturday,9,2,normal,37.81
+DOC1,Cardiology,15,Wednesday,16,3,normal,80.12
+DOC6,General Medicine,10,Tuesday,12,2,normal,26.97
+DOC3,Orthopedics,20,Tuesday,18,2,normal,80.83
+DOC4,Pediatrics,12,Tuesday,18,8,normal,142.74
+DOC2,General Medicine,10,Thursday,12,5,normal,46.28
+DOC3,Orthopedics,20,Sunday,14,4,normal,55.26
+DOC5,Dermatology,8,Wednesday,10,2,normal,34.96
+DOC6,General Medicine,10,Wednesday,18,7,normal,105.94
+DOC2,General Medicine,10,Thursday,16,5,normal,80.81
+DOC1,Cardiology,15,Sunday,9,1,normal,31.08
+DOC2,General Medicine,10,Tuesday,16,2,normal,40.9
+DOC2,General Medicine,10,Tuesday,10,3,normal,58.55
+DOC6,General Medicine,10,Wednesday,9,5,normal,85.51
+DOC5,Dermatology,8,Wednesday,17,1,normal,22.6
+DOC4,Pediatrics,12,Saturday,18,5,normal,61.24
+DOC2,General Medicine,10,Saturday,10,1,normal,16.36
+DOC3,Orthopedics,20,Wednesday,12,5,normal,91.23
+DOC5,Dermatology,8,Thursday,18,4,normal,52.94
+DOC4,Pediatrics,12,Sunday,16,6,normal,76.33
+DOC2,General Medicine,10,Wednesday,14,3,normal,31.1
+DOC2,General Medicine,10,Thursday,15,6,normal,87.43
+DOC3,Orthopedics,20,Friday,15,1,normal,49.66
+DOC1,Cardiology,15,Saturday,12,2,normal,27.57
+DOC6,General Medicine,10,Thursday,12,3,normal,37.0
+DOC2,General Medicine,10,Sunday,9,3,normal,35.46
+DOC3,Orthopedics,20,Saturday,18,3,normal,76.43
+DOC1,Cardiology,15,Friday,12,2,normal,32.02
+DOC3,Orthopedics,20,Thursday,9,9,emergency,2.59
+DOC3,Orthopedics,20,Wednesday,14,4,normal,79.38
+DOC4,Pediatrics,12,Friday,13,3,normal,38.97
+DOC4,Pediatrics,12,Saturday,17,2,normal,36.47
+DOC2,General Medicine,10,Friday,11,8,normal,129.15
+DOC4,Pediatrics,12,Tuesday,11,2,normal,48.73
+DOC4,Pediatrics,12,Tuesday,10,3,normal,66.17
+DOC3,Orthopedics,20,Wednesday,14,0,normal,8.38
+DOC6,General Medicine,10,Tuesday,12,2,normal,20.07
+DOC6,General Medicine,10,Sunday,9,3,normal,35.18
+DOC5,Dermatology,8,Friday,14,5,normal,38.55
+DOC3,Orthopedics,20,Thursday,19,1,normal,37.54
+DOC4,Pediatrics,12,Saturday,17,7,emergency,4.25
+DOC4,Pediatrics,12,Wednesday,16,4,normal,81.37
+DOC6,General Medicine,10,Friday,12,5,normal,49.66
+DOC5,Dermatology,8,Thursday,16,5,normal,60.12
+DOC1,Cardiology,15,Sunday,13,4,normal,40.7
+DOC3,Orthopedics,20,Saturday,18,4,normal,88.0
+DOC4,Pediatrics,12,Thursday,12,4,normal,49.14
+DOC1,Cardiology,15,Sunday,18,1,normal,29.39
+DOC2,General Medicine,10,Tuesday,12,5,normal,48.77
+DOC3,Orthopedics,20,Tuesday,18,3,normal,105.22
+DOC5,Dermatology,8,Sunday,10,9,normal,77.87
+DOC4,Pediatrics,12,Saturday,12,1,normal,15.33
+DOC1,Cardiology,15,Thursday,15,4,emergency,3.54
+DOC3,Orthopedics,20,Tuesday,9,1,normal,52.53
+DOC2,General Medicine,10,Friday,17,5,normal,78.69
+DOC3,Orthopedics,20,Monday,10,2,normal,109.68
+DOC5,Dermatology,8,Tuesday,17,6,normal,70.61
+DOC4,Pediatrics,12,Thursday,15,3,normal,64.59
+DOC2,General Medicine,10,Sunday,13,4,normal,30.41
+DOC4,Pediatrics,12,Thursday,16,3,normal,65.5
+DOC1,Cardiology,15,Sunday,13,6,normal,54.87
+DOC3,Orthopedics,20,Friday,17,4,normal,130.59
+DOC2,General Medicine,10,Saturday,18,3,normal,32.97
+DOC2,General Medicine,10,Thursday,11,4,normal,71.81
+DOC6,General Medicine,10,Thursday,15,3,normal,46.65
+DOC5,Dermatology,8,Thursday,13,5,normal,38.62
+DOC3,Orthopedics,20,Wednesday,12,8,normal,146.66
+DOC3,Orthopedics,20,Monday,14,3,normal,84.12
+DOC4,Pediatrics,12,Tuesday,19,4,normal,56.26
+DOC3,Orthopedics,20,Sunday,12,3,emergency,4.83
+DOC5,Dermatology,8,Thursday,18,5,normal,57.91
+DOC4,Pediatrics,12,Monday,18,6,normal,131.47
+DOC6,General Medicine,10,Sunday,15,3,normal,37.96
+DOC4,Pediatrics,12,Monday,14,8,normal,109.65
+DOC4,Pediatrics,12,Sunday,10,1,normal,25.72
+DOC5,Dermatology,8,Wednesday,18,3,normal,43.03
+DOC1,Cardiology,15,Thursday,12,3,normal,47.66
+DOC4,Pediatrics,12,Monday,15,3,normal,83.18
+DOC5,Dermatology,8,Friday,12,3,normal,27.39
+DOC1,Cardiology,15,Friday,16,5,normal,119.86
+DOC2,General Medicine,10,Tuesday,19,6,normal,61.83
+DOC4,Pediatrics,12,Sunday,15,8,normal,97.54
+DOC2,General Medicine,10,Sunday,15,5,normal,53.87
+DOC2,General Medicine,10,Sunday,19,2,normal,16.42
+DOC1,Cardiology,15,Thursday,11,6,normal,150.94
+DOC4,Pediatrics,12,Friday,19,3,normal,45.45
+DOC3,Orthopedics,20,Saturday,18,5,normal,106.11
+DOC1,Cardiology,15,Sunday,19,7,normal,73.46
+DOC6,General Medicine,10,Thursday,17,2,normal,40.72
+DOC2,General Medicine,10,Wednesday,15,4,normal,62.91
+DOC2,General Medicine,10,Sunday,12,5,normal,33.98
+DOC4,Pediatrics,12,Thursday,11,1,normal,31.55
+DOC6,General Medicine,10,Wednesday,11,5,normal,86.01
+DOC3,Orthopedics,20,Saturday,10,1,normal,40.85
+DOC4,Pediatrics,12,Saturday,18,7,normal,92.3
+DOC6,General Medicine,10,Wednesday,9,4,normal,68.91
+DOC5,Dermatology,8,Tuesday,10,1,normal,20.46
+DOC5,Dermatology,8,Tuesday,19,4,normal,40.82
+DOC3,Orthopedics,20,Tuesday,9,4,normal,140.39
+DOC4,Pediatrics,12,Wednesday,17,3,normal,62.56
+DOC1,Cardiology,15,Wednesday,18,3,normal,76.92
+DOC1,Cardiology,15,Thursday,16,1,normal,38.65
+DOC2,General Medicine,10,Monday,12,2,normal,36.82
+DOC5,Dermatology,8,Saturday,15,3,normal,32.03
+DOC5,Dermatology,8,Saturday,9,3,normal,25.1
+DOC5,Dermatology,8,Saturday,17,4,normal,36.33
+DOC5,Dermatology,8,Monday,12,6,normal,61.6
+DOC2,General Medicine,10,Wednesday,17,6,emergency,4.48
+DOC5,Dermatology,8,Saturday,11,5,normal,41.8
+DOC4,Pediatrics,12,Friday,10,8,emergency,6.48
+DOC5,Dermatology,8,Wednesday,14,6,normal,41.28
+DOC1,Cardiology,15,Sunday,19,1,emergency,8.15
+DOC3,Orthopedics,20,Saturday,12,1,normal,24.67
+DOC3,Orthopedics,20,Saturday,18,7,normal,141.85
+DOC5,Dermatology,8,Sunday,10,4,normal,40.18
+DOC6,General Medicine,10,Tuesday,13,6,normal,56.7
+DOC6,General Medicine,10,Sunday,14,6,normal,35.66
+DOC4,Pediatrics,12,Monday,13,1,normal,29.12
+DOC5,Dermatology,8,Thursday,15,4,normal,47.21
+DOC4,Pediatrics,12,Thursday,17,2,normal,50.08
+DOC4,Pediatrics,12,Sunday,13,5,normal,36.62
+DOC2,General Medicine,10,Tuesday,16,5,normal,85.57
+DOC6,General Medicine,10,Sunday,13,0,emergency,4.33
+DOC5,Dermatology,8,Thursday,14,0,normal,3.96
+DOC4,Pediatrics,12,Thursday,14,6,emergency,5.98
+DOC4,Pediatrics,12,Monday,15,3,emergency,4.75
+DOC5,Dermatology,8,Monday,17,2,normal,42.27
+DOC3,Orthopedics,20,Tuesday,19,6,normal,124.83
+DOC3,Orthopedics,20,Sunday,19,4,normal,64.95
+DOC1,Cardiology,15,Monday,12,3,normal,64.98
+DOC4,Pediatrics,12,Wednesday,19,5,normal,70.3
+DOC3,Orthopedics,20,Saturday,13,2,normal,38.97
+DOC5,Dermatology,8,Sunday,10,3,normal,33.65
+DOC3,Orthopedics,20,Wednesday,11,4,normal,142.6
+DOC6,General Medicine,10,Monday,12,7,normal,84.23
+DOC6,General Medicine,10,Wednesday,19,5,normal,50.76
+DOC4,Pediatrics,12,Monday,18,5,normal,122.04
+DOC3,Orthopedics,20,Friday,12,7,normal,129.3
+DOC2,General Medicine,10,Monday,19,5,normal,72.48
+DOC1,Cardiology,15,Wednesday,12,4,normal,54.7
+DOC1,Cardiology,15,Saturday,11,3,normal,58.82
+DOC2,General Medicine,10,Friday,13,3,normal,36.61
+DOC5,Dermatology,8,Thursday,10,0,normal,11.33
+DOC1,Cardiology,15,Saturday,19,4,emergency,3.12
+DOC2,General Medicine,10,Thursday,13,6,normal,56.14
+DOC1,Cardiology,15,Wednesday,19,3,normal,56.24
+DOC1,Cardiology,15,Monday,13,2,normal,39.27
+DOC1,Cardiology,15,Wednesday,14,4,normal,58.23
+DOC4,Pediatrics,12,Sunday,12,3,normal,28.77
+DOC1,Cardiology,15,Sunday,18,6,normal,95.28
+DOC1,Cardiology,15,Wednesday,12,3,normal,44.08
+DOC4,Pediatrics,12,Saturday,12,2,normal,21.6
+DOC6,General Medicine,10,Wednesday,9,3,normal,54.2
+DOC2,General Medicine,10,Monday,9,8,normal,164.69
+DOC4,Pediatrics,12,Sunday,12,3,normal,31.24
+DOC6,General Medicine,10,Saturday,12,6,normal,45.39
+DOC6,General Medicine,10,Sunday,13,3,normal,23.98
+DOC5,Dermatology,8,Wednesday,12,3,normal,23.34
+DOC2,General Medicine,10,Thursday,14,7,normal,62.68
+DOC6,General Medicine,10,Wednesday,12,6,normal,52.63
+DOC2,General Medicine,10,Monday,12,3,normal,44.79
+DOC6,General Medicine,10,Saturday,10,6,normal,71.68
+DOC3,Orthopedics,20,Wednesday,10,4,normal,140.05
+DOC6,General Medicine,10,Wednesday,12,4,normal,44.05
+DOC3,Orthopedics,20,Tuesday,12,9,normal,156.14
+DOC5,Dermatology,8,Thursday,15,6,normal,75.14
+DOC1,Cardiology,15,Thursday,15,2,normal,57.42
+DOC6,General Medicine,10,Monday,17,4,normal,82.98
+DOC5,Dermatology,8,Wednesday,17,6,normal,75.76
+DOC6,General Medicine,10,Saturday,17,2,normal,29.03
+DOC2,General Medicine,10,Saturday,12,4,emergency,4.59
+DOC4,Pediatrics,12,Sunday,10,3,normal,46.76
+DOC2,General Medicine,10,Monday,16,3,normal,70.99
+DOC2,General Medicine,10,Wednesday,11,2,normal,41.71
+DOC6,General Medicine,10,Sunday,15,2,emergency,4.84
+DOC1,Cardiology,15,Tuesday,15,5,normal,117.69
+DOC1,Cardiology,15,Wednesday,12,3,normal,50.8
+DOC1,Cardiology,15,Thursday,18,6,normal,136.18
+DOC5,Dermatology,8,Tuesday,15,6,normal,73.93
+DOC3,Orthopedics,20,Saturday,18,4,normal,88.69
+DOC5,Dermatology,8,Saturday,12,2,normal,8.32
+DOC3,Orthopedics,20,Wednesday,17,5,normal,151.67
+DOC5,Dermatology,8,Friday,12,6,normal,43.23
+DOC6,General Medicine,10,Sunday,15,4,normal,46.27
+DOC3,Orthopedics,20,Sunday,9,4,normal,99.13
+DOC1,Cardiology,15,Monday,19,4,emergency,5.19
+DOC6,General Medicine,10,Saturday,9,5,normal,63.24
+DOC6,General Medicine,10,Sunday,14,5,normal,35.82
+DOC4,Pediatrics,12,Monday,17,3,normal,89.12
+DOC1,Cardiology,15,Friday,10,1,normal,39.6
+DOC2,General Medicine,10,Tuesday,19,3,normal,36.05
+DOC3,Orthopedics,20,Saturday,13,7,normal,87.57
+DOC2,General Medicine,10,Friday,9,6,normal,100.27
+DOC3,Orthopedics,20,Wednesday,15,5,normal,161.97
+DOC1,Cardiology,15,Thursday,14,1,normal,33.81
+DOC3,Orthopedics,20,Monday,18,4,normal,165.72
+DOC1,Cardiology,15,Friday,19,9,normal,134.3
+DOC6,General Medicine,10,Thursday,18,4,normal,70.9
+DOC4,Pediatrics,12,Thursday,10,6,normal,115.06
+DOC6,General Medicine,10,Sunday,14,6,normal,36.89
+DOC2,General Medicine,10,Monday,19,3,normal,52.5
+DOC4,Pediatrics,12,Friday,10,3,normal,65.91
+DOC2,General Medicine,10,Sunday,10,7,normal,74.37
+DOC3,Orthopedics,20,Monday,14,4,normal,100.45
+DOC1,Cardiology,15,Friday,9,4,normal,102.45
+DOC6,General Medicine,10,Friday,13,7,normal,60.12
+DOC5,Dermatology,8,Thursday,15,4,normal,49.64
+DOC4,Pediatrics,12,Saturday,19,3,normal,27.59
+DOC6,General Medicine,10,Saturday,11,5,normal,55.6
+DOC3,Orthopedics,20,Thursday,14,1,normal,24.02
+DOC4,Pediatrics,12,Saturday,15,5,normal,65.97
+DOC6,General Medicine,10,Saturday,17,2,normal,32.87
+DOC1,Cardiology,15,Wednesday,9,1,normal,42.22
+DOC6,General Medicine,10,Wednesday,10,3,normal,58.95
+DOC2,General Medicine,10,Thursday,17,2,normal,39.45
+DOC3,Orthopedics,20,Monday,15,2,normal,106.22
+DOC3,Orthopedics,20,Monday,15,2,normal,106.71
+DOC6,General Medicine,10,Tuesday,16,4,normal,62.65
+DOC3,Orthopedics,20,Tuesday,12,2,normal,48.51
+DOC3,Orthopedics,20,Saturday,11,2,normal,59.57
+DOC6,General Medicine,10,Sunday,13,1,normal,12.61
+DOC1,Cardiology,15,Friday,18,5,normal,115.65
+DOC5,Dermatology,8,Thursday,19,4,normal,37.22
+DOC2,General Medicine,10,Friday,15,0,normal,14.62
+DOC2,General Medicine,10,Monday,13,6,normal,69.53
+DOC4,Pediatrics,12,Sunday,13,8,normal,60.3
+DOC2,General Medicine,10,Saturday,18,7,normal,73.65
+DOC2,General Medicine,10,Thursday,15,3,normal,50.86
+DOC1,Cardiology,15,Wednesday,9,4,normal,112.04
+DOC1,Cardiology,15,Saturday,10,1,normal,25.7
+DOC2,General Medicine,10,Thursday,13,5,normal,51.24
+DOC4,Pediatrics,12,Saturday,19,4,normal,43.26
+DOC2,General Medicine,10,Wednesday,15,4,emergency,1.28
+DOC5,Dermatology,8,Monday,15,3,normal,54.52
+DOC3,Orthopedics,20,Saturday,15,3,normal,74.34
+DOC6,General Medicine,10,Sunday,11,5,normal,59.32
+DOC4,Pediatrics,12,Tuesday,16,3,normal,65.0
+DOC4,Pediatrics,12,Saturday,16,2,normal,37.06
+DOC1,Cardiology,15,Saturday,9,4,normal,74.94
+DOC5,Dermatology,8,Wednesday,10,4,normal,51.19
+DOC2,General Medicine,10,Wednesday,13,3,normal,34.26
+DOC2,General Medicine,10,Friday,10,4,normal,66.65
+DOC1,Cardiology,15,Tuesday,18,4,normal,101.84
+DOC5,Dermatology,8,Thursday,18,2,normal,27.71
+DOC4,Pediatrics,12,Monday,15,4,normal,98.07
+DOC1,Cardiology,15,Monday,15,8,normal,227.28
+DOC4,Pediatrics,12,Tuesday,14,6,normal,67.87
+DOC5,Dermatology,8,Friday,19,4,normal,37.75
+DOC5,Dermatology,8,Saturday,18,3,normal,29.4
+DOC4,Pediatrics,12,Tuesday,14,2,normal,26.65
+DOC2,General Medicine,10,Tuesday,11,2,normal,42.06
+DOC2,General Medicine,10,Wednesday,12,4,normal,38.54
+DOC2,General Medicine,10,Sunday,17,2,normal,29.67
+DOC3,Orthopedics,20,Wednesday,17,4,normal,130.84
+DOC6,General Medicine,10,Sunday,19,7,normal,44.84
+DOC4,Pediatrics,12,Monday,14,3,normal,46.0
+DOC5,Dermatology,8,Tuesday,11,5,normal,69.8
+DOC2,General Medicine,10,Wednesday,11,3,normal,54.9
+DOC1,Cardiology,15,Monday,9,3,normal,112.6
+DOC4,Pediatrics,12,Monday,14,6,normal,82.3
+DOC5,Dermatology,8,Saturday,18,4,normal,38.14
+DOC1,Cardiology,15,Sunday,16,6,normal,98.92
+DOC1,Cardiology,15,Thursday,9,8,normal,183.16
+DOC4,Pediatrics,12,Saturday,18,8,normal,98.26
+DOC6,General Medicine,10,Tuesday,17,11,normal,164.06
+DOC3,Orthopedics,20,Thursday,9,3,normal,113.28
+DOC6,General Medicine,10,Thursday,17,4,emergency,4.93
+DOC3,Orthopedics,20,Monday,13,2,normal,63.84
+DOC5,Dermatology,8,Thursday,10,4,normal,59.28
+DOC4,Pediatrics,12,Saturday,10,7,normal,89.97
+DOC5,Dermatology,8,Saturday,11,4,normal,41.15
+DOC1,Cardiology,15,Monday,17,5,normal,151.32
+DOC2,General Medicine,10,Thursday,14,2,normal,23.45
+DOC1,Cardiology,15,Monday,11,1,normal,54.1
+DOC5,Dermatology,8,Sunday,15,3,normal,22.03
+DOC2,General Medicine,10,Friday,10,9,normal,143.9
+DOC2,General Medicine,10,Wednesday,12,2,normal,24.88
+DOC1,Cardiology,15,Sunday,11,5,normal,88.61
+DOC4,Pediatrics,12,Thursday,16,1,normal,32.67
+DOC1,Cardiology,15,Friday,10,6,normal,141.5
+DOC4,Pediatrics,12,Thursday,12,5,normal,58.32
+DOC1,Cardiology,15,Saturday,19,4,normal,44.41
+DOC1,Cardiology,15,Friday,19,3,normal,52.41
+DOC4,Pediatrics,12,Saturday,18,7,normal,88.6
+DOC1,Cardiology,15,Tuesday,12,4,normal,62.44
+DOC2,General Medicine,10,Saturday,10,3,normal,39.51
+DOC5,Dermatology,8,Wednesday,16,4,normal,55.67
+DOC4,Pediatrics,12,Saturday,19,3,normal,28.11
+DOC3,Orthopedics,20,Monday,18,3,normal,140.01
+DOC3,Orthopedics,20,Tuesday,18,6,normal,187.78
+DOC2,General Medicine,10,Tuesday,10,3,normal,55.91
+DOC2,General Medicine,10,Wednesday,17,6,normal,91.35
+DOC3,Orthopedics,20,Saturday,16,4,normal,88.41
+DOC3,Orthopedics,20,Thursday,12,7,normal,131.9
+DOC4,Pediatrics,12,Wednesday,16,3,normal,63.89
+DOC1,Cardiology,15,Tuesday,9,2,normal,62.77
+DOC2,General Medicine,10,Wednesday,16,4,normal,66.9
+DOC6,General Medicine,10,Thursday,9,4,emergency,4.28
+DOC3,Orthopedics,20,Thursday,17,3,normal,104.39
+DOC3,Orthopedics,20,Saturday,14,2,normal,30.67
+DOC5,Dermatology,8,Thursday,11,4,normal,60.33
+DOC2,General Medicine,10,Monday,16,8,normal,149.4
+DOC6,General Medicine,10,Saturday,15,3,normal,35.08
+DOC6,General Medicine,10,Monday,9,4,normal,87.33
+DOC4,Pediatrics,12,Friday,12,6,normal,67.07
+DOC6,General Medicine,10,Sunday,10,3,normal,36.88
+DOC3,Orthopedics,20,Saturday,17,4,normal,95.78
+DOC6,General Medicine,10,Saturday,11,5,normal,61.82
+DOC4,Pediatrics,12,Friday,11,1,normal,30.44
+DOC3,Orthopedics,20,Sunday,15,4,normal,91.46
+DOC4,Pediatrics,12,Wednesday,18,2,normal,47.54
+DOC2,General Medicine,10,Sunday,9,5,normal,62.11
+DOC1,Cardiology,15,Sunday,16,1,normal,22.77
+DOC1,Cardiology,15,Tuesday,16,5,normal,113.73
+DOC2,General Medicine,10,Friday,14,6,normal,58.18
+DOC6,General Medicine,10,Wednesday,19,6,normal,61.98
+DOC2,General Medicine,10,Monday,16,2,normal,52.63
+DOC3,Orthopedics,20,Tuesday,14,5,normal,99.01
+DOC1,Cardiology,15,Saturday,16,2,normal,39.58
+DOC2,General Medicine,10,Thursday,17,2,normal,32.81
+DOC2,General Medicine,10,Tuesday,16,2,normal,34.18
+DOC2,General Medicine,10,Wednesday,10,0,normal,16.02
+DOC3,Orthopedics,20,Thursday,19,6,normal,127.32
+DOC6,General Medicine,10,Sunday,9,0,normal,9.36
+DOC1,Cardiology,15,Tuesday,12,3,normal,52.14
+DOC2,General Medicine,10,Wednesday,16,4,normal,67.93
+DOC5,Dermatology,8,Monday,12,4,normal,42.56
+DOC4,Pediatrics,12,Tuesday,9,3,normal,69.17
+DOC3,Orthopedics,20,Friday,9,3,normal,109.79
+DOC3,Orthopedics,20,Thursday,13,4,normal,78.28
+DOC2,General Medicine,10,Wednesday,9,3,normal,55.3
+DOC1,Cardiology,15,Sunday,10,5,normal,87.88
+DOC1,Cardiology,15,Friday,10,4,normal,108.35
+DOC5,Dermatology,8,Thursday,13,4,normal,32.83
+DOC3,Orthopedics,20,Tuesday,16,6,normal,180.62
+DOC5,Dermatology,8,Monday,14,8,normal,75.19
+DOC1,Cardiology,15,Wednesday,10,4,normal,107.8
+DOC5,Dermatology,8,Saturday,17,5,normal,43.03
+DOC4,Pediatrics,12,Monday,14,1,normal,26.25
+DOC4,Pediatrics,12,Friday,17,5,normal,92.32
+DOC3,Orthopedics,20,Wednesday,16,7,normal,213.22
+DOC4,Pediatrics,12,Thursday,18,1,normal,29.38
+DOC6,General Medicine,10,Sunday,15,3,normal,35.27
+DOC6,General Medicine,10,Tuesday,11,4,normal,72.6
+DOC2,General Medicine,10,Saturday,18,2,normal,29.26
+DOC3,Orthopedics,20,Saturday,13,3,normal,46.23
+DOC4,Pediatrics,12,Thursday,13,4,normal,44.29
+DOC4,Pediatrics,12,Sunday,12,6,normal,47.23
+DOC6,General Medicine,10,Friday,11,6,normal,101.74
+DOC4,Pediatrics,12,Wednesday,11,4,normal,84.42
+DOC2,General Medicine,10,Thursday,16,3,normal,51.56
+DOC1,Cardiology,15,Wednesday,18,2,normal,59.94
+DOC2,General Medicine,10,Thursday,17,3,normal,51.26
+DOC4,Pediatrics,12,Sunday,16,3,normal,41.62
+DOC3,Orthopedics,20,Wednesday,13,3,emergency,8.07
+DOC4,Pediatrics,12,Sunday,19,4,normal,40.97
+DOC5,Dermatology,8,Monday,10,3,normal,49.21
+DOC4,Pediatrics,12,Tuesday,18,3,normal,59.75
+DOC6,General Medicine,10,Saturday,12,8,emergency,1.11
+DOC6,General Medicine,10,Saturday,14,4,normal,30.66
+DOC5,Dermatology,8,Monday,14,2,normal,23.14
+DOC5,Dermatology,8,Monday,17,3,normal,49.44
+DOC3,Orthopedics,20,Tuesday,16,2,normal,77.88
+DOC6,General Medicine,10,Wednesday,12,3,normal,32.88
+DOC2,General Medicine,10,Wednesday,13,5,normal,44.4
+DOC6,General Medicine,10,Thursday,19,3,normal,37.41
+DOC4,Pediatrics,12,Monday,12,3,normal,50.24
+DOC1,Cardiology,15,Friday,14,3,emergency,3.63
+DOC1,Cardiology,15,Tuesday,15,5,normal,116.88
+DOC2,General Medicine,10,Friday,13,7,emergency,5.34
+DOC5,Dermatology,8,Friday,19,1,normal,15.99
+DOC1,Cardiology,15,Tuesday,12,7,normal,91.1
+DOC5,Dermatology,8,Saturday,15,3,normal,30.46
+DOC1,Cardiology,15,Tuesday,13,3,normal,46.55
+DOC3,Orthopedics,20,Wednesday,9,3,normal,115.25
+DOC5,Dermatology,8,Thursday,11,2,emergency,1.0
+DOC5,Dermatology,8,Saturday,16,1,normal,20.47
+DOC6,General Medicine,10,Saturday,19,3,normal,33.58
+DOC4,Pediatrics,12,Friday,11,4,normal,85.93
+DOC1,Cardiology,15,Monday,12,4,normal,78.02
+DOC2,General Medicine,10,Friday,12,9,normal,82.54
+DOC4,Pediatrics,12,Friday,17,7,normal,125.26
+DOC3,Orthopedics,20,Saturday,14,0,normal,12.69
+DOC3,Orthopedics,20,Tuesday,13,1,normal,30.19
+DOC5,Dermatology,8,Monday,10,2,normal,45.94
+DOC3,Orthopedics,20,Saturday,11,3,normal,79.95
+DOC1,Cardiology,15,Wednesday,10,6,normal,149.18
+DOC4,Pediatrics,12,Thursday,19,3,normal,42.76
+DOC1,Cardiology,15,Saturday,12,9,normal,85.09
+DOC4,Pediatrics,12,Saturday,18,8,normal,103.87
+DOC3,Orthopedics,20,Tuesday,10,2,normal,79.71
+DOC5,Dermatology,8,Monday,12,4,normal,40.1
+DOC6,General Medicine,10,Monday,18,5,normal,97.71
+DOC2,General Medicine,10,Tuesday,18,1,normal,31.22
+DOC2,General Medicine,10,Tuesday,19,1,normal,16.95
+DOC2,General Medicine,10,Sunday,9,3,normal,35.23
+DOC3,Orthopedics,20,Monday,12,4,normal,103.47
+DOC6,General Medicine,10,Monday,14,3,normal,38.91
+DOC2,General Medicine,10,Sunday,12,3,normal,22.2
+DOC3,Orthopedics,20,Sunday,11,2,normal,54.99
+DOC1,Cardiology,15,Wednesday,13,7,normal,98.52
+DOC2,General Medicine,10,Friday,13,2,normal,23.55
+DOC5,Dermatology,8,Monday,17,4,normal,64.84
+DOC4,Pediatrics,12,Monday,18,4,normal,103.81
+DOC6,General Medicine,10,Wednesday,13,1,normal,11.56
+DOC2,General Medicine,10,Thursday,15,4,normal,64.82
+DOC4,Pediatrics,12,Friday,13,1,normal,18.57
+DOC4,Pediatrics,12,Sunday,19,4,normal,47.4
+DOC6,General Medicine,10,Monday,9,1,normal,33.73
+DOC6,General Medicine,10,Friday,10,4,normal,71.14
+DOC6,General Medicine,10,Wednesday,15,3,normal,54.57
+DOC2,General Medicine,10,Friday,19,3,normal,36.66
+DOC3,Orthopedics,20,Wednesday,19,7,emergency,5.04
+DOC6,General Medicine,10,Tuesday,10,5,normal,84.07
+DOC4,Pediatrics,12,Monday,18,2,normal,67.3
+DOC4,Pediatrics,12,Monday,10,5,normal,129.46
+DOC6,General Medicine,10,Saturday,11,3,normal,36.26
+DOC5,Dermatology,8,Tuesday,9,3,normal,41.97
+DOC3,Orthopedics,20,Saturday,16,1,normal,40.76
+DOC2,General Medicine,10,Saturday,12,2,normal,18.68
+DOC3,Orthopedics,20,Saturday,9,5,normal,116.17
+DOC3,Orthopedics,20,Sunday,18,0,normal,13.98
+DOC6,General Medicine,10,Monday,19,4,normal,61.48
+DOC3,Orthopedics,20,Friday,12,4,normal,84.17
+DOC4,Pediatrics,12,Thursday,16,1,normal,26.09
+DOC6,General Medicine,10,Sunday,15,2,normal,29.96
+DOC6,General Medicine,10,Wednesday,10,3,normal,51.66
+DOC2,General Medicine,10,Tuesday,14,4,normal,37.99
+DOC5,Dermatology,8,Monday,10,5,normal,91.23
+DOC4,Pediatrics,12,Sunday,19,2,normal,29.0
+DOC4,Pediatrics,12,Thursday,13,3,emergency,7.33
+DOC2,General Medicine,10,Monday,16,5,normal,104.85
+DOC3,Orthopedics,20,Sunday,19,5,normal,72.46
+DOC4,Pediatrics,12,Tuesday,10,4,normal,86.07
+DOC3,Orthopedics,20,Friday,10,3,normal,110.08
+DOC5,Dermatology,8,Tuesday,12,6,normal,37.28
+DOC6,General Medicine,10,Sunday,18,6,normal,63.94
+DOC4,Pediatrics,12,Thursday,16,5,normal,95.18
+DOC1,Cardiology,15,Tuesday,9,7,normal,169.87
+DOC1,Cardiology,15,Thursday,14,3,normal,50.56
+DOC1,Cardiology,15,Sunday,12,4,normal,39.47
+DOC5,Dermatology,8,Wednesday,11,3,normal,42.81
+DOC5,Dermatology,8,Saturday,14,5,normal,27.99
+DOC5,Dermatology,8,Monday,16,6,normal,97.63
+DOC2,General Medicine,10,Sunday,10,3,normal,43.91
+DOC5,Dermatology,8,Wednesday,17,7,normal,85.97
+DOC6,General Medicine,10,Saturday,18,6,normal,60.85
+DOC5,Dermatology,8,Friday,15,7,normal,77.75
+DOC5,Dermatology,8,Monday,10,3,normal,60.38
+DOC1,Cardiology,15,Saturday,18,3,normal,52.01
+DOC6,General Medicine,10,Saturday,9,5,normal,57.29
+DOC4,Pediatrics,12,Saturday,15,7,normal,88.84
+DOC4,Pediatrics,12,Tuesday,13,8,normal,89.12
+DOC2,General Medicine,10,Tuesday,11,1,normal,27.48
+DOC2,General Medicine,10,Sunday,17,3,normal,41.09
+DOC4,Pediatrics,12,Monday,9,3,normal,85.63
+DOC5,Dermatology,8,Tuesday,14,3,normal,31.32
+DOC4,Pediatrics,12,Saturday,9,3,normal,46.09
+DOC3,Orthopedics,20,Thursday,15,3,normal,101.17
+DOC5,Dermatology,8,Thursday,12,4,normal,35.69
+DOC2,General Medicine,10,Saturday,16,3,normal,39.04
+DOC4,Pediatrics,12,Saturday,16,5,emergency,3.27
+DOC2,General Medicine,10,Tuesday,10,4,normal,67.69
+DOC6,General Medicine,10,Sunday,15,5,emergency,7.1
+DOC6,General Medicine,10,Friday,15,3,normal,57.81
+DOC1,Cardiology,15,Sunday,12,6,normal,59.74
+DOC3,Orthopedics,20,Friday,11,2,normal,80.08
+DOC3,Orthopedics,20,Saturday,16,4,normal,93.07
+DOC1,Cardiology,15,Wednesday,16,3,normal,78.79
+DOC4,Pediatrics,12,Saturday,9,7,normal,96.41
+DOC2,General Medicine,10,Friday,16,4,normal,63.32
+DOC3,Orthopedics,20,Wednesday,12,3,normal,65.8
+DOC1,Cardiology,15,Monday,11,4,normal,136.22
+DOC5,Dermatology,8,Saturday,10,2,normal,30.44
+DOC4,Pediatrics,12,Monday,12,6,normal,86.05
+DOC4,Pediatrics,12,Sunday,10,3,normal,46.54
+DOC5,Dermatology,8,Thursday,13,2,normal,23.02
+DOC2,General Medicine,10,Monday,9,3,normal,69.84
+DOC2,General Medicine,10,Friday,11,5,normal,81.1
+DOC2,General Medicine,10,Wednesday,19,6,normal,64.96
+DOC5,Dermatology,8,Wednesday,19,8,normal,69.71
+DOC3,Orthopedics,20,Saturday,14,1,normal,21.01
+DOC6,General Medicine,10,Saturday,10,2,normal,27.59
+DOC3,Orthopedics,20,Tuesday,15,2,normal,79.59
+DOC2,General Medicine,10,Saturday,17,8,normal,84.08
+DOC2,General Medicine,10,Friday,10,5,normal,81.19
+DOC2,General Medicine,10,Wednesday,19,6,emergency,3.45
+DOC4,Pediatrics,12,Saturday,14,5,normal,40.96
+DOC1,Cardiology,15,Saturday,16,4,normal,74.04
+DOC4,Pediatrics,12,Thursday,15,4,normal,70.98
+DOC3,Orthopedics,20,Saturday,15,4,normal,88.88
+DOC5,Dermatology,8,Saturday,18,2,emergency,9.21
+DOC1,Cardiology,15,Saturday,10,6,normal,104.34
+DOC3,Orthopedics,20,Sunday,17,5,normal,110.14
+DOC3,Orthopedics,20,Thursday,16,1,normal,47.03
+DOC4,Pediatrics,12,Saturday,19,3,normal,28.7
+DOC2,General Medicine,10,Monday,16,3,normal,72.98
+DOC6,General Medicine,10,Sunday,18,2,normal,26.77
+DOC2,General Medicine,10,Saturday,11,4,normal,52.76
+DOC6,General Medicine,10,Tuesday,16,0,normal,17.24
+DOC6,General Medicine,10,Tuesday,17,2,normal,45.41
+DOC2,General Medicine,10,Sunday,16,5,normal,57.76
+DOC3,Orthopedics,20,Thursday,11,3,normal,112.49
+DOC3,Orthopedics,20,Saturday,11,6,normal,135.77
+DOC1,Cardiology,15,Saturday,16,1,normal,28.24
+DOC2,General Medicine,10,Sunday,15,6,normal,61.0
+DOC6,General Medicine,10,Sunday,15,3,normal,30.72
+DOC1,Cardiology,15,Monday,10,5,normal,165.79
+DOC3,Orthopedics,20,Monday,10,7,normal,292.21
+DOC2,General Medicine,10,Thursday,15,3,normal,49.52
+DOC5,Dermatology,8,Sunday,17,9,normal,73.41
+DOC5,Dermatology,8,Thursday,9,3,emergency,5.95
+DOC6,General Medicine,10,Thursday,11,6,normal,96.62
+DOC2,General Medicine,10,Monday,11,3,emergency,3.23
+DOC1,Cardiology,15,Sunday,14,4,normal,40.67
+DOC5,Dermatology,8,Wednesday,14,4,normal,30.18
+DOC5,Dermatology,8,Monday,17,6,normal,88.6
+DOC3,Orthopedics,20,Saturday,17,4,normal,90.41
+DOC3,Orthopedics,20,Sunday,9,6,normal,132.72
+DOC2,General Medicine,10,Thursday,9,1,normal,27.65
+DOC4,Pediatrics,12,Thursday,13,2,emergency,7.73
+DOC1,Cardiology,15,Tuesday,13,1,normal,19.21
+DOC4,Pediatrics,12,Sunday,9,1,normal,22.43
+DOC1,Cardiology,15,Monday,15,5,normal,153.44
+DOC3,Orthopedics,20,Wednesday,11,2,normal,80.28
+DOC2,General Medicine,10,Saturday,13,5,normal,34.92
+DOC4,Pediatrics,12,Saturday,15,3,emergency,5.21
+DOC6,General Medicine,10,Sunday,10,5,normal,58.55
+DOC6,General Medicine,10,Wednesday,9,1,emergency,4.25
+DOC5,Dermatology,8,Saturday,10,5,normal,41.09
+DOC1,Cardiology,15,Tuesday,17,5,normal,118.81
+DOC5,Dermatology,8,Saturday,16,1,normal,17.18
+DOC4,Pediatrics,12,Sunday,13,5,normal,41.14
+DOC6,General Medicine,10,Saturday,10,5,normal,60.0
+DOC3,Orthopedics,20,Sunday,16,6,normal,125.08
+DOC5,Dermatology,8,Monday,18,5,normal,87.35
+DOC3,Orthopedics,20,Saturday,15,3,normal,69.01
+DOC2,General Medicine,10,Saturday,15,3,normal,33.39
+DOC3,Orthopedics,20,Thursday,11,4,normal,138.21
+DOC3,Orthopedics,20,Wednesday,10,2,normal,86.31
+DOC5,Dermatology,8,Saturday,18,7,normal,63.42
+DOC3,Orthopedics,20,Sunday,18,3,normal,75.85
+DOC4,Pediatrics,12,Thursday,14,3,normal,41.25
+DOC6,General Medicine,10,Wednesday,14,5,normal,45.16
+DOC1,Cardiology,15,Wednesday,19,5,normal,82.19
+DOC4,Pediatrics,12,Monday,11,9,normal,217.7
+DOC3,Orthopedics,20,Wednesday,13,6,normal,107.47
+DOC2,General Medicine,10,Tuesday,10,3,normal,57.51
+DOC6,General Medicine,10,Tuesday,14,5,normal,48.13
+DOC3,Orthopedics,20,Sunday,9,5,normal,115.37
+DOC3,Orthopedics,20,Monday,13,5,normal,123.75
+DOC3,Orthopedics,20,Saturday,10,4,normal,94.7
+DOC6,General Medicine,10,Wednesday,18,4,normal,63.82
+DOC1,Cardiology,15,Wednesday,9,4,normal,104.93
+DOC6,General Medicine,10,Tuesday,14,1,normal,19.92
+DOC3,Orthopedics,20,Tuesday,14,5,normal,94.58
+DOC5,Dermatology,8,Thursday,15,6,emergency,3.51
+DOC3,Orthopedics,20,Sunday,18,1,normal,31.52
+DOC1,Cardiology,15,Friday,12,1,normal,22.85
+DOC1,Cardiology,15,Friday,18,7,normal,158.54
+DOC3,Orthopedics,20,Sunday,19,3,normal,51.01
+DOC2,General Medicine,10,Friday,18,4,normal,69.08
+DOC1,Cardiology,15,Tuesday,19,5,normal,80.29
+DOC3,Orthopedics,20,Tuesday,19,3,normal,71.32
+DOC5,Dermatology,8,Wednesday,13,6,normal,47.2
+DOC1,Cardiology,15,Wednesday,11,2,normal,63.3
+DOC5,Dermatology,8,Thursday,9,4,normal,52.31
+DOC3,Orthopedics,20,Monday,18,4,normal,173.07
+DOC5,Dermatology,8,Monday,9,7,normal,112.21
+DOC3,Orthopedics,20,Wednesday,19,1,normal,30.09
+DOC4,Pediatrics,12,Wednesday,19,3,normal,45.84
+DOC4,Pediatrics,12,Saturday,14,3,emergency,3.08
+DOC4,Pediatrics,12,Wednesday,15,4,normal,81.22
+DOC5,Dermatology,8,Thursday,16,5,normal,60.22
+DOC3,Orthopedics,20,Monday,16,3,normal,137.86
+DOC4,Pediatrics,12,Friday,16,5,normal,101.82
+DOC6,General Medicine,10,Saturday,9,6,normal,65.89
+DOC3,Orthopedics,20,Tuesday,19,3,normal,75.46
+DOC2,General Medicine,10,Monday,16,2,normal,47.84
+DOC2,General Medicine,10,Saturday,13,9,normal,51.94
+DOC6,General Medicine,10,Monday,17,4,normal,81.66
+DOC1,Cardiology,15,Wednesday,9,5,normal,120.63
+DOC2,General Medicine,10,Friday,13,2,normal,24.43
+DOC5,Dermatology,8,Thursday,17,3,normal,41.71
+DOC3,Orthopedics,20,Tuesday,17,2,normal,78.97
+DOC3,Orthopedics,20,Saturday,12,6,emergency,5.15
+DOC1,Cardiology,15,Thursday,17,3,normal,81.2
+DOC1,Cardiology,15,Friday,12,6,normal,85.25
+DOC3,Orthopedics,20,Wednesday,13,3,normal,65.63
+DOC6,General Medicine,10,Tuesday,12,1,normal,13.64
+DOC3,Orthopedics,20,Monday,11,10,normal,402.52
+DOC4,Pediatrics,12,Monday,13,4,emergency,4.98
+DOC6,General Medicine,10,Saturday,14,6,normal,31.7
+DOC6,General Medicine,10,Monday,15,4,normal,81.86
+DOC4,Pediatrics,12,Saturday,9,3,normal,47.44
+DOC4,Pediatrics,12,Friday,14,4,normal,51.71
+DOC3,Orthopedics,20,Tuesday,17,4,normal,127.34
+DOC6,General Medicine,10,Wednesday,12,7,normal,62.4
+DOC6,General Medicine,10,Saturday,12,5,normal,33.28
+DOC5,Dermatology,8,Monday,14,2,normal,23.86
+DOC4,Pediatrics,12,Monday,11,4,normal,113.62
+DOC4,Pediatrics,12,Thursday,10,4,normal,80.76
+DOC4,Pediatrics,12,Friday,13,2,normal,31.75
+DOC1,Cardiology,15,Wednesday,15,5,emergency,8.0
+DOC1,Cardiology,15,Tuesday,10,0,normal,21.07
+DOC2,General Medicine,10,Friday,11,4,normal,70.17
+DOC4,Pediatrics,12,Friday,10,6,normal,119.17
+DOC6,General Medicine,10,Saturday,19,5,normal,35.76
+DOC4,Pediatrics,12,Wednesday,15,2,normal,44.31
+DOC5,Dermatology,8,Tuesday,12,3,normal,28.57
+DOC2,General Medicine,10,Wednesday,16,5,normal,77.01
+DOC4,Pediatrics,12,Saturday,12,4,normal,29.65
+DOC5,Dermatology,8,Tuesday,18,4,normal,48.05
+DOC2,General Medicine,10,Thursday,11,5,normal,82.57
+DOC3,Orthopedics,20,Wednesday,11,9,normal,283.57
+DOC3,Orthopedics,20,Monday,9,3,normal,145.21
+DOC4,Pediatrics,12,Tuesday,14,7,normal,76.42
+DOC1,Cardiology,15,Thursday,12,6,normal,82.18
+DOC3,Orthopedics,20,Friday,13,5,normal,100.8
+DOC5,Dermatology,8,Sunday,16,6,normal,51.69
+DOC1,Cardiology,15,Wednesday,14,8,normal,112.42
+DOC3,Orthopedics,20,Thursday,10,5,normal,170.07
+DOC5,Dermatology,8,Tuesday,18,6,normal,65.66
+DOC3,Orthopedics,20,Friday,11,4,normal,136.71
+DOC4,Pediatrics,12,Sunday,11,6,normal,85.16
+DOC1,Cardiology,15,Friday,16,3,normal,79.43
+DOC1,Cardiology,15,Saturday,15,4,normal,72.28
+DOC1,Cardiology,15,Sunday,18,6,normal,98.75
+DOC5,Dermatology,8,Sunday,9,5,normal,52.02
+DOC2,General Medicine,10,Tuesday,12,4,normal,40.37
+DOC5,Dermatology,8,Sunday,13,4,normal,13.88
+DOC5,Dermatology,8,Saturday,15,4,normal,33.09
+DOC5,Dermatology,8,Monday,16,3,emergency,5.41
+DOC5,Dermatology,8,Thursday,19,5,normal,43.11
+DOC4,Pediatrics,12,Wednesday,14,2,normal,23.36
+DOC6,General Medicine,10,Wednesday,18,6,normal,92.7
+DOC4,Pediatrics,12,Wednesday,15,1,normal,28.98
+DOC4,Pediatrics,12,Friday,10,3,normal,67.13
+DOC1,Cardiology,15,Tuesday,9,1,normal,41.62
+DOC4,Pediatrics,12,Friday,17,2,normal,49.21
+DOC3,Orthopedics,20,Saturday,14,9,emergency,7.17
+DOC1,Cardiology,15,Sunday,12,6,normal,53.68
+DOC2,General Medicine,10,Wednesday,15,3,normal,53.09
+DOC6,General Medicine,10,Sunday,14,2,normal,18.75
+DOC3,Orthopedics,20,Tuesday,12,7,normal,129.32
+DOC3,Orthopedics,20,Thursday,12,3,normal,58.14
+DOC2,General Medicine,10,Thursday,17,5,normal,76.49
+DOC3,Orthopedics,20,Sunday,10,5,normal,119.14
+DOC2,General Medicine,10,Monday,12,5,normal,57.86
+DOC6,General Medicine,10,Thursday,19,3,normal,34.53
+DOC4,Pediatrics,12,Wednesday,14,4,emergency,5.92
+DOC6,General Medicine,10,Thursday,14,2,normal,22.27
+DOC6,General Medicine,10,Wednesday,13,5,normal,44.23
+DOC5,Dermatology,8,Sunday,9,2,normal,20.58
+DOC5,Dermatology,8,Saturday,19,7,normal,39.2
+DOC5,Dermatology,8,Friday,17,7,normal,83.66
+DOC2,General Medicine,10,Thursday,17,3,normal,49.3
+DOC1,Cardiology,15,Wednesday,12,5,normal,73.14
+DOC1,Cardiology,15,Sunday,17,4,normal,64.95
+DOC5,Dermatology,8,Friday,12,5,normal,36.25
+DOC4,Pediatrics,12,Wednesday,10,6,normal,112.84
+DOC1,Cardiology,15,Sunday,13,4,normal,42.96
+DOC1,Cardiology,15,Monday,14,4,normal,74.56
+DOC2,General Medicine,10,Monday,16,2,normal,55.86
+DOC4,Pediatrics,12,Saturday,14,3,normal,27.75
+DOC1,Cardiology,15,Monday,18,2,normal,72.47
+DOC4,Pediatrics,12,Tuesday,10,3,normal,67.91
+DOC1,Cardiology,15,Monday,12,5,normal,90.4
+DOC1,Cardiology,15,Tuesday,19,4,normal,68.96
+DOC6,General Medicine,10,Monday,12,4,normal,47.51
+DOC5,Dermatology,8,Tuesday,15,5,normal,61.55
+DOC5,Dermatology,8,Tuesday,9,5,normal,70.65
+DOC6,General Medicine,10,Tuesday,17,2,normal,38.33
+DOC5,Dermatology,8,Wednesday,12,6,normal,47.34
+DOC3,Orthopedics,20,Thursday,11,2,normal,85.7
+DOC2,General Medicine,10,Friday,12,2,normal,21.42
+DOC1,Cardiology,15,Wednesday,12,3,normal,43.57
+DOC2,General Medicine,10,Tuesday,16,5,normal,75.38
