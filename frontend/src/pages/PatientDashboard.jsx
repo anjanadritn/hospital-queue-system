@@ -24,7 +24,9 @@ import {
   FileText,
   Ban,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Pill,
+  FlaskConical
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +38,7 @@ import ConsultationRecordModal from '../components/ConsultationRecordModal';
 import CancelAppointmentModal from '../components/CancelAppointmentModal';
 import MyLiveQueueSection from '../components/MyLiveQueueSection';
 import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
+import PharmacyLabOrdersSection from '../components/PharmacyLabOrdersSection';
 import { getBrowserLocation } from '../services/locationService';
 
 export default function PatientDashboard() {
@@ -60,6 +63,9 @@ export default function PatientDashboard() {
   const [queueRefreshing, setQueueRefreshing] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [medicalHistory, setMedicalHistory] = useState([]);
+  const [pharmacyOrders, setPharmacyOrders] = useState([]);
+  const [labOrders, setLabOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [cancellingAppointment, setCancellingAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -119,11 +125,13 @@ export default function PatientDashboard() {
     setLoading(true);
     try {
       const patientId = user.patient_id || user.user_id;
-      const [aptsData, queueData, notifsData, historyData] = await Promise.allSettled([
+      const [aptsData, queueData, notifsData, historyData, pharmData, labData] = await Promise.allSettled([
         patientId ? hospitalApi.getPatientAppointments(patientId) : Promise.resolve([]),
         hospitalApi.getMyActiveQueue(),
         patientId ? hospitalApi.getNotifications(patientId) : Promise.resolve([]),
-        hospitalApi.getMyMedicalHistory().catch(() => ({ success: true, consultations: [] }))
+        hospitalApi.getMyMedicalHistory().catch(() => ({ success: true, consultations: [] })),
+        patientId ? hospitalApi.getPharmacyOrders({ patient_id: patientId }) : Promise.resolve([]),
+        patientId ? hospitalApi.getLabOrders({ patient_id: patientId }) : Promise.resolve([])
       ]);
 
       if (aptsData.status === 'fulfilled' && aptsData.value) {
@@ -148,6 +156,14 @@ export default function PatientDashboard() {
         const histList = historyData.value.consultations || (Array.isArray(historyData.value) ? historyData.value : []);
         setMedicalHistory(histList);
       }
+      if (pharmData.status === 'fulfilled' && pharmData.value) {
+        const pList = Array.isArray(pharmData.value) ? pharmData.value : (pharmData.value?.orders || []);
+        setPharmacyOrders(pList);
+      }
+      if (labData.status === 'fulfilled' && labData.value) {
+        const lList = Array.isArray(labData.value) ? labData.value : (labData.value?.orders || []);
+        setLabOrders(lList);
+      }
     } catch (err) {
       console.error('Error fetching patient dashboard data:', err);
     } finally {
@@ -155,18 +171,44 @@ export default function PatientDashboard() {
     }
   };
 
+  const handleRefreshOrders = async () => {
+    if (!user) return;
+    setOrdersLoading(true);
+    try {
+      const patientId = user.patient_id || user.user_id;
+      const [pharmData, labData] = await Promise.allSettled([
+        patientId ? hospitalApi.getPharmacyOrders({ patient_id: patientId }) : Promise.resolve([]),
+        patientId ? hospitalApi.getLabOrders({ patient_id: patientId }) : Promise.resolve([])
+      ]);
+      if (pharmData.status === 'fulfilled' && pharmData.value) {
+        const pList = Array.isArray(pharmData.value) ? pharmData.value : (pharmData.value?.orders || []);
+        setPharmacyOrders(pList);
+      }
+      if (labData.status === 'fulfilled' && labData.value) {
+        const lList = Array.isArray(labData.value) ? labData.value : (labData.value?.orders || []);
+        setLabOrders(lList);
+      }
+    } catch (e) {
+      console.error('Error refreshing pharmacy and lab orders:', e);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadDashboardData();
 
-    // Real-time dynamic queue & notifications polling every 5 seconds
+    // Real-time dynamic queue, orders & notifications polling every 5 seconds
     const interval = setInterval(() => {
       if (user) {
         const patientId = user.patient_id || user.user_id;
         Promise.allSettled([
           patientId ? hospitalApi.getPatientAppointments(patientId) : Promise.resolve([]),
           hospitalApi.getMyActiveQueue(),
-          patientId ? hospitalApi.getNotifications(patientId) : Promise.resolve([])
-        ]).then(([aptsData, queueData, notifsData]) => {
+          patientId ? hospitalApi.getNotifications(patientId) : Promise.resolve([]),
+          patientId ? hospitalApi.getPharmacyOrders({ patient_id: patientId }) : Promise.resolve([]),
+          patientId ? hospitalApi.getLabOrders({ patient_id: patientId }) : Promise.resolve([])
+        ]).then(([aptsData, queueData, notifsData, pharmData, labData]) => {
           if (aptsData.status === 'fulfilled' && aptsData.value) {
             setAppointments(Array.isArray(aptsData.value) ? aptsData.value : []);
           }
@@ -184,6 +226,14 @@ export default function PatientDashboard() {
                 ? notifsData.value.notifications
                 : [];
             setNotifications(notifList);
+          }
+          if (pharmData && pharmData.status === 'fulfilled' && pharmData.value) {
+            const pList = Array.isArray(pharmData.value) ? pharmData.value : (pharmData.value?.orders || []);
+            setPharmacyOrders(pList);
+          }
+          if (labData && labData.status === 'fulfilled' && labData.value) {
+            const lList = Array.isArray(labData.value) ? labData.value : (labData.value?.orders || []);
+            setLabOrders(lList);
           }
         });
       }
@@ -425,6 +475,19 @@ export default function PatientDashboard() {
               <Activity className="w-3.5 h-3.5" />
               <span>{t('my_medical_history')}</span>
             </Link>
+
+            <a
+              href="#pharmacy-lab-orders"
+              className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center gap-1.5 border border-emerald-200 shadow-2xs cursor-pointer"
+            >
+              <Pill className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Pharmacy & Lab Orders</span>
+              {(pharmacyOrders.length > 0 || labOrders.length > 0) && (
+                <span className="px-1.5 py-0.2 bg-emerald-200/80 text-emerald-900 rounded-full text-[10px] font-extrabold">
+                  {pharmacyOrders.length + labOrders.length}
+                </span>
+              )}
+            </a>
           </div>
         </div>
 
@@ -708,7 +771,17 @@ export default function PatientDashboard() {
           </div>
         )}
 
-        {/* 8. RECENT NOTIFICATIONS OVERVIEW */}
+        {/* 8. PHARMACY & LAB ORDERS TRACKING */}
+        <div id="pharmacy-lab-orders">
+          <PharmacyLabOrdersSection
+            pharmacyOrders={pharmacyOrders}
+            labOrders={labOrders}
+            loading={ordersLoading}
+            onRefresh={handleRefreshOrders}
+          />
+        </div>
+
+        {/* 9. RECENT NOTIFICATIONS OVERVIEW */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-slate-100">
             <div>

@@ -361,6 +361,25 @@ export default function AboutHospital() {
                 </div>
               </div>
 
+              {/* NLM RxNorm Clinical Data Attribution Card */}
+              <div className="bg-sky-950/40 text-slate-200 rounded-3xl p-6 border border-sky-800/40 space-y-3">
+                <div className="flex items-center gap-2 text-sky-400 text-xs font-bold">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Clinical Terminology & Data Attribution</span>
+                </div>
+                <h4 className="font-black text-sm text-white">
+                  U.S. National Library of Medicine (NLM) RxNorm
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
+                </p>
+                <div className="pt-1 flex items-center gap-2 text-[11px] text-sky-300">
+                  <span className="px-2.5 py-1 bg-sky-900/60 rounded-lg border border-sky-700/50 font-mono text-[10px]">
+                    Prescribable RxNorm Terminology API
+                  </span>
+                </div>
+              </div>
+
             </div>
 
           </div>

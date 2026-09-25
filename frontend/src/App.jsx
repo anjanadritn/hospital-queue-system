@@ -23,6 +23,9 @@ import AboutHospital from './pages/AboutHospital';
 import StaffDashboard from './pages/StaffDashboard';
 import DoctorQueuePrediction from './pages/DoctorQueuePrediction';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import TvDisplay from './pages/TvDisplay';
+import PharmacyDashboard from './pages/PharmacyDashboard';
+import LabDashboard from './pages/LabDashboard';
 
 export default function App() {
   return (
@@ -44,6 +47,7 @@ export default function App() {
               <Route path="/departments" element={<Departments />} />
               <Route path="/predict" element={<MLPrediction />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/tv-display" element={<TvDisplay />} />
 
               {/* Protected Patient Routes */}
               <Route
@@ -143,6 +147,50 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected Pharmacy Routes */}
+              <Route
+                path="/pharmacy"
+                element={
+                  <ProtectedRoute allowedRoles={['pharmacist', 'pharmacy', 'admin', 'doctor', 'staff']}>
+                    <PharmacyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/pharmacy-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['pharmacist', 'pharmacy', 'admin', 'doctor', 'staff']}>
+                    <PharmacyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected Laboratory Routes */}
+              <Route
+                path="/laboratory"
+                element={
+                  <ProtectedRoute allowedRoles={['lab_technician', 'laboratory', 'lab', 'admin', 'doctor', 'staff']}>
+                    <LabDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/lab"
+                element={
+                  <ProtectedRoute allowedRoles={['lab_technician', 'laboratory', 'lab', 'admin', 'doctor', 'staff']}>
+                    <LabDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/lab-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['lab_technician', 'laboratory', 'lab', 'admin', 'doctor', 'staff']}>
+                    <LabDashboard />
                   </ProtectedRoute>
                 }
               />

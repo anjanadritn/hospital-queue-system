@@ -79,6 +79,28 @@ INITIAL_USERS = [
         "phone_verified": True,
         "status": "VERIFIED",
         "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
+        "user_id": "U_PHARM_01",
+        "name": "Suresh Pharmacy Officer",
+        "phone": "9876543230",
+        "email": "pharmacy@hospital.local",
+        "password_hash": generate_password_hash("PharmPass123!"),
+        "role": "pharmacist",
+        "phone_verified": True,
+        "status": "VERIFIED",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
+        "user_id": "U_LAB_01",
+        "name": "Deepa Lab Technologist",
+        "phone": "9876543240",
+        "email": "lab@hospital.local",
+        "password_hash": generate_password_hash("LabPass123!"),
+        "role": "lab_technician",
+        "phone_verified": True,
+        "status": "VERIFIED",
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
 ]
 
@@ -550,6 +572,10 @@ def login_user(phone: str, password: str, role: Optional[str] = None) -> Tuple[O
         redirect_target = "/admin"
     elif user_role == "doctor":
         redirect_target = "/doctor"
+    elif user_role in ("pharmacist", "pharmacy"):
+        redirect_target = "/pharmacy"
+    elif user_role in ("lab_technician", "laboratory", "lab"):
+        redirect_target = "/laboratory"
 
     return {
         "token": token,
@@ -615,6 +641,10 @@ def login_user_with_otp(phone: str, otp: str, role: Optional[str] = None) -> Tup
         redirect_target = "/admin"
     elif user_role == "doctor":
         redirect_target = "/doctor"
+    elif user_role in ("pharmacist", "pharmacy"):
+        redirect_target = "/pharmacy"
+    elif user_role in ("lab_technician", "laboratory", "lab"):
+        redirect_target = "/laboratory"
 
     return {
         "token": token,

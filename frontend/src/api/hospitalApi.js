@@ -103,6 +103,61 @@ export const hospitalApi = {
     const response = await apiClient.get(`/symptoms/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
+  searchMedicines: async (query) => {
+    if (!query || String(query).trim().length < 2) return [];
+    const response = await apiClient.get('/medicines/search', {
+      params: { q: String(query).trim() }
+    });
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    return response.data?.results || response.data?.suggestions || [];
+  },
+
+  // 4c. Pharmacy Orders
+  getPharmacyOrders: async (filters = {}) => {
+    const response = await apiClient.get('/pharmacy/orders', { params: filters });
+    return response.data?.orders || [];
+  },
+  getPharmacyOrder: async (orderId) => {
+    const response = await apiClient.get(`/pharmacy/orders/${orderId}`);
+    return response.data?.order || null;
+  },
+  createPharmacyOrder: async (payload) => {
+    const response = await apiClient.post('/pharmacy/orders', payload);
+    return response.data;
+  },
+  updatePharmacyOrderStatus: async (orderId, status, notes = '', updatedBy = '') => {
+    const response = await apiClient.patch(`/pharmacy/orders/${orderId}/status`, {
+      status,
+      notes,
+      updated_by: updatedBy
+    });
+    return response.data;
+  },
+
+  // 4d. Laboratory Orders
+  getLabOrders: async (filters = {}) => {
+    const response = await apiClient.get('/lab/orders', { params: filters });
+    return response.data?.orders || [];
+  },
+  getLabOrder: async (orderId) => {
+    const response = await apiClient.get(`/lab/orders/${orderId}`);
+    return response.data?.order || null;
+  },
+  createLabOrder: async (payload) => {
+    const response = await apiClient.post('/lab/orders', payload);
+    return response.data;
+  },
+  updateLabOrderStatus: async (orderId, status, notes = '', reportData = null, updatedBy = '') => {
+    const response = await apiClient.patch(`/lab/orders/${orderId}/status`, {
+      status,
+      notes,
+      report_data: reportData,
+      updated_by: updatedBy
+    });
+    return response.data;
+  },
 
   // 5. Appointments & Advance Booking
   bookAppointment: async (payload) => {

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Any, Dict
 from database.mongodb import get_db, serialize_doc, serialize_docs
 
 logger = logging.getLogger("smart-hospital-backend")
@@ -10,7 +10,9 @@ def archive_consultation(
     doctor_notes: Optional[str] = None,
     diagnosis: Optional[str] = None,
     advice: Optional[str] = None,
-    actual_duration_mins: int = 15
+    actual_duration_mins: int = 15,
+    prescriptions: Optional[List[dict]] = None,
+    lab_tests: Optional[List[Any]] = None
 ) -> Tuple[Optional[dict], Optional[str]]:
     """
     Archives a completed consultation into the permanent db.consultations collection.
@@ -18,7 +20,7 @@ def archive_consultation(
     - Patient identification
     - Vitals recorded at consultation
     - Patient-reported complaints & duration
-    - Doctor-recorded clinical notes, diagnosis (if any), and advice (if any)
+    - Doctor-recorded clinical notes, diagnosis (if any), advice (if any), and structured prescriptions
     NOTE: Never invent or fabricate a diagnosis. If not provided, it remains None.
     """
     try:
@@ -72,6 +74,24 @@ def archive_consultation(
         clean_diagnosis = str(diagnosis).strip() if diagnosis and str(diagnosis).strip() else None
         clean_advice = str(advice).strip() if advice and str(advice).strip() else None
 
+        # Clean structured prescriptions: list of { medicine, dosage, frequency, duration, instructions }
+        clean_prescriptions = []
+        if prescriptions and isinstance(prescriptions, list):
+            for p in prescriptions:
+                if isinstance(p, dict) and (p.get("medicine") or p.get("name")):
+                    item = {
+                        "medicine": str(p.get("medicine") or p.get("name")).strip(),
+                        "dosage": str(p.get("dosage") or "").strip(),
+                        "frequency": str(p.get("frequency") or "").strip(),
+                        "duration": str(p.get("duration") or "").strip(),
+                        "instructions": str(p.get("instructions") or "").strip()
+                    }
+                    if p.get("rxcui"):
+                        item["rxcui"] = str(p["rxcui"]).strip()
+                    if p.get("term_type") or p.get("tty"):
+                        item["term_type"] = str(p.get("term_type") or p.get("tty")).strip()
+                    clean_prescriptions.append(item)
+
         consultation_doc = {
             "consultation_id": consultation_id,
             "queue_id": entry.get("queue_id") if entry else queue_or_booking_id,
@@ -97,6 +117,7 @@ def archive_consultation(
                 "diagnosis": clean_diagnosis, # None if not entered by doctor
                 "advice": clean_advice
             },
+            "prescriptions": clean_prescriptions,
             "actual_duration_mins": actual_duration_mins,
             "status": "completed",
             "updated_at": now_iso
@@ -115,6 +136,7 @@ def archive_consultation(
             "doctor_notes": clean_notes,
             "diagnosis": clean_diagnosis,
             "advice": clean_advice,
+            "prescriptions": clean_prescriptions,
             "completed_at": now_iso,
             "actual_duration_mins": actual_duration_mins
         }
@@ -126,6 +148,37 @@ def archive_consultation(
             {"booking_id": queue_or_booking_id},
             {"$set": update_mirror}
         )
+
+        # ----------------------------------------------------
+        # PHARMACY & LAB HAND-OFF AUTOMATION
+        # ----------------------------------------------------
+        # 1. Automatically create Pharmacy Order if prescriptions exist
+        if clean_prescriptions:
+            try:
+                from services.order_service import create_or_update_pharmacy_order_from_consultation
+                pharm_order, _ = create_or_update_pharmacy_order_from_consultation(consultation_doc)
+                if pharm_order and pharm_order.get("order_id"):
+                    consultation_doc["pharmacy_order_id"] = pharm_order.get("order_id")
+                    db.consultations.update_one(
+                        {"consultation_id": consultation_id},
+                        {"$set": {"pharmacy_order_id": pharm_order.get("order_id")}}
+                    )
+            except Exception as pharm_ex:
+                logger.warning(f"Error auto-creating pharmacy order for {consultation_id}: {pharm_ex}")
+
+        # 2. Automatically create Lab Order if lab tests requested
+        if lab_tests:
+            try:
+                from services.order_service import create_lab_order_from_consultation
+                lab_order, _ = create_lab_order_from_consultation(consultation_doc, lab_tests)
+                if lab_order and lab_order.get("order_id"):
+                    consultation_doc["lab_order_id"] = lab_order.get("order_id")
+                    db.consultations.update_one(
+                        {"consultation_id": consultation_id},
+                        {"$set": {"lab_order_id": lab_order.get("order_id")}}
+                    )
+            except Exception as lab_ex:
+                logger.warning(f"Error auto-creating lab order for {consultation_id}: {lab_ex}")
 
         return serialize_doc(consultation_doc), None
     except Exception as e:
@@ -203,6 +256,7 @@ def get_patient_consultations(patient_id: str) -> List[dict]:
                         "diagnosis": q_ser.get("diagnosis"),
                         "advice": q_ser.get("advice")
                     },
+                    "prescriptions": q_ser.get("prescriptions", []),
                     "actual_duration_mins": q_ser.get("actual_duration_mins", 15),
                     "status": "completed"
                 }
@@ -259,6 +313,7 @@ def get_patient_consultations(patient_id: str) -> List[dict]:
                         "diagnosis": a_ser.get("diagnosis"),
                         "advice": a_ser.get("advice")
                     },
+                    "prescriptions": a_ser.get("prescriptions", []),
                     "actual_duration_mins": a_ser.get("actual_duration_mins", 15),
                     "status": "completed"
                 }
@@ -314,7 +369,14 @@ def get_consultation_by_id(consultation_id: str) -> Optional[dict]:
             ]
         })
         if doc:
-            return serialize_doc(doc)
+            serialized = serialize_doc(doc)
+            pharm_order = db.pharmacy_orders.find_one({"consultation_id": doc.get("consultation_id")})
+            if pharm_order:
+                serialized["pharmacy_order"] = serialize_doc(pharm_order)
+            lab_order = db.lab_orders.find_one({"consultation_id": doc.get("consultation_id")})
+            if lab_order:
+                serialized["lab_order"] = serialize_doc(lab_order)
+            return serialized
 
         # Fallback to queue
         q_doc = db.queue.find_one({"$or": [{"queue_id": consultation_id}, {"booking_id": consultation_id}]})

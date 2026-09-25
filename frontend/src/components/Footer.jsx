@@ -186,8 +186,15 @@ export default function Footer() {
 
         </div>
 
+        {/* Clinical Data NLM RxNorm Attribution Note */}
+        <div className="pt-6 border-t border-slate-800/80 text-[11px] text-slate-400 text-center sm:text-left leading-relaxed">
+          <p>
+            This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
+          </p>
+        </div>
+
         {/* Bottom Strip */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <span>© {new Date().getFullYear()} {t('brand_title', 'SmartHospital Platform')}.</span>
             <span className="hidden sm:inline">•</span>

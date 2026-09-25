@@ -1405,12 +1405,24 @@ def update_queue_status(queue_id: str, new_status: str, metadata: Optional[dict]
                 diagnosis = metadata.get("diagnosis")
                 advice = metadata.get("advice")
                 duration = metadata.get("actual_duration_mins", 15)
+                prescriptions = metadata.get("prescriptions") or []
                 if doc_notes:
                     update_data["doctor_notes"] = str(doc_notes).strip()
                 if diagnosis:
                     update_data["diagnosis"] = str(diagnosis).strip()
                 if advice:
                     update_data["advice"] = str(advice).strip()
+                if prescriptions and isinstance(prescriptions, list):
+                    update_data["prescriptions"] = [
+                        {
+                            "medicine": str(p.get("medicine") or p.get("name")).strip(),
+                            "dosage": str(p.get("dosage") or "").strip(),
+                            "frequency": str(p.get("frequency") or "").strip(),
+                            "duration": str(p.get("duration") or "").strip(),
+                            "instructions": str(p.get("instructions") or "").strip()
+                        }
+                        for p in prescriptions if isinstance(p, dict) and (p.get("medicine") or p.get("name"))
+                    ]
                 update_data["actual_duration_mins"] = duration
                 update_data["completed_at"] = now_str
 
@@ -1432,7 +1444,9 @@ def update_queue_status(queue_id: str, new_status: str, metadata: Optional[dict]
                         doctor_notes=update_data.get("doctor_notes"),
                         diagnosis=update_data.get("diagnosis"),
                         advice=update_data.get("advice"),
-                        actual_duration_mins=update_data.get("actual_duration_mins", 15)
+                        actual_duration_mins=update_data.get("actual_duration_mins", 15),
+                        prescriptions=update_data.get("prescriptions"),
+                        lab_tests=metadata.get("lab_tests") or metadata.get("lab_orders") if metadata else None
                     )
                 except Exception as ex:
                     logger.warning(f"Error archiving consultation: {ex}")
@@ -1597,7 +1611,15 @@ def _notify_consultation_completed(entry: dict) -> None:
         extra_fields={"doctor_name": doctor_display, "department": department}
     )
 
-def complete_consultation(booking_id: str, actual_duration_mins: int = 15, doctor_notes: Optional[str] = None, diagnosis: Optional[str] = None, advice: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
+def complete_consultation(
+    booking_id: str,
+    actual_duration_mins: int = 15,
+    doctor_notes: Optional[str] = None,
+    diagnosis: Optional[str] = None,
+    advice: Optional[str] = None,
+    prescriptions: Optional[List[dict]] = None,
+    lab_tests: Optional[List[dict]] = None
+) -> Tuple[Optional[dict], Optional[str]]:
     try:
         db = get_db()
         entry = db.queue.find_one({"$or": [{"queue_id": booking_id}, {"booking_id": booking_id}]}) or \
@@ -1617,6 +1639,17 @@ def complete_consultation(booking_id: str, actual_duration_mins: int = 15, docto
                 update_data["diagnosis"] = str(diagnosis).strip()
             if advice:
                 update_data["advice"] = str(advice).strip()
+            if prescriptions and isinstance(prescriptions, list):
+                update_data["prescriptions"] = [
+                    {
+                        "medicine": str(p.get("medicine") or p.get("name")).strip(),
+                        "dosage": str(p.get("dosage") or "").strip(),
+                        "frequency": str(p.get("frequency") or "").strip(),
+                        "duration": str(p.get("duration") or "").strip(),
+                        "instructions": str(p.get("instructions") or "").strip()
+                    }
+                    for p in prescriptions if isinstance(p, dict) and (p.get("medicine") or p.get("name"))
+                ]
 
             db.queue.update_one({"$or": [{"queue_id": q_id}, {"booking_id": b_id}]}, {"$set": update_data})
             db.appointments.update_one({"booking_id": b_id}, {"$set": update_data})
@@ -1634,7 +1667,9 @@ def complete_consultation(booking_id: str, actual_duration_mins: int = 15, docto
                     doctor_notes=doctor_notes,
                     diagnosis=diagnosis,
                     advice=advice,
-                    actual_duration_mins=actual_duration_mins
+                    actual_duration_mins=actual_duration_mins,
+                    prescriptions=update_data.get("prescriptions"),
+                    lab_tests=lab_tests
                 )
             except Exception as ex:
                 logger.warning(f"Error archiving consultation: {ex}")

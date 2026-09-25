@@ -1,4 +1,7 @@
+import logging
 from flask import Blueprint, request, jsonify
+
+logger = logging.getLogger(__name__)
 from services.queue_service import (
     join_queue,
     get_queue_status,

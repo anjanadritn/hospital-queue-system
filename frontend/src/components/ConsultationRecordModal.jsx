@@ -1,10 +1,10 @@
-import React from 'react';
 import { 
   X, Calendar, Clock, User, Stethoscope, Building2, 
   FileText, Activity, AlertCircle, CheckCircle2, Printer, 
-  ShieldAlert, Sparkles, HeartPulse, Scale, Ruler, MapPin
+  ShieldAlert, Sparkles, HeartPulse, Scale, Ruler, MapPin, Download
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { generatePrescriptionPdf } from '../utils/prescriptionPdfGenerator';
 
 export default function ConsultationRecordModal({ record, onClose }) {
   const { t } = useLanguage();
@@ -42,9 +42,23 @@ export default function ConsultationRecordModal({ record, onClose }) {
   const diagnosis = doctorAssessment.diagnosis || record.diagnosis || null;
   const doctorNotes = doctorAssessment.notes || record.doctor_notes || null;
   const doctorAdvice = doctorAssessment.advice || record.doctor_advice || null;
+  const prescriptions = Array.isArray(record.prescriptions) ? record.prescriptions : [];
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const [downloadingPdf, setDownloadingPdf] = React.useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      await generatePrescriptionPdf(record);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   return (
@@ -277,7 +291,40 @@ export default function ConsultationRecordModal({ record, onClose }) {
                 </div>
               )}
 
-              {!diagnosis && !doctorNotes && !doctorAdvice && (
+              {/* Prescribed Medicines (Structured List) */}
+              {prescriptions.length > 0 && (
+                <div className="p-3.5 bg-white dark:bg-slate-800 rounded-xl border border-sky-200 dark:border-sky-800/80 shadow-sm">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300 block mb-2 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-sky-600" /> Prescribed Medicines ({prescriptions.length})
+                  </span>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-400 text-[11px]">
+                          <th className="pb-1.5 font-bold">Medicine</th>
+                          <th className="pb-1.5 font-bold">Dosage</th>
+                          <th className="pb-1.5 font-bold">Frequency</th>
+                          <th className="pb-1.5 font-bold">Duration</th>
+                          <th className="pb-1.5 font-bold">Instructions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                        {prescriptions.map((med, mIdx) => (
+                          <tr key={mIdx} className="text-slate-800 dark:text-slate-200">
+                            <td className="py-2 font-bold text-slate-900 dark:text-white">{med.medicine || med.name}</td>
+                            <td className="py-2">{med.dosage || '—'}</td>
+                            <td className="py-2 font-mono font-semibold">{med.frequency || '—'}</td>
+                            <td className="py-2">{med.duration || '—'}</td>
+                            <td className="py-2 italic text-slate-600 dark:text-slate-400">{med.instructions || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {!diagnosis && !doctorNotes && !doctorAdvice && prescriptions.length === 0 && (
                 <p className="text-xs italic text-slate-400 text-center py-2">
                   No physician notes or instructions were documented during this consultation.
                 </p>
@@ -302,14 +349,23 @@ export default function ConsultationRecordModal({ record, onClose }) {
         {/* Footer Actions */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 print:hidden">
           <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            id="modal-download-pdf-btn"
+            className="px-4 py-2 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>{downloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+          </button>
+          <button
             onClick={handlePrint}
-            className="px-4 py-2 text-sm font-semibold rounded-xl bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 text-sm font-semibold rounded-xl bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition flex items-center gap-2 shadow-sm cursor-pointer"
           >
             <Printer className="w-4 h-4" /> {t('print_record')}
           </button>
           <button
             onClick={onClose}
-            className="px-5 py-2 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition shadow-sm"
+            className="px-5 py-2 text-sm font-semibold rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 transition shadow-sm cursor-pointer"
           >
             {t('close')}
           </button>

@@ -21,7 +21,9 @@ import {
   Layers,
   ChevronRight,
   Globe,
-  FileText
+  FileText,
+  Pill,
+  FlaskConical
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -71,6 +73,8 @@ export default function Navbar() {
   const isPatient = user?.role === 'patient';
   const isDoctor = user?.role === 'doctor';
   const isAdmin = user?.role === 'admin';
+  const isPharmacist = user?.role === 'pharmacist' || user?.role === 'pharmacy';
+  const isLabStaff = user?.role === 'lab_technician' || user?.role === 'laboratory' || user?.role === 'lab';
 
   const isActive = (path) => location.pathname === path;
 
@@ -88,7 +92,7 @@ export default function Navbar() {
         {/* Brand Logo & Clinical OPD Status */}
         <div className="flex items-center gap-4">
           <Link
-            to={isPatient ? '/patient' : isDoctor ? '/doctor' : isAdmin ? '/admin' : '/'}
+            to={isPatient ? '/patient' : isDoctor ? '/doctor' : isAdmin ? '/admin' : isPharmacist ? '/pharmacy' : isLabStaff ? '/laboratory' : '/'}
             className="flex items-center gap-2.5 group"
           >
             <div className="w-10 h-10 bg-gradient-to-tr from-sky-600 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-sky-600/15 group-hover:scale-105 transition-transform duration-200">
@@ -99,7 +103,7 @@ export default function Navbar() {
                 SMART<span className="text-sky-600">HOSPITAL</span>
               </span>
               <span className="text-[10px] font-semibold text-slate-500 block -mt-0.5">
-                {isDoctor ? t('doctor_opd_console', 'SIMSRH Doctor Console') : isAdmin ? t('admin_portal', 'SIMSRH Operations Portal') : isPatient ? t('patient_care_portal', 'SIMSRH Patient Portal') : 'SIMSRH Tumakuru • OPD Platform'}
+                {isDoctor ? t('doctor_opd_console', 'SIMSRH Doctor Console') : isAdmin ? t('admin_portal', 'SIMSRH Operations Portal') : isPatient ? t('patient_care_portal', 'SIMSRH Patient Portal') : isPharmacist ? 'SIMSRH Pharmacy Console' : isLabStaff ? 'SIMSRH Laboratory Console' : 'SIMSRH Tumakuru • OPD Platform'}
               </span>
             </div>
           </Link>
@@ -308,6 +312,76 @@ export default function Navbar() {
                 <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
                 <span>{t('queue_analytics', 'Queue Analytics')}</span>
               </Link>
+
+              <Link
+                to="/pharmacy"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                  isActive('/pharmacy') || isActive('/pharmacy-dashboard') ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Pill className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Pharmacy</span>
+              </Link>
+
+              <Link
+                to="/laboratory"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                  isActive('/laboratory') || isActive('/lab') || isActive('/lab-dashboard') ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Laboratory</span>
+              </Link>
+            </>
+          )}
+
+          {/* 4. PHARMACIST NAVIGATION */}
+          {isAuthenticated && isPharmacist && (
+            <>
+              <Link
+                to="/pharmacy"
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+                  isActive('/pharmacy') || isActive('/pharmacy-dashboard') ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Pill className="w-3.5 h-3.5" />
+                <span>Pharmacy Console</span>
+              </Link>
+
+              <Link
+                to="/departments"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                  isActive('/departments') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                <span>Clinical Wings</span>
+              </Link>
+            </>
+          )}
+
+          {/* 5. LAB STAFF NAVIGATION */}
+          {isAuthenticated && isLabStaff && (
+            <>
+              <Link
+                to="/laboratory"
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+                  isActive('/laboratory') || isActive('/lab') || isActive('/lab-dashboard') ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>Laboratory Console</span>
+              </Link>
+
+              <Link
+                to="/departments"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                  isActive('/departments') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                <span>Clinical Wings</span>
+              </Link>
             </>
           )}
 
@@ -421,9 +495,9 @@ export default function Navbar() {
           {/* Authenticated User Profile Badge & Logout */}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2.5 pl-1">
-              {/* Profile Avatar (Patient, Doctor, Admin) */}
+              {/* Profile Avatar (Patient, Doctor, Admin, Pharmacy, Lab) */}
               <Link
-                to={isPatient ? "/patient/profile" : (isDoctor ? "/doctor" : "/admin")}
+                to={isPatient ? "/patient/profile" : (isDoctor ? "/doctor" : (isAdmin ? "/admin" : (isPharmacist ? "/pharmacy" : (isLabStaff ? "/laboratory" : "/"))))}
                 className="flex items-center gap-2 group cursor-pointer focus:outline-none"
                 title={isPatient ? t('my_profile') : user.name}
               >
@@ -442,7 +516,7 @@ export default function Navbar() {
 
               <div className="text-right hidden sm:block">
                 <Link
-                  to={isPatient ? "/patient/profile" : (isDoctor ? "/doctor" : "/admin")}
+                  to={isPatient ? "/patient/profile" : (isDoctor ? "/doctor" : (isAdmin ? "/admin" : (isPharmacist ? "/pharmacy" : (isLabStaff ? "/laboratory" : "/"))))}
                   className="font-extrabold text-xs text-slate-900 block leading-tight hover:text-sky-600 transition"
                 >
                   {user.name}
@@ -453,7 +527,11 @@ export default function Navbar() {
                       ? 'bg-purple-100 text-purple-700 border border-purple-200'
                       : user.role === 'doctor'
                         ? 'bg-sky-100 text-sky-800 border border-sky-200'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : isPharmacist
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          : isLabStaff
+                            ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                            : 'bg-teal-100 text-teal-800 border border-teal-200'
                   }`}
                 >
                   {user.role}
@@ -646,6 +724,48 @@ export default function Navbar() {
               </Link>
               <Link to="/analytics" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-600" /> {t('queue_analytics', 'Queue Analytics')}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+              <Link to="/pharmacy" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 text-xs font-bold text-emerald-800">
+                <span className="flex items-center gap-2"><Pill className="w-4 h-4 text-emerald-600" /> Pharmacy Console</span>
+                <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
+              </Link>
+              <Link to="/laboratory" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-indigo-50 text-xs font-bold text-indigo-800">
+                <span className="flex items-center gap-2"><FlaskConical className="w-4 h-4 text-indigo-600" /> Laboratory Console</span>
+                <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
+              </Link>
+            </div>
+          )}
+
+          {/* 4. Mobile Pharmacist Navigation */}
+          {isAuthenticated && isPharmacist && (
+            <div className="space-y-1">
+              <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
+                Pharmacy Services
+              </div>
+              <Link to="/pharmacy" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 text-xs font-bold text-emerald-800">
+                <span className="flex items-center gap-2"><Pill className="w-4 h-4 text-emerald-600" /> Pharmacy Orders Console</span>
+                <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
+              </Link>
+              <Link to="/departments" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><Building2 className="w-4 h-4 text-teal-600" /> Clinical Wings</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+            </div>
+          )}
+
+          {/* 5. Mobile Lab Technician Navigation */}
+          {isAuthenticated && isLabStaff && (
+            <div className="space-y-1">
+              <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
+                Diagnostic Laboratory Services
+              </div>
+              <Link to="/laboratory" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-indigo-50 text-xs font-bold text-indigo-800">
+                <span className="flex items-center gap-2"><FlaskConical className="w-4 h-4 text-indigo-600" /> Laboratory Orders Console</span>
+                <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
+              </Link>
+              <Link to="/departments" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><Building2 className="w-4 h-4 text-teal-600" /> Clinical Wings</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
             </div>

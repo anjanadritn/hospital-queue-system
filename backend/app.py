@@ -20,6 +20,8 @@ from routes.admin_routes import admin_bp
 from routes.department_routes import department_bp
 from routes.patient_routes import patient_bp
 from routes.location_routes import location_bp
+from routes.medicine_routes import medicine_bp
+from routes.order_routes import order_bp
 
 # ============================================================
 # LOGGING CONFIGURATION
@@ -123,6 +125,8 @@ def create_app() -> Flask:
     app.register_blueprint(department_bp)
     app.register_blueprint(patient_bp)
     app.register_blueprint(location_bp)
+    app.register_blueprint(medicine_bp)
+    app.register_blueprint(order_bp)
 
     # ========================================================
     # DATABASE INITIALIZATION

@@ -27,12 +27,14 @@ import {
   Ban,
   Building2,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { optimizeProfileImage } from '../utils/imageOptimizer';
+import { generatePrescriptionPdf } from '../utils/prescriptionPdfGenerator';
 import LoadingState from '../components/LoadingState';
 import StatusBadge from '../components/StatusBadge';
 import ConsultationRecordModal from '../components/ConsultationRecordModal';
@@ -1091,8 +1093,17 @@ export default function PatientProfilePage({ initialTab }) {
                         </div>
                       )}
 
-                      {/* Action to open full modal */}
-                      <div className="pt-2 flex justify-end">
+                      {/* Action to open full modal / download PDF */}
+                      <div className="pt-2 flex flex-wrap justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => generatePrescriptionPdf(rec)}
+                          className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                          title="Download Official Prescription PDF"
+                        >
+                          <Download className="w-3.5 h-3.5 text-teal-600" />
+                          <span>{t('download_pdf', 'Download PDF')}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => setSelectedRecord(rec)}

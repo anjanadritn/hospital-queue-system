@@ -18,7 +18,9 @@ import {
   Clock,
   CheckCircle2,
   Users,
-  Stethoscope
+  Stethoscope,
+  Pill,
+  FlaskConical
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -30,11 +32,11 @@ export default function Login() {
   const { login } = useAuth();
   const { t } = useLanguage();
 
-  // Read role from URL query param (?role=patient|doctor|admin)
+  // Read role from URL query param (?role=patient|doctor|admin|pharmacist|lab_technician)
   const getInitialRole = () => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
-    if (roleParam && ['patient', 'doctor', 'admin'].includes(roleParam)) {
+    if (roleParam && ['patient', 'doctor', 'admin', 'pharmacist', 'lab_technician'].includes(roleParam)) {
       return roleParam;
     }
     return 'patient';
@@ -52,7 +54,7 @@ export default function Login() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
-    if (roleParam && ['patient', 'doctor', 'admin'].includes(roleParam)) {
+    if (roleParam && ['patient', 'doctor', 'admin', 'pharmacist', 'lab_technician'].includes(roleParam)) {
       setRole(roleParam);
       setError(null);
     }
@@ -75,6 +77,12 @@ export default function Login() {
     } else if (demoRole === 'admin') {
       setPhone('9999999999');
       setPassword('AdminPass123!');
+    } else if (demoRole === 'pharmacist') {
+      setPhone('9876543230');
+      setPassword('PharmPass123!');
+    } else if (demoRole === 'lab_technician') {
+      setPhone('9876543240');
+      setPassword('LabPass123!');
     }
   };
 
@@ -104,6 +112,8 @@ export default function Login() {
         let defaultTarget = res.redirect || '/patient';
         if (res.user?.role === 'admin') defaultTarget = '/admin';
         else if (res.user?.role === 'doctor') defaultTarget = '/doctor';
+        else if (res.user?.role === 'pharmacist' || res.user?.role === 'pharmacy') defaultTarget = '/pharmacy';
+        else if (res.user?.role === 'lab_technician' || res.user?.role === 'laboratory' || res.user?.role === 'lab') defaultTarget = '/laboratory';
         else defaultTarget = '/patient';
 
         navigate(defaultTarget, { replace: true });
@@ -226,11 +236,11 @@ export default function Login() {
                   {t('instant_access', 'Instant Access')}
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => handleQuickDemoFill('patient')}
-                  className={`py-2 px-2.5 rounded-xl border transition text-center cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
                     role === 'patient'
                       ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
@@ -241,7 +251,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => handleQuickDemoFill('doctor')}
-                  className={`py-2 px-2.5 rounded-xl border transition text-center cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
                     role === 'doctor'
                       ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
@@ -252,13 +262,35 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => handleQuickDemoFill('admin')}
-                  className={`py-2 px-2.5 rounded-xl border transition text-center cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
                     role === 'admin'
                       ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
                   }`}
                 >
                   {t('admin', 'Admin')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoFill('pharmacist')}
+                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
+                    role === 'pharmacist'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300'
+                  }`}
+                >
+                  Pharmacy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoFill('lab_technician')}
+                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
+                    role === 'lab_technician'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300'
+                  }`}
+                >
+                  Lab
                 </button>
               </div>
             </div>
@@ -268,11 +300,13 @@ export default function Login() {
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
                 {t('select_account_role', 'Select Account Role')}
               </label>
-              <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
                 {[
                   { id: 'patient', label: t('patient', 'Patient'), icon: Users },
                   { id: 'doctor', label: t('doctor', 'Doctor'), icon: Stethoscope },
-                  { id: 'admin', label: t('admin', 'Admin'), icon: ShieldCheck }
+                  { id: 'admin', label: t('admin', 'Admin'), icon: ShieldCheck },
+                  { id: 'pharmacist', label: 'Pharmacy', icon: Pill },
+                  { id: 'lab_technician', label: 'Laboratory', icon: FlaskConical }
                 ].map((r) => {
                   const Icon = r.icon;
                   const isSelected = role === r.id;
@@ -281,7 +315,7 @@ export default function Login() {
                       key={r.id}
                       type="button"
                       onClick={() => handleRoleChange(r.id)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                         isSelected
                           ? 'bg-white text-sky-700 shadow-xs border border-slate-200/60'
                           : 'text-slate-600 hover:text-slate-900'
