@@ -27,6 +27,7 @@ import DoctorQueuePrediction from './pages/DoctorQueuePrediction';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import TvDisplay from './pages/TvDisplay';
 import PharmacyDashboard from './pages/PharmacyDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 import LabDashboard from './pages/LabDashboard';
 
 export default function App() {
@@ -37,12 +38,13 @@ export default function App() {
         <div className="min-h-screen bg-slate-50 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
           <Navbar />
           <div className="flex-1">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/about" element={<AboutHospital />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+            <ErrorBoundary>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/about" element={<AboutHospital />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/doctors" element={<Doctors />} />
               <Route path="/doctors/:doctorId" element={<DoctorProfile />} />
@@ -203,6 +205,7 @@ export default function App() {
               {/* Wildcard Fallback Route */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </ErrorBoundary>
           </div>
           <Footer />
         </div>

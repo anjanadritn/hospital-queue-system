@@ -40,9 +40,19 @@ export default function Navbar() {
   const [activeQueueToken, setActiveQueueToken] = useState(null);
 
   useEffect(() => {
-    hospitalApi.getHealth()
-      .then((res) => setDbHealthy(Boolean(res && res.database_connected !== false)))
-      .catch(() => setDbHealthy(false));
+    let isMounted = true;
+    try {
+      hospitalApi.getHealth()
+        .then((res) => {
+          if (isMounted) setDbHealthy(Boolean(res && res.database_connected !== false));
+        })
+        .catch(() => {
+          if (isMounted) setDbHealthy(false);
+        });
+    } catch (e) {
+      if (isMounted) setDbHealthy(false);
+    }
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {

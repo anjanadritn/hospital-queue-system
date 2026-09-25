@@ -41,8 +41,13 @@ export default function Login() {
   };
 
   const [role, setRole] = useState(() => {
-    const params = new URLSearchParams(location.search);
-    return parseRoleParam(params.get('role'));
+    try {
+      const search = location?.search || (typeof window !== 'undefined' ? window.location.search : '');
+      const params = new URLSearchParams(search);
+      return parseRoleParam(params.get('role'));
+    } catch (e) {
+      return 'patient';
+    }
   });
 
   const [phone, setPhone] = useState('');
@@ -67,11 +72,14 @@ export default function Login() {
 
   // Sync role if URL search param changes
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const parsed = parseRoleParam(params.get('role'));
-    setRole(parsed);
-    setError(null);
-  }, [location.search]);
+    try {
+      const search = location?.search || (typeof window !== 'undefined' ? window.location.search : '');
+      const params = new URLSearchParams(search);
+      const parsed = parseRoleParam(params.get('role'));
+      setRole(parsed);
+      setError(null);
+    } catch (e) {}
+  }, [location?.search]);
 
   const handleSelectRole = (targetRoleKey) => {
     setStaffMenuOpen(false);

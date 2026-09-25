@@ -22,9 +22,28 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
+// Safe storage access for Axios interceptors
+const safeGetToken = () => {
+  try {
+    return typeof window !== 'undefined' ? (localStorage.getItem('access_token') || localStorage.getItem('smart_hospital_token')) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const safeClearTokens = () => {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('smart_hospital_token');
+      localStorage.removeItem('smart_hospital_user');
+    }
+  } catch (e) {}
+};
+
 // Add JWT Token Interceptor using access_token key
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token') || localStorage.getItem('smart_hospital_token');
+  const token = safeGetToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -36,10 +55,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear invalid/expired token on 401
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('smart_hospital_token');
-      localStorage.removeItem('smart_hospital_user');
+      safeClearTokens();
     }
     return Promise.reject(error);
   }
