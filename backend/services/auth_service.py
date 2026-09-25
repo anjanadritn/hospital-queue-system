@@ -562,3 +562,45 @@ def login_user_with_otp(phone: str, otp: str, role: Optional[str] = None) -> Tup
         "redirect": "/staff" if user.get("role") in ["doctor", "admin"] else "/patient"
     }, None
 
+
+def change_authenticated_password(user_identifier: str, current_password: str, new_password: str) -> Tuple[bool, Optional[str]]:
+    """
+    Changes the password for an authenticated user identified by user_id or phone.
+    Verifies that the current password matches before applying the new password.
+    """
+    try:
+        db = get_db()
+        user = db.users.find_one({"$or": [{"user_id": user_identifier}, {"phone": user_identifier}]})
+    except Exception:
+        user = None
+
+    if not user:
+        for u in IN_MEMORY_USERS:
+            if u.get("user_id") == user_identifier or u.get("phone") == user_identifier:
+                user = u
+                break
+
+    if not user:
+        return False, "User account not found."
+
+    stored_hash = user.get("password_hash", "")
+    if not stored_hash or not check_password_hash(stored_hash, current_password):
+        return False, "Incorrect current password."
+
+    new_hash = generate_password_hash(new_password)
+    try:
+        db = get_db()
+        db.users.update_one(
+            {"$or": [{"user_id": user_identifier}, {"phone": user_identifier}]},
+            {"$set": {"password_hash": new_hash}}
+        )
+    except Exception:
+        pass
+
+    for u in IN_MEMORY_USERS:
+        if u.get("user_id") == user_identifier or u.get("phone") == user_identifier:
+            u["password_hash"] = new_hash
+
+    return True, None
+
+

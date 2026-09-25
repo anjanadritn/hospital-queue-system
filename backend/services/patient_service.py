@@ -421,3 +421,41 @@ def update_profile_picture(patient_id: str, image_bytes: bytes, mime_type: str) 
         return result, None
     except Exception as ex:
         return None, f"Failed to save profile picture: {str(ex)}"
+
+
+def remove_profile_picture(patient_id: str) -> tuple:
+    """
+    Removes the profile picture for the given patient_id from db.patients and db.users.
+    Returns (updated_patient_doc, error_string).
+    """
+    now = ist_isoformat()
+    try:
+        db = get_db()
+        patient = db.patients.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
+        if not patient:
+            user = db.users.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
+            if not user:
+                return None, "Patient profile not found"
+            actual_pid = user.get("patient_id") or patient_id
+            user_id = user.get("user_id")
+        else:
+            actual_pid = patient.get("patient_id", patient_id)
+            user_id = patient.get("user_id")
+
+        db.patients.update_one(
+            {"patient_id": actual_pid},
+            {"$set": {"profile_picture": None, "updated_at": now}}
+        )
+        if user_id:
+            db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"profile_picture": None, "updated_at": now}}
+            )
+
+        updated = db.patients.find_one({"patient_id": actual_pid})
+        result = serialize_doc(updated) if updated else {"patient_id": actual_pid, "profile_picture": None}
+        result.pop("password_hash", None)
+        return result, None
+    except Exception as ex:
+        return None, f"Failed to remove profile picture: {str(ex)}"
+
