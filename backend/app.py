@@ -89,6 +89,9 @@ def create_app() -> Flask:
         for origin in cors_origins_str.split(",")
         if origin.strip()
     ]
+    # Allow all Vercel deployment and preview URLs
+    import re
+    allowed_origins.append(re.compile(r"^https://.*\.vercel\.app$"))
 
     logger.info("Allowed CORS origins: %s", allowed_origins)
 

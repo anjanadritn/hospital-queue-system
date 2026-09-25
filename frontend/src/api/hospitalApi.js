@@ -1,13 +1,34 @@
 import axios from 'axios';
 
 const resolveApiBaseUrl = () => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
-    return envUrl.trim().replace(/\/+$/, '');
-  }
-  // In production browser environments (such as Vercel *.vercel.app), use relative /api
-  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim();
+
+  // In browser environments:
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname || '';
+    const isLocalhost =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.endsWith('.local');
+
+    if (isLocalhost) {
+      return (envUrl || 'http://localhost:5000').replace(/\/+$/, '');
+    }
+
+    // In production (such as *.vercel.app or custom domain):
+    // Only use envUrl if it is a real non-localhost URL (e.g. https://api.myhospital.com)
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+      return envUrl.replace(/\/+$/, '');
+    }
+
+    // Default to relative /api for production so Vercel can proxy/route it
     return '/api';
+  }
+
+  // Non-browser / SSR fallback:
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl.replace(/\/+$/, '');
   }
   return 'http://localhost:5000';
 };
@@ -41,8 +62,21 @@ const safeClearTokens = () => {
   } catch (e) {}
 };
 
-// Add JWT Token Interceptor using access_token key
+// Add JWT Token Interceptor using access_token key & ensure production never hits localhost
 apiClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname || '';
+    const isLocalhost =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.endsWith('.local');
+
+    if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1'))) {
+      config.baseURL = '/api';
+    }
+  }
+
   const token = safeGetToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
