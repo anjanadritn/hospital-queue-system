@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { HeartPulse, Phone, Lock, AlertCircle, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export default function ForgotPassword() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || t('failed_send_otp', 'Failed to send password reset OTP'));
+      setError(formatErrorMessage(err, t('failed_send_otp', 'Failed to send password reset OTP')));
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function ForgotPassword() {
       }, 2000);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || t('pass_reset_failed', 'Password reset failed'));
+      setError(formatErrorMessage(err, t('pass_reset_failed', 'Password reset failed')));
     } finally {
       setLoading(false);
     }
@@ -99,7 +100,7 @@ export default function ForgotPassword() {
         {error && (
           <div className="mb-6 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+            <span>{formatErrorMessage(error)}</span>
           </div>
         )}
 

@@ -22,6 +22,7 @@ import {
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 import StatusBadge from '../components/StatusBadge';
 import LoadingState from '../components/LoadingState';
 import DepartureCard from '../components/DepartureCard';
@@ -337,7 +338,7 @@ export default function QueueTracking() {
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
               <h3 className="text-base font-bold text-red-900 mb-1">{t('service_comm_notice', 'Queue Access Notice')}</h3>
-              <p className="text-xs text-red-700 font-medium">{error}</p>
+              <p className="text-xs text-red-700 font-medium">{formatErrorMessage(error)}</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
               <button

@@ -18,6 +18,7 @@ import {
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function PatientSecurity() {
   const { user } = useAuth();
@@ -59,7 +60,7 @@ export default function PatientSecurity() {
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || 'Failed to update password. Please check your current password.');
+      setErrorMsg(formatErrorMessage(err, 'Failed to update password. Please check your current password.'));
     } finally {
       setSaving(false);
     }
@@ -224,7 +225,7 @@ export default function PatientSecurity() {
             {errorMsg && (
               <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span className="font-bold">{errorMsg}</span>
+                <span className="font-bold">{formatErrorMessage(errorMsg)}</span>
               </div>
             )}
 

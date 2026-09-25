@@ -3,6 +3,8 @@ import { AlertCircle, RefreshCw, ServerCrash, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
+import { formatErrorMessage } from '../utils/errorUtils';
+
 export default function ErrorState({
   title,
   message,
@@ -12,7 +14,8 @@ export default function ErrorState({
 }) {
   const { t } = useLanguage();
   const displayTitle = title || t('service_notice', 'Service Communication Notice');
-  const displayMessage = message || t('service_error_msg', 'Unable to synchronize with the healthcare queue server. Please verify network connectivity.');
+  const fallbackMsg = t('service_error_msg', 'Unable to synchronize with the healthcare queue server. Please verify network connectivity.');
+  const displayMessage = formatErrorMessage(message, fallbackMsg);
   const displayBackText = backText || t('return_to_specialists', 'Return to Specialists Directory');
 
   return (

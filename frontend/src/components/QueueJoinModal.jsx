@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, CheckCircle2, AlertCircle, Loader2, User, Phone, Building2, Stethoscope, Ticket, Navigation, MapPin } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function QueueJoinModal({ doctor, isOpen, onClose, onSuccess }) {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function QueueJoinModal({ doctor, isOpen, onClose, onSuccess }) {
       if (onSuccess) onSuccess(res);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Failed to join queue. Please check Flask backend status.');
+      setError(formatErrorMessage(err, 'Failed to join queue. Please check Flask backend status.'));
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,7 @@ export default function QueueJoinModal({ doctor, isOpen, onClose, onSuccess }) {
             {error && (
               <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
+                <span>{formatErrorMessage(error)}</span>
               </div>
             )}
 

@@ -22,6 +22,7 @@ import {
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -131,7 +132,7 @@ export default function Login() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || t('invalid_credentials', 'Invalid phone number or password for selected role.'));
+      setError(formatErrorMessage(err, t('invalid_credentials', 'Invalid phone number or password for selected role.')));
     } finally {
       setLoading(false);
     }
@@ -411,7 +412,7 @@ export default function Login() {
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div className="flex-1">
                   <span className="font-extrabold block">{t('authentication_notice', 'Authentication Notice')}</span>
-                  <p className="mt-0.5">{error}</p>
+                  <p className="mt-0.5">{formatErrorMessage(error)}</p>
                 </div>
               </div>
             )}

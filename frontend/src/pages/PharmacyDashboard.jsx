@@ -22,6 +22,7 @@ import {
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function PharmacyDashboard() {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export default function PharmacyDashboard() {
       setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('[PharmacyDashboard] Failed to fetch orders:', err);
-      setError(err.response?.data?.error || 'Failed to load pharmacy orders. Please check your connection.');
+      setError(formatErrorMessage(err, 'Failed to load pharmacy orders. Please check your connection.'));
     } finally {
       setLoading(false);
     }
@@ -278,7 +279,7 @@ export default function PharmacyDashboard() {
           <div className="p-8 text-center bg-white rounded-3xl border border-rose-200 shadow-sm max-w-lg mx-auto">
             <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2.5" />
             <h3 className="text-sm font-bold text-slate-900">Failed to Load Orders</h3>
-            <p className="text-xs text-slate-500 mt-1">{error}</p>
+            <p className="text-xs text-slate-500 mt-1">{formatErrorMessage(error)}</p>
             <button
               onClick={fetchOrders}
               className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"

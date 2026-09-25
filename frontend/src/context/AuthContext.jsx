@@ -24,11 +24,24 @@ const safeStorage = {
 };
 
 export function AuthProvider({ children }) {
+  const isValidUser = (u) => {
+    return Boolean(u && typeof u === 'object' && !u.error && !u.code && (u.user_id || u.phone || u.role || u.email || u.id));
+  };
+
+  const safeClearTokens = () => {
+    safeStorage.removeItem('access_token');
+    safeStorage.removeItem('smart_hospital_token');
+    safeStorage.removeItem('smart_hospital_user');
+  };
+
   const [token, setToken] = useState(() => safeStorage.getItem('access_token') || safeStorage.getItem('smart_hospital_token'));
   const [user, setUser] = useState(() => {
     const cached = safeStorage.getItem('smart_hospital_user');
     if (cached) {
-      try { return JSON.parse(cached); } catch (_) { return null; }
+      try {
+        const parsed = JSON.parse(cached);
+        if (isValidUser(parsed)) return parsed;
+      } catch (_) { return null; }
     }
     return null;
   });
@@ -53,19 +66,24 @@ export function AuthProvider({ children }) {
         setTimeout(() => reject(new Error('Session validation timeout')), 3500)
       );
       const userData = await Promise.race([fetchPromise, timeoutPromise]);
-      if (userData) {
+      if (isValidUser(userData)) {
         setUser(userData);
         setToken(savedToken);
         setIsAuthenticated(true);
         safeStorage.setItem('smart_hospital_user', JSON.stringify(userData));
+      } else if (userData && (userData.error || userData.code)) {
+        // Discard error responses returned from API
+        console.warn('Session restoration received error payload:', userData);
+        safeClearTokens();
+        setUser(null);
+        setToken(null);
+        setIsAuthenticated(false);
       }
     } catch (err) {
       console.warn('Session restoration background check note:', err?.message || err);
       // Only clear if 401 unauthorized was returned by server
       if (err?.response?.status === 401) {
-        safeStorage.removeItem('access_token');
-        safeStorage.removeItem('smart_hospital_token');
-        safeStorage.removeItem('smart_hospital_user');
+        safeClearTokens();
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
@@ -87,11 +105,16 @@ export function AuthProvider({ children }) {
 
     try {
       const canonicalUser = await hospitalApi.getCurrentUser();
-      setUser(canonicalUser);
-      safeStorage.setItem('smart_hospital_user', JSON.stringify(canonicalUser));
+      if (isValidUser(canonicalUser)) {
+        setUser(canonicalUser);
+        safeStorage.setItem('smart_hospital_user', JSON.stringify(canonicalUser));
+      } else if (isValidUser(initialUserData)) {
+        setUser(initialUserData);
+        safeStorage.setItem('smart_hospital_user', JSON.stringify(initialUserData));
+      }
     } catch (e) {
-      setUser(initialUserData);
-      if (initialUserData) {
+      if (isValidUser(initialUserData)) {
+        setUser(initialUserData);
         safeStorage.setItem('smart_hospital_user', JSON.stringify(initialUserData));
       }
     }

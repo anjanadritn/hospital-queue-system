@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { KeyRound, X, CheckCircle2, AlertTriangle, Loader2, ShieldCheck, User } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess }) {
   const { t } = useLanguage();
@@ -31,7 +32,7 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || t('invalid_otp_code', 'Invalid or expired consultation OTP'));
+      setError(formatErrorMessage(err, t('invalid_otp_code', 'Invalid or expired consultation OTP')));
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export default function DoctorOtpModal({ patientData, isOpen, onClose, onSuccess
         {error && (
           <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2 text-left">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+            <span>{formatErrorMessage(error)}</span>
           </div>
         )}
 

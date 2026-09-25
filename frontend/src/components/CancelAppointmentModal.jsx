@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { hospitalApi } from '../api/hospitalApi';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function CancelAppointmentModal({ appointment, isOpen, onClose, onSuccess }) {
   const { t } = useLanguage();
@@ -47,7 +48,7 @@ export default function CancelAppointmentModal({ appointment, isOpen, onClose, o
       }, 1000);
     } catch (err) {
       console.error('Cancellation error:', err);
-      const errMsg = err.response?.data?.error || err.message;
+      const errMsg = formatErrorMessage(err, 'Unable to cancel the appointment. Please try again.');
       if (err.response?.status === 409) {
         if (errMsg && errMsg.toLowerCase().includes('already')) {
           setError(t('already_cancelled', 'Appointment has already been cancelled.'));
@@ -57,7 +58,7 @@ export default function CancelAppointmentModal({ appointment, isOpen, onClose, o
           setError(errMsg);
         }
       } else {
-        setError(errMsg || 'Unable to cancel the appointment. Please try again.');
+        setError(errMsg);
       }
     } finally {
       setLoading(false);
@@ -192,7 +193,7 @@ export default function CancelAppointmentModal({ appointment, isOpen, onClose, o
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 font-semibold flex items-center gap-2 animate-shake">
               <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>{error}</span>
+              <span>{formatErrorMessage(error)}</span>
             </div>
           )}
 

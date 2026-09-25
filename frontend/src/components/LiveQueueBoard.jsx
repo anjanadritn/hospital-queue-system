@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 const DEPARTMENTS = [
   'All Departments',
@@ -191,7 +192,7 @@ export default function LiveQueueBoard({ initialDepartment = '' }) {
         ) : error && totalCount === 0 ? (
           <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-            <span className="text-sm">{error}</span>
+            <span className="text-sm">{formatErrorMessage(error)}</span>
           </div>
         ) : (
           <>

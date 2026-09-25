@@ -29,6 +29,7 @@ import {
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 import SymptomSelector from '../components/SymptomSelector';
 import DepartureCard from '../components/DepartureCard';
 import PatientLocationSelector from '../components/PatientLocationSelector';
@@ -422,11 +423,11 @@ export default function BookAppointment() {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
-        setError(err.response?.data?.error || 'Authentication required. Please log in with your patient account before booking.');
+        setError(formatErrorMessage(err, 'Authentication required. Please log in with your patient account before booking.'));
       } else if (err.response?.status === 403) {
-        setError(err.response?.data?.error || 'Access forbidden (403). Only registered patient accounts are authorized to schedule outpatient consultations.');
+        setError(formatErrorMessage(err, 'Access forbidden (403). Only registered patient accounts are authorized to schedule outpatient consultations.'));
       } else {
-        setError(err.response?.data?.error || 'Failed to book appointment. Please verify backend status.');
+        setError(formatErrorMessage(err, 'Failed to book appointment. Please verify backend status.'));
       }
     } finally {
       setBookingLoading(false);
@@ -472,7 +473,7 @@ export default function BookAppointment() {
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div>
                   <span className="font-extrabold block">Booking Encountered An Issue</span>
-                  <span>{error}</span>
+                  <span>{formatErrorMessage(error)}</span>
                 </div>
               </div>
             )}

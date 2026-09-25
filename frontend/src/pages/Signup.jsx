@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
+import { formatErrorMessage } from '../utils/errorUtils';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -91,12 +92,7 @@ export default function Signup() {
       }
     } catch (err) {
       console.error('OTP Send Error:', err);
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        t('failed_send_otp', 'Failed to send verification OTP');
-      setError(message);
+      setError(formatErrorMessage(err, t('failed_send_otp', 'Failed to send verification OTP')));
     } finally {
       setLoading(false);
     }
@@ -116,12 +112,7 @@ export default function Signup() {
       }
     } catch (err) {
       console.error('OTP Resend Error:', err);
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        t('failed_send_otp', 'Failed to resend verification OTP');
-      setError(message);
+      setError(formatErrorMessage(err, t('failed_send_otp', 'Failed to resend verification OTP')));
     } finally {
       setLoading(false);
     }
@@ -153,12 +144,7 @@ export default function Signup() {
       }, 2000);
     } catch (err) {
       console.error('Registration Error:', err);
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        t('reg_failed_otp', 'Account registration failed. Please verify your OTP.');
-      setError(message);
+      setError(formatErrorMessage(err, t('reg_failed_otp', 'Account registration failed. Please verify your OTP.')));
     } finally {
       setLoading(false);
     }
@@ -265,7 +251,7 @@ export default function Signup() {
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div className="flex-1">
                   <span className="font-extrabold block">{t('authentication_notice', 'Registration Issue')}</span>
-                  <p className="mt-0.5">{error}</p>
+                  <p className="mt-0.5">{formatErrorMessage(error)}</p>
                 </div>
               </div>
             )}

@@ -50,13 +50,17 @@ export class ErrorBoundary extends React.Component {
               </p>
             </div>
 
-            {this.state.error?.message && (
+            {this.state.error && (
               <div className="p-3 bg-slate-100 rounded-xl text-left border border-slate-200">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                   Diagnostics
                 </span>
                 <p className="font-mono text-xs text-rose-700 font-semibold break-words">
-                  {this.state.error.message}
+                  {typeof this.state.error === 'string'
+                    ? this.state.error
+                    : typeof this.state.error?.message === 'string'
+                      ? this.state.error.message
+                      : JSON.stringify(this.state.error)}
                 </p>
               </div>
             )}

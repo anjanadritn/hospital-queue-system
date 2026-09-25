@@ -50,9 +50,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// Response interceptor to handle 401 session expiration
+// Response interceptor to handle 401 session expiration and error normalization
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response?.data && typeof response.data === 'object' && response.data.error && response.data.success === false) {
+      const err = new Error(
+        typeof response.data.error === 'string'
+          ? response.data.error
+          : (response.data.error?.message || 'Request failed')
+      );
+      err.response = response;
+      return Promise.reject(err);
+    }
+    return response;
+  },
   (error) => {
     if (error.response && error.response.status === 401) {
       safeClearTokens();
