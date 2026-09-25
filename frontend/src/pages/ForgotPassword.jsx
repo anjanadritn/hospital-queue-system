@@ -19,9 +19,20 @@ export default function ForgotPassword() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  const normalizePhoneInput = (val) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '');
+    if (digits.startsWith('0091') && digits.length >= 14) return digits.slice(4);
+    if (digits.startsWith('91') && digits.length > 10) return digits.slice(2);
+    if (digits.startsWith('0') && digits.length === 11) return digits.slice(1);
+    if (digits.length > 10) return digits.slice(-10);
+    return digits;
+  };
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (!phone || phone.length < 10) {
+    const cleanPhone = normalizePhoneInput(phone);
+    if (!cleanPhone || cleanPhone.length < 10) {
       setError(t('invalid_phone_error', 'Please enter a valid 10-digit phone number'));
       return;
     }
@@ -30,7 +41,7 @@ export default function ForgotPassword() {
     setError(null);
 
     try {
-      const res = await hospitalApi.forgotPassword(phone.trim());
+      const res = await hospitalApi.forgotPassword(cleanPhone);
       setOtpSent(true);
       if (res.development_otp) {
         setDevOtp(res.development_otp);
@@ -51,11 +62,12 @@ export default function ForgotPassword() {
       return;
     }
 
+    const cleanPhone = normalizePhoneInput(phone);
     setLoading(true);
     setError(null);
 
     try {
-      await hospitalApi.resetPassword(phone.trim(), otpInput.trim(), newPassword);
+      await hospitalApi.resetPassword(cleanPhone || phone.trim(), otpInput.trim(), newPassword);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
@@ -106,11 +118,12 @@ export default function ForgotPassword() {
               <div className="relative">
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
-                  type="text"
+                  type="tel"
                   required
+                  maxLength={16}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t('enter_registered_phone', 'Enter registered 10-digit phone number')}
+                  placeholder={t('enter_registered_phone', 'Enter registered phone (10-digit or +91...)')}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"
                 />
               </div>

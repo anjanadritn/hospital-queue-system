@@ -99,10 +99,12 @@ def init_db():
     try:
         db = get_db()
         if db.doctors.count_documents({}) == 0:
-            from seed_data import DOCTORS_DATA, PATIENTS_DATA, USERS_DATA, QUEUE_DATA
+            from seed_data import DOCTORS_DATA, PATIENTS_DATA, USERS_DATA, QUEUE_DATA, CONSULTATIONS_DATA
             db.doctors.insert_many(DOCTORS_DATA)
             db.patients.insert_many(PATIENTS_DATA)
             db.users.insert_many(USERS_DATA)
             db.queue.insert_many(QUEUE_DATA)
+            if CONSULTATIONS_DATA:
+                db.consultations.insert_many(CONSULTATIONS_DATA)
     except Exception as e:
         logger.warning(f"init_db info: {e}")

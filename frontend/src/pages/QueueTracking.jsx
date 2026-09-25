@@ -654,17 +654,43 @@ export default function QueueTracking() {
 
           </div>
         ) : (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-xs space-y-4 max-w-md mx-auto">
-            <Ticket className="w-12 h-12 text-slate-300 mx-auto" />
-            <p className="text-xs text-slate-500">{t('no_active_consultations', "You don't currently have an active consultation token.")}</p>
-            <button
-              onClick={() => navigate('/book')}
-              className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
-            >
-              {t('book_consultation', 'Book Consultation')}
-            </button>
+          /* NO ACTIVE QUEUE STATE */
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="bg-white rounded-3xl p-10 text-center border border-slate-200/80 shadow-md space-y-5">
+              <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto">
+                <Ticket className="w-8 h-8 text-slate-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 mb-1">
+                  {t('no_active_queue_title', 'No Active Queue Token')}
+                </h3>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  {t('no_active_queue_desc', "You don't currently have an active consultation token. Book an appointment or join the walk-in queue to get started.")}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                <button
+                  onClick={() => navigate('/book')}
+                  className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-xs"
+                >
+                  {t('book_consultation', 'Book Consultation')}
+                </button>
+                <button
+                  onClick={() => navigate(user?.role === 'patient' ? '/patient' : '/')}
+                  className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
+                >
+                  {t('patient_care_portal', 'Back to Dashboard')}
+                </button>
+              </div>
+            </div>
+
+            {/* Search tip */}
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-700 font-medium text-center">
+              <span className="font-bold">Have a token ID?</span> Enter it in the search bar above to track any consultation token.
+            </div>
           </div>
         )}
+
 
       </div>
     </div>

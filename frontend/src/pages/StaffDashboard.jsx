@@ -26,7 +26,10 @@ import {
   FileText,
   UserCheck,
   Power,
-  SkipForward
+  SkipForward,
+  Plus,
+  Trash2,
+  Pill
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +38,7 @@ import StatusBadge from '../components/StatusBadge';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import PatientDetailsModal from '../components/PatientDetailsModal';
+import MedicineSearchInput from '../components/MedicineSearchInput';
 
 export default function StaffDashboard() {
   const { user } = useAuth();
@@ -56,8 +60,32 @@ export default function StaffDashboard() {
   const [consultationNotes, setConsultationNotes] = useState('');
   const [doctorDiagnosis, setDoctorDiagnosis] = useState('');
   const [doctorAdvice, setDoctorAdvice] = useState('');
+  const [prescriptions, setPrescriptions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const handleAddMedicine = () => {
+    setPrescriptions((prev) => [
+      ...prev,
+      { medicine: '', dosage: '', frequency: '', duration: '', instructions: '' }
+    ]);
+  };
+
+  const handleRemoveMedicine = (index) => {
+    setPrescriptions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMedicineChange = (index, field, value, extraData = null) => {
+    setPrescriptions((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+        ...(extraData?.rxcui ? { rxcui: extraData.rxcui } : {})
+      };
+      return updated;
+    });
+  };
 
   // Pre-Consultation Patient Details Modal State
   const [selectedPatientForModal, setSelectedPatientForModal] = useState(null);
@@ -137,7 +165,16 @@ export default function StaffDashboard() {
       await loadDoctorWorkstationData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || 'Failed to start consultation.');
+      const errData = err.response?.data || {};
+      if (errData.requires_arrival_verification) {
+        alert(
+          `⚠️ Arrival Not Verified\n\n` +
+          `${errData.error}\n\n` +
+          `Please ask the Admin Arrival Desk to verify the patient\'s 6-digit OTP first.`
+        );
+      } else {
+        alert(errData.error || 'Failed to start consultation.');
+      }
     } finally {
       setActionLoadingId(null);
     }
@@ -146,15 +183,27 @@ export default function StaffDashboard() {
   const handleCompleteConsultation = async (queueId, assessmentData = null) => {
     setActionLoadingId(queueId);
     try {
+      const validPrescriptions = prescriptions
+        .filter((p) => p.medicine && p.medicine.trim())
+        .map((p) => ({
+          medicine: p.medicine.trim(),
+          dosage: (p.dosage || '').trim(),
+          frequency: (p.frequency || '').trim(),
+          duration: (p.duration || '').trim(),
+          instructions: (p.instructions || '').trim()
+        }));
+
       const payload = assessmentData || {
         diagnosis: doctorDiagnosis.trim() || null,
         notes: consultationNotes.trim() || null,
-        advice: doctorAdvice.trim() || null
+        advice: doctorAdvice.trim() || null,
+        prescriptions: validPrescriptions
       };
       await hospitalApi.completeQueueToken(queueId, payload);
       setDoctorDiagnosis('');
       setConsultationNotes('');
       setDoctorAdvice('');
+      setPrescriptions([]);
       await loadDoctorWorkstationData();
     } catch (err) {
       console.error(err);
@@ -171,6 +220,7 @@ export default function StaffDashboard() {
       setDoctorDiagnosis('');
       setConsultationNotes('');
       setDoctorAdvice('');
+      setPrescriptions([]);
       await loadDoctorWorkstationData();
     } catch (err) {
       console.error(err);
@@ -608,17 +658,123 @@ export default function StaffDashboard() {
                 />
               </div>
 
-              <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
-                {/* If Called: show Start Consultation */}
-                {currentPatient.status === 'called' && (
+              {/* Structured Prescribed Medicines List */}
+              <div className="p-3.5 bg-black/25 rounded-2xl border border-white/15 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Pill className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Prescribed Medicines ({prescriptions.length})
+                    </span>
+                  </div>
                   <button
-                    onClick={() => handleStartConsultation(currentPatient.queue_id)}
-                    disabled={actionLoadingId === currentPatient.queue_id}
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                    type="button"
+                    onClick={handleAddMedicine}
+                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                   >
-                    <Play className="w-4 h-4 fill-white" />
-                    <span>{t('start_consultation')}</span>
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Medicine</span>
                   </button>
+                </div>
+
+                {prescriptions.length === 0 ? (
+                  <p className="text-[11px] text-slate-400 italic py-1">
+                    No individual medicines added yet. Click "+ Add Medicine" to prescribe structured medicines (dosage, frequency, duration).
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {prescriptions.map((p, idx) => (
+                      <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-white/5 p-2 rounded-xl border border-white/10">
+                        <div className="col-span-12 sm:col-span-4">
+                          <MedicineSearchInput
+                            value={p.medicine}
+                            onChange={(val, item) => handleMedicineChange(idx, 'medicine', val, item)}
+                            placeholder="Medicine Name (e.g. Paracetamol)"
+                          />
+                        </div>
+                        <div className="col-span-6 sm:col-span-2">
+                          <input
+                            type="text"
+                            placeholder="Dosage (650mg)"
+                            value={p.dosage}
+                            onChange={(e) => handleMedicineChange(idx, 'dosage', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-white/10 border border-white/15 rounded-lg text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none"
+                          />
+                        </div>
+                        <div className="col-span-6 sm:col-span-2">
+                          <input
+                            type="text"
+                            placeholder="Freq (1-0-1)"
+                            value={p.frequency}
+                            onChange={(e) => handleMedicineChange(idx, 'frequency', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-white/10 border border-white/15 rounded-lg text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none"
+                          />
+                        </div>
+                        <div className="col-span-5 sm:col-span-2">
+                          <input
+                            type="text"
+                            placeholder="Duration (5 days)"
+                            value={p.duration}
+                            onChange={(e) => handleMedicineChange(idx, 'duration', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-white/10 border border-white/15 rounded-lg text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none"
+                          />
+                        </div>
+                        <div className="col-span-5 sm:col-span-1">
+                          <input
+                            type="text"
+                            placeholder="Instructions"
+                            value={p.instructions}
+                            onChange={(e) => handleMedicineChange(idx, 'instructions', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-white/10 border border-white/15 rounded-lg text-xs text-white placeholder:text-slate-400 focus:bg-white/20 focus:outline-none"
+                          />
+                        </div>
+                        <div className="col-span-2 sm:col-span-1 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMedicine(idx)}
+                            className="p-1.5 text-rose-300 hover:text-rose-200 hover:bg-rose-500/20 rounded-lg transition cursor-pointer"
+                            title="Remove medicine"
+                          >
+                            <Trash2 className="w-4 h-4 mx-auto" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Clinical Data Attribution & Guidance Micro-Note */}
+                <div className="pt-2 px-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400 border-t border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <span>
+                      Official NLM RxNorm prescribable drugs catalog integration. Type 2+ letters to search.
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">
+                    This product uses publicly available data from the U.S. National Library of Medicine (NLM), NIH.
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
+                {/* If Called: show Start Consultation (only if patient arrival verified) */}
+                {currentPatient.status === 'called' && (
+                  currentPatient.verified_by_admin || currentPatient.arrived_at_hospital ? (
+                    <button
+                      onClick={() => handleStartConsultation(currentPatient.queue_id)}
+                      disabled={actionLoadingId === currentPatient.queue_id}
+                      className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                    >
+                      <Play className="w-4 h-4 fill-white" />
+                      <span>{t('start_consultation')}</span>
+                    </button>
+                  ) : (
+                    <div className="px-4 py-2 bg-amber-500/20 border border-amber-400/40 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-2">
+                      <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Awaiting Admin Arrival OTP Verification</span>
+                    </div>
+                  )
                 )}
 
                 {/* COMPLETE CONSULTATION BUTTON */}
@@ -930,17 +1086,27 @@ export default function StaffDashboard() {
                                 </button>
                               )}
 
-                              {/* Start Consultation */}
+                              {/* Start Consultation — gated behind Admin arrival OTP verification */}
                               {item.status === 'called' && (
-                                <button
-                                  onClick={() => handleStartConsultation(item.queue_id)}
-                                  disabled={actionLoadingId === item.queue_id}
-                                  className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[10px] transition inline-flex items-center gap-1 shadow-xs cursor-pointer"
-                                  title="Commence consultation"
-                                >
-                                  <Play className="w-3 h-3" />
-                                  <span>{t('start_consultation')}</span>
-                                </button>
+                                item.verified_by_admin || item.arrived_at_hospital ? (
+                                  <button
+                                    onClick={() => handleStartConsultation(item.queue_id)}
+                                    disabled={actionLoadingId === item.queue_id}
+                                    className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[10px] transition inline-flex items-center gap-1 shadow-xs cursor-pointer"
+                                    title="Commence consultation — patient arrival verified"
+                                  >
+                                    <Play className="w-3 h-3" />
+                                    <span>{t('start_consultation')}</span>
+                                  </button>
+                                ) : (
+                                  <span
+                                    className="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg font-bold text-[10px] inline-flex items-center gap-1"
+                                    title="Admin must verify patient arrival OTP before consultation can start"
+                                  >
+                                    <KeyRound className="w-3 h-3 text-amber-600" />
+                                    <span>Pending Arrival OTP</span>
+                                  </span>
+                                )
                               )}
 
                               {/* Complete Consultation */}

@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   Cpu,
   Info,
-  Sparkles
+  Sparkles,
+  Pill,
+  FlaskConical
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useLanguage } from '../context/LanguageContext';
@@ -94,6 +96,22 @@ export default function NotificationPanel({ patientId }) {
         badgeClass: 'bg-emerald-100 text-emerald-800',
         icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />,
         typeLabel: 'Completed'
+      };
+    }
+    if (text.includes('pharmacy') || text.includes('prescription') || text.includes('dispensed')) {
+      return {
+        borderClass: 'border-l-4 border-emerald-500 bg-emerald-50/70',
+        badgeClass: 'bg-emerald-100 text-emerald-800',
+        icon: <Pill className="w-4 h-4 text-emerald-600 shrink-0" />,
+        typeLabel: 'Pharmacy'
+      };
+    }
+    if (text.includes('lab') || text.includes('report_ready') || text.includes('investigation') || text.includes('pathology')) {
+      return {
+        borderClass: 'border-l-4 border-indigo-500 bg-indigo-50/70',
+        badgeClass: 'bg-indigo-100 text-indigo-800',
+        icon: <FlaskConical className="w-4 h-4 text-indigo-600 shrink-0" />,
+        typeLabel: 'Laboratory'
       };
     }
     if (text.includes('ai') || text.includes('prediction') || text.includes('duration') || text.includes('ml')) {

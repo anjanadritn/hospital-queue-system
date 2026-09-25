@@ -2,11 +2,12 @@ from flask import Blueprint, request, jsonify
 from services.rbac_middleware import require_auth
 from services.patient_service import (
     create_patient_profile, get_patient_by_id, update_patient_profile, get_patient_by_user_id,
-    update_profile_picture
+    update_profile_picture, remove_profile_picture
 )
 from services.consultation_service import (
     get_patient_consultations, get_consultation_by_id
 )
+from services.auth_service import change_authenticated_password
 from database.mongodb import get_db, serialize_docs
 
 patient_bp = Blueprint("patients", __name__, url_prefix="/patients")
@@ -30,28 +31,49 @@ def create_patient():
 
     return jsonify(result), 201
 
+@patient_bp.route("/profile", methods=["GET"])
 @patient_bp.route("/me", methods=["GET"])
 @require_auth(allowed_roles=["patient"])
 def get_my_profile():
     current_user = getattr(request, "current_user", {})
     user_id = current_user.get("user_id")
-    patient = get_patient_by_user_id(user_id)
+    patient_id = current_user.get("patient_id")
+
+    patient = None
+    if patient_id:
+        patient = get_patient_by_id(patient_id)
+    if not patient and user_id:
+        patient = get_patient_by_user_id(user_id)
+
     if not patient:
-        # Fallback to current user info
-        return jsonify({
-            "patient_id": current_user.get("patient_id") or f"P_{user_id}",
+        # Fallback to current user info and ensure sanitized
+        fallback_patient = {
+            "patient_id": patient_id or f"P_{user_id}",
             "user_id": user_id,
             "name": current_user.get("name", "Patient"),
             "phone": current_user.get("phone", ""),
             "email": current_user.get("email", ""),
+            "date_of_birth": current_user.get("date_of_birth"),
             "age": current_user.get("age"),
             "gender": current_user.get("gender"),
             "city": current_user.get("city") or "Tumakuru",
+            "village": current_user.get("village", ""),
+            "address": current_user.get("address", ""),
+            "emergency_contact_name": current_user.get("emergency_contact_name", ""),
+            "emergency_contact_phone": current_user.get("emergency_contact_phone", ""),
+            "emergency_contact": current_user.get("emergency_contact", {}),
+            "profile_picture": current_user.get("profile_picture"),
             "height_cm": current_user.get("height_cm"),
             "weight_kg": current_user.get("weight_kg")
-        }), 200
+        }
+        return jsonify(fallback_patient), 200
+
+    patient.pop("password_hash", None)
+    patient.pop("password", None)
+    patient.pop("otp", None)
     return jsonify(patient), 200
 
+@patient_bp.route("/profile", methods=["PUT"])
 @patient_bp.route("/me", methods=["PUT"])
 @require_auth(allowed_roles=["patient"])
 def update_my_profile():
@@ -63,9 +85,42 @@ def update_my_profile():
     if err:
         return jsonify({"success": False, "error": err}), 400
 
-    return jsonify(result), 200
+    return jsonify({"success": True, "message": "Profile updated successfully.", "patient": result, **result}), 200
 
+@patient_bp.route("/me/change-password", methods=["POST"])
+@require_auth(allowed_roles=["patient"])
+def change_my_password():
+    """
+    Safely changes the authenticated patient's password.
+    Requires current_password, new_password, and confirm_password.
+    Never exposes or returns passwords.
+    """
+    current_user = getattr(request, "current_user", {})
+    user_identifier = current_user.get("user_id") or current_user.get("patient_id") or current_user.get("phone")
+    if not user_identifier:
+        return jsonify({"success": False, "error": "Unauthorized: No valid user identifier found."}), 401
 
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("current_password", "").strip()
+    new_password = data.get("new_password", "").strip()
+    confirm_password = data.get("confirm_password", "").strip()
+
+    if not current_password:
+        return jsonify({"success": False, "error": "Current password is required."}), 400
+    if not new_password:
+        return jsonify({"success": False, "error": "New password is required."}), 400
+    if len(new_password) < 6:
+        return jsonify({"success": False, "error": "New password must be at least 6 characters long."}), 400
+    if new_password != confirm_password:
+        return jsonify({"success": False, "error": "New password and confirmation password do not match."}), 400
+
+    ok, err = change_authenticated_password(user_identifier, current_password, new_password)
+    if not ok:
+        return jsonify({"success": False, "error": err}), 400
+
+    return jsonify({"success": True, "message": "Password updated successfully."}), 200
+
+@patient_bp.route("/profile/picture", methods=["PUT"])
 @patient_bp.route("/me/picture", methods=["PUT"])
 @require_auth(allowed_roles=["patient"])
 def update_my_profile_picture():
@@ -74,7 +129,7 @@ def update_my_profile_picture():
     Accepts:
       - multipart/form-data with field 'picture' (file upload)
       - application/json with field 'image_base64' (base64 string) and 'mime_type'
-    Validates type (jpeg/png/webp) and size (max 2 MB).
+    Validates type (jpeg/png/webp), header magic bytes, and size (max 2 MB).
     JWT identity is used — patient can only update their OWN picture.
     """
     import base64
@@ -86,20 +141,17 @@ def update_my_profile_picture():
 
     content_type = request.content_type or ""
     if "multipart/form-data" in content_type:
-        # File upload via form
         file = request.files.get("picture")
         if not file:
             return jsonify({"success": False, "error": "No picture file provided in form field 'picture'"}), 400
         mime_type = file.content_type or "image/jpeg"
         image_bytes = file.read()
     else:
-        # JSON body with base64
         data = request.get_json(silent=True) or {}
         b64_str = data.get("image_base64", "")
         mime_type = data.get("mime_type", "image/jpeg")
         if not b64_str:
             return jsonify({"success": False, "error": "No image data provided. Send 'image_base64' or use multipart/form-data."}), 400
-        # Strip data-URI prefix if present
         if "," in b64_str:
             b64_str = b64_str.split(",", 1)[1]
         try:
@@ -111,7 +163,23 @@ def update_my_profile_picture():
     if err:
         return jsonify({"success": False, "error": err}), 400
 
-    return jsonify({"success": True, "patient": result}), 200
+    return jsonify({"success": True, "message": "Profile picture updated successfully.", "patient": result, **result}), 200
+
+@patient_bp.route("/profile/picture", methods=["DELETE"])
+@patient_bp.route("/me/picture", methods=["DELETE"])
+@require_auth(allowed_roles=["patient"])
+def delete_my_profile_picture():
+    """
+    Removes the profile picture for the authenticated patient.
+    """
+    current_user = getattr(request, "current_user", {})
+    patient_id = current_user.get("patient_id") or current_user.get("user_id")
+
+    result, err = remove_profile_picture(patient_id)
+    if err:
+        return jsonify({"success": False, "error": err}), 400
+
+    return jsonify({"success": True, "message": "Profile picture removed successfully.", "patient": result, **result}), 200
 
 @patient_bp.route("/me/history", methods=["GET"])
 @require_auth(allowed_roles=["patient"])
@@ -131,15 +199,16 @@ def get_my_medical_history():
 @require_auth(allowed_roles=["patient", "doctor", "admin"])
 def get_patient(patient_id: str):
     current_user = getattr(request, "current_user", {})
-    patient = get_patient_by_id(patient_id)
-    if not patient:
-        return jsonify({"success": False, "error": "Patient profile not found"}), 404
 
     # Security check: Patient can only view own profile; Doctor/Admin can view any
     if current_user.get("role") == "patient":
         auth_patient_id = current_user.get("patient_id") or current_user.get("user_id")
-        if patient.get("patient_id") != auth_patient_id and patient.get("user_id") != current_user.get("user_id"):
+        if patient_id != auth_patient_id:
             return jsonify({"success": False, "error": "Unauthorized access to patient profile"}), 403
+
+    patient = get_patient_by_id(patient_id)
+    if not patient:
+        return jsonify({"success": False, "error": "Patient profile not found"}), 404
 
     return jsonify(patient), 200
 
@@ -149,15 +218,15 @@ def update_patient(patient_id: str):
     data = request.get_json(silent=True) or {}
     current_user = getattr(request, "current_user", {})
 
-    patient = get_patient_by_id(patient_id)
-    if not patient:
-        return jsonify({"success": False, "error": "Patient profile not found"}), 404
-
     # Security check: Patient can only update own profile; Admin can update any
     if current_user.get("role") != "admin":
         auth_patient_id = current_user.get("patient_id") or current_user.get("user_id")
-        if patient.get("patient_id") != auth_patient_id and patient.get("user_id") != current_user.get("user_id"):
+        if patient_id != auth_patient_id:
             return jsonify({"success": False, "error": "Unauthorized to modify this patient profile"}), 403
+
+    patient = get_patient_by_id(patient_id)
+    if not patient:
+        return jsonify({"success": False, "error": "Patient profile not found"}), 404
 
     result, err = update_patient_profile(patient_id, data)
     if err:

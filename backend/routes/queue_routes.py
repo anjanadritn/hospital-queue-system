@@ -1,4 +1,7 @@
+import logging
 from flask import Blueprint, request, jsonify
+
+logger = logging.getLogger(__name__)
 from services.queue_service import (
     join_queue,
     get_queue_status,
@@ -233,10 +236,30 @@ def start_consultation_route(queue_id):
     guard_err = _verify_doctor_token_ownership(queue_id)
     if guard_err:
         return guard_err
+
+    # GATE: Patient must be verified by Admin (arrival OTP verified) before consultation can start
+    try:
+        db = get_db()
+        q_entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]})
+        if q_entry:
+            is_verified = q_entry.get("verified_by_admin") or q_entry.get("arrived_at_hospital")
+            if not is_verified:
+                patient_name = q_entry.get("patient_name", "the patient")
+                return jsonify({
+                    "error": f"Cannot start consultation. Patient '{patient_name}' (Token: {queue_id}) "
+                             "has not been verified at the Admin Arrival Desk yet. "
+                             "Please ask the admin to verify the patient's 6-digit Arrival OTP first.",
+                    "requires_arrival_verification": True,
+                    "queue_id": queue_id
+                }), 403
+    except Exception:
+        pass  # If DB check fails, allow start (fail-open)
+
     res, error = update_queue_status(queue_id, "in_consultation")
     if error:
         return jsonify({"error": error}), 400
     return jsonify(res), 200
+
 
 @queue_bp.route("/queue/<queue_id>/complete", methods=["POST"])
 @require_auth(allowed_roles=["doctor", "admin"])

@@ -25,7 +25,9 @@ import {
   ChevronRight,
   X,
   Sun,
-  Moon
+  Moon,
+  BedDouble,
+  AlertTriangle
 } from 'lucide-react';
 import { hospitalApi } from '../../api/hospitalApi';
 import { useLanguage } from '../../context/LanguageContext';
@@ -47,6 +49,7 @@ export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [slotAnalytics, setSlotAnalytics] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  const [doctorLeaveLoading, setDoctorLeaveLoading] = useState(null); // doctor_id being toggled
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
   const [queues, setQueues] = useState([]);
@@ -172,7 +175,7 @@ export default function AdminDashboard() {
     try {
       const [analyticsData, docsData, deptsData, usersData, queueData, aptsData, patientsData, slotData] = await Promise.all([
         hospitalApi.getAnalytics().catch(() => null),
-        hospitalApi.getDoctors().catch(() => []),
+        hospitalApi.getAllDoctorsAdmin().catch(() => hospitalApi.getDoctors().catch(() => [])),
         hospitalApi.getDepartments().catch(() => []),
         hospitalApi.getAdminUsers().catch(() => []),
         hospitalApi.getAllQueues().catch(() => []),
@@ -213,9 +216,48 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleRefresh = () => {
+  const fetchDashboardData = async () => {
     setRefreshing(true);
-    fetchAdminData();
+    await fetchAdminData();
+  };
+
+  const handleRefresh = () => {
+    fetchDashboardData();
+  };
+
+  const handleToggleDoctorLeave = async (doctorId, currentOnLeave) => {
+    const newOnLeave = !currentOnLeave;
+    let reason = '';
+    if (newOnLeave) {
+      reason = window.prompt(
+        `Mark Dr. as On Leave Today.\n\nOptional: Enter a leave reason (press OK to confirm):`,
+        'Doctor is on leave today'
+      );
+      if (reason === null) return; // User cancelled
+      reason = reason.trim() || 'Doctor is on leave today';
+    } else {
+      const confirmed = window.confirm('Restore this doctor to Available? This will clear the on-leave flag.');
+      if (!confirmed) return;
+    }
+    setDoctorLeaveLoading(doctorId);
+    try {
+      const res = await hospitalApi.toggleDoctorLeave(doctorId, newOnLeave, reason);
+      // Optimistically update local state
+      setDoctors(prev => prev.map(d =>
+        d.doctor_id === doctorId
+          ? { ...d, on_leave: newOnLeave, available: !newOnLeave, leave_reason: reason }
+          : d
+      ));
+      const notifMsg = res.patients_notified
+        ? `\n\n${res.patients_notified} affected patient(s) have been notified.`
+        : '';
+      alert(`${res.message}${notifMsg}`);
+    } catch (err) {
+      console.error('Toggle leave error:', err);
+      alert(err.response?.data?.error || 'Failed to update doctor leave status. Please try again.');
+    } finally {
+      setDoctorLeaveLoading(null);
+    }
   };
 
   const handleVerifyArrival = async (e) => {
@@ -1410,18 +1452,17 @@ export default function AdminDashboard() {
                 <select
                   value={bookingStatusFilter}
                   onChange={(e) => setBookingStatusFilter(e.target.value)}
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
                 >
                   <option value="ALL">{t('all_statuses', 'All Statuses')}</option>
-                  <option value="waiting">{t('waiting_in_line', 'Waiting in Line')}</option>
-                  <option value="in_consultation">{t('in_consultation_status', 'In Consultation')}</option>
-                  <option value="ready">{t('ready_status', 'Ready (Next Up)')}</option>
-                  <option value="called">{t('called_status', 'Called')}</option>
-                  <option value="arrived">{t('arrived_status', 'Arrived')}</option>
                   <option value="booked">{t('booked_status', 'Booked')}</option>
+                  <option value="confirmed">{t('confirmed_status', 'Confirmed')}</option>
+                  <option value="waiting">{t('waiting_status', 'Waiting')}</option>
+                  <option value="arrived">{t('arrived_status', 'Arrived')}</option>
+                  <option value="in_consultation">{t('in_consultation_status', 'In Consultation')}</option>
                   <option value="completed">{t('completed_status', 'Completed')}</option>
+                  <option value="missed">{t('skipped_missed_status', 'Skipped / Missed Consultation')}</option>
                   <option value="cancelled">{t('cancelled_status', 'Cancelled')}</option>
-                  <option value="missed">{t('missed_status', 'Missed')}</option>
                 </select>
               </div>
             </div>
@@ -1451,8 +1492,30 @@ export default function AdminDashboard() {
                         (apt.department || '').toLowerCase().includes(q) ||
                         (apt.consultation_date || '').toLowerCase().includes(q)
                       );
-                      const rawStatus = (apt.current_status || apt.status || '').toLowerCase();
-                      const matchesStatus = bookingStatusFilter === 'ALL' || rawStatus === bookingStatusFilter.toLowerCase();
+                      const rawStatus = (apt.current_status || apt.status || '').toLowerCase().trim();
+                      let matchesStatus = true;
+                      if (bookingStatusFilter !== 'ALL') {
+                        const target = bookingStatusFilter.toLowerCase();
+                        if (target === 'booked') {
+                          matchesStatus = rawStatus === 'booked';
+                        } else if (target === 'confirmed') {
+                          matchesStatus = rawStatus === 'confirmed';
+                        } else if (target === 'waiting') {
+                          matchesStatus = rawStatus === 'waiting';
+                        } else if (target === 'arrived') {
+                          matchesStatus = rawStatus === 'arrived' || rawStatus === 'ready' || rawStatus === 'called';
+                        } else if (target === 'in_consultation') {
+                          matchesStatus = rawStatus === 'in_consultation';
+                        } else if (target === 'completed') {
+                          matchesStatus = rawStatus === 'completed';
+                        } else if (target === 'missed') {
+                          matchesStatus = rawStatus === 'missed' || rawStatus === 'skipped' || rawStatus === 'missed_consultation' || rawStatus === 'no_show';
+                        } else if (target === 'cancelled') {
+                          matchesStatus = rawStatus === 'cancelled';
+                        } else {
+                          matchesStatus = rawStatus === target;
+                        }
+                      }
                       return matchesQuery && matchesStatus;
                     });
 
@@ -1478,7 +1541,7 @@ export default function AdminDashboard() {
                       
                       const bookedTime = formatExactBookedTime(apt.booked_at || apt.created_at);
                       const currentPos = apt.current_queue_position ?? apt.position;
-                      const rawStatus = (apt.current_status || apt.status || 'booked').toLowerCase();
+                      const rawStatus = (apt.current_status || apt.status || 'booked').toLowerCase().trim();
 
                       // Status Badge Style
                       const getStatusBadge = (st) => {
@@ -1497,7 +1560,12 @@ export default function AdminDashboard() {
                           case 'cancelled':
                             return 'bg-rose-100 text-rose-800 border-rose-300';
                           case 'missed':
+                          case 'skipped':
+                          case 'missed_consultation':
+                          case 'no_show':
                             return 'bg-orange-100 text-orange-800 border-orange-300';
+                          case 'confirmed':
+                            return 'bg-indigo-50 text-indigo-700 border-indigo-200 font-bold';
                           case 'booked':
                           default:
                             return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -1509,11 +1577,15 @@ export default function AdminDashboard() {
                           case 'in_consultation': return t('in_consultation_status', 'In Consultation');
                           case 'ready': return t('ready_status', 'Ready (Next Up)');
                           case 'called': return t('called_status', 'Called');
-                          case 'waiting': return t('waiting_in_line', 'Waiting in Line');
-                          case 'arrived': return t('arrived_at_clinic', 'Arrived at Clinic');
+                          case 'waiting': return t('waiting_status', 'Waiting');
+                          case 'arrived': return t('arrived_status', 'Arrived');
                           case 'completed': return t('completed_status', 'Completed');
                           case 'cancelled': return t('cancelled_status', 'Cancelled');
-                          case 'missed': return t('missed_status', 'Missed');
+                          case 'missed':
+                          case 'skipped':
+                          case 'missed_consultation':
+                          case 'no_show': return t('skipped_missed_status', 'Skipped / Missed Consultation');
+                          case 'confirmed': return t('confirmed_status', 'Confirmed');
                           case 'booked': default: return t('booked_status', 'Booked');
                         }
                       };
@@ -1610,55 +1682,103 @@ export default function AdminDashboard() {
         {/* TAB 2: DOCTORS DIRECTORY */}
         {activeTab === 'doctors' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900">{t('medical_specialists_roster', 'Medical Specialists Roster')}</h2>
                 <p className="text-xs text-slate-500">{t('active_physicians_hours', 'Active hospital physicians and consulting hours')}</p>
               </div>
-              <button
-                onClick={() => setIsDocModalOpen(true)}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{t('add_doctor', 'Add Doctor')}</span>
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                {doctors.filter(d => d.on_leave).length > 0 && (
+                  <span className="px-3 py-1.5 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-1.5">
+                    <BedDouble className="w-3.5 h-3.5 text-red-600" />
+                    <span>{doctors.filter(d => d.on_leave).length} On Leave Today</span>
+                  </span>
+                )}
+                <button
+                  onClick={() => setIsDocModalOpen(true)}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{t('add_doctor', 'Add Doctor')}</span>
+                </button>
+              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="pb-3">{t('doctor_id_col', 'Doctor ID')}</th>
-                    <th className="pb-3">{t('name', 'Name')}</th>
-                    <th className="pb-3">{t('department', 'Department')}</th>
-                    <th className="pb-3">{t('room', 'Room')}</th>
-                    <th className="pb-3">{t('experience_col', 'Experience')}</th>
-                    <th className="pb-3">{t('status_col', 'Status')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                  {doctors.map((doc) => (
-                    <tr key={doc.doctor_id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3.5 font-bold font-mono text-sky-700">{doc.doctor_id}</td>
-                      <td className="py-3.5 font-bold text-slate-900">{doc.name}</td>
-                      <td className="py-3.5">
-                        <span className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 text-[11px] font-semibold border border-sky-100">
-                          {doc.department}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-slate-600">{doc.consultation_room}</td>
-                      <td className="py-3.5 text-slate-600">{doc.experience || '10 years'}</td>
-                      <td className="py-3.5">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          doc.available ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                        }`}>
-                          {doc.available ? t('available_status', 'Available') : t('unavailable_status', 'Unavailable')}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {doctors.map((doc) => (
+                <div
+                  key={doc.doctor_id}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${
+                    doc.on_leave
+                      ? 'bg-red-50/40 border-red-200 ring-1 ring-red-100'
+                      : 'bg-white border-slate-200/80 hover:border-sky-300 hover:shadow-xs'
+                  }`}
+                >
+                  {/* Doctor header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
+                        doc.on_leave
+                          ? 'bg-red-100 text-red-600 border border-red-200'
+                          : 'bg-sky-50 text-sky-700 border border-sky-200'
+                      }`}>
+                        {doc.name?.split(' ').slice(-1)[0]?.[0] || 'D'}
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-sm text-slate-900 leading-tight">{doc.name}</div>
+                        <div className="text-[10px] font-mono text-slate-400">{doc.doctor_id}</div>
+                      </div>
+                    </div>
+                    {/* On Leave / Available badge */}
+                    {doc.on_leave ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-red-100 text-red-700 border border-red-200 flex items-center gap-1 shrink-0">
+                        <BedDouble className="w-3 h-3" />
+                        ON LEAVE
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                        {doc.available !== false ? '● Available' : '○ Unavailable'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Department & Room */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-100 font-semibold">{doc.department}</span>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200 font-semibold">{doc.consultation_room}</span>
+                    <span className="text-slate-500">{doc.experience || '10 years'}</span>
+                  </div>
+
+                  {/* Leave reason banner */}
+                  {doc.on_leave && doc.leave_reason && (
+                    <div className="flex items-start gap-2 bg-red-100 border border-red-200 rounded-xl p-2.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-red-700 font-medium">{doc.leave_reason}</p>
+                    </div>
+                  )}
+
+                  {/* Leave Toggle Button */}
+                  <button
+                    onClick={() => handleToggleDoctorLeave(doc.doctor_id, doc.on_leave)}
+                    disabled={doctorLeaveLoading === doc.doctor_id}
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                      doc.on_leave
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                        : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                    }`}
+                    title={doc.on_leave ? 'Restore doctor to Available' : 'Mark doctor as On Leave Today'}
+                  >
+                    <BedDouble className="w-3.5 h-3.5" />
+                    <span>
+                      {doctorLeaveLoading === doc.doctor_id
+                        ? 'Updating...'
+                        : doc.on_leave
+                          ? 'Restore to Available'
+                          : 'Mark On Leave Today'}
+                    </span>
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}

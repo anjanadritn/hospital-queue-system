@@ -56,9 +56,20 @@ export default function Signup() {
     };
   }, [resendTimer]);
 
+  const normalizePhoneInput = (val) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '');
+    if (digits.startsWith('0091') && digits.length >= 14) return digits.slice(4);
+    if (digits.startsWith('91') && digits.length > 10) return digits.slice(2);
+    if (digits.startsWith('0') && digits.length === 11) return digits.slice(1);
+    if (digits.length > 10) return digits.slice(-10);
+    return digits;
+  };
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (!phone || phone.length < 10) {
+    const cleanPhone = normalizePhoneInput(phone);
+    if (!cleanPhone || cleanPhone.length < 10) {
       setError(t('invalid_phone_error', 'Please enter a valid 10-digit mobile number'));
       return;
     }
@@ -71,7 +82,7 @@ export default function Signup() {
     setError(null);
 
     try {
-      const res = await hospitalApi.sendAuthOtp(phone.trim(), 'ACCOUNT_VERIFICATION');
+      const res = await hospitalApi.sendAuthOtp(cleanPhone, 'ACCOUNT_VERIFICATION');
       setOtpSent(true);
       setResendTimer(30);
       if (res.development_otp) {
@@ -126,10 +137,11 @@ export default function Signup() {
     setLoading(true);
     setError(null);
 
+    const cleanPhone = normalizePhoneInput(phone);
     try {
       await hospitalApi.registerPatient({
         name: name.trim(),
-        phone: phone.trim(),
+        phone: cleanPhone || phone.trim(),
         email: email.trim(),
         password: password,
         otp: otpInput.trim()
@@ -306,8 +318,8 @@ export default function Signup() {
                       <input
                         type="tel"
                         required
-                        maxLength={10}
-                        placeholder={t('phone_placeholder', '10-digit number')}
+                        maxLength={16}
+                        placeholder={t('phone_placeholder', '10-digit number or +91...')}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-sky-500 focus:outline-none transition"

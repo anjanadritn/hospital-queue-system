@@ -103,6 +103,15 @@ export default function PatientLocationSelector({
     }
   }, [value]);
 
+  // When switching to 'myself', force GPS mode and clear stale family location data
+  useEffect(() => {
+    if (bookingFor === 'myself') {
+      setMode('device_gps');
+      setConfirmed(false);
+      setGpsError(null);
+    }
+  }, [bookingFor]);
+
   // Handle Mode Change
   const handleSelectMode = (newMode) => {
     setMode(newMode);
@@ -342,12 +351,15 @@ export default function PatientLocationSelector({
         <div>
           <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-sky-600" />
-            <span>{t('patient_current_location', "Where is the patient currently?")}</span>
+            {bookingFor === 'myself'
+              ? <span>Where are you currently?</span>
+              : <span>{t('patient_current_location', 'Where is the patient currently?')}</span>
+            }
           </span>
           <p className="text-[11px] text-slate-500 mt-0.5">
             {bookingFor === 'myself'
-              ? 'Calculates exact driving distance, SIMSRH departure time, and real-time transit alerts.'
-              : `Specify ${relation || "patient"}'s actual physical location for accurate travel distance and Leave Now alerts.`}
+              ? 'Using the current location of this device to calculate your driving distance and arrival time to SIMSRH.'
+              : `Specify ${relation || 'patient'}'s actual physical location for accurate travel distance and Leave Now alerts.`}
           </p>
         </div>
 
@@ -358,92 +370,119 @@ export default function PatientLocationSelector({
         )}
       </div>
 
-      {/* THREE LOCATION OPTIONS TILES */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* OPTION A: Use My Current Location */}
-        <button
-          type="button"
-          onClick={() => handleSelectMode('device_gps')}
-          className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
-            mode === 'device_gps'
-              ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-200 shadow-xs'
-              : 'bg-white border-slate-200 hover:bg-slate-100/60'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-              mode === 'device_gps' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
-            }`}>
-              <Navigation className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <div className="text-xs font-black text-slate-900">
-                {t('use_my_current_location', 'Use my current location')}
+      {/* LOCATION OPTION TILES — only GPS shown for 'myself', all three shown for family */}
+      {bookingFor === 'myself' ? (
+        /* MYSELF: single GPS tile */
+        <div className="grid grid-cols-1 gap-3">
+          <button
+            type="button"
+            onClick={() => handleSelectMode('device_gps')}
+            className="p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between bg-sky-50 border-sky-500 ring-2 ring-sky-200 shadow-xs"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-sky-600 text-white">
+                <Navigation className="w-3.5 h-3.5" />
               </div>
-              <div className="text-[10px] text-slate-400">Device GPS</div>
+              <div>
+                <div className="text-xs font-black text-slate-900">
+                  {t('use_my_current_location', 'Use my current location')}
+                </div>
+                <div className="text-[10px] text-sky-600 font-bold">Device GPS · Precise</div>
+              </div>
             </div>
-          </div>
-          <div className="text-[10px] text-slate-500 mt-2">
-            {bookingFor === 'myself' ? 'Direct device GPS' : 'Only if physically with patient'}
-          </div>
-        </button>
+            <div className="text-[10px] text-slate-500 mt-2">
+              Allows accurate OpenRouteService driving calculation from your current spot to SIMSRH.
+            </div>
+          </button>
+        </div>
+      ) : (
+        /* FAMILY: all three location tiles */
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* OPTION A: Use My Current Location */}
+          <button
+            type="button"
+            onClick={() => handleSelectMode('device_gps')}
+            className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
+              mode === 'device_gps'
+                ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-200 shadow-xs'
+                : 'bg-white border-slate-200 hover:bg-slate-100/60'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                mode === 'device_gps' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
+              }`}>
+                <Navigation className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-xs font-black text-slate-900">
+                  {t('use_my_current_location', 'Use my current location')}
+                </div>
+                <div className="text-[10px] text-slate-400">Device GPS</div>
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-2">
+              Only if physically with patient
+            </div>
+          </button>
 
-        {/* OPTION B: Set Patient's Location (Map + Search) */}
-        <button
-          type="button"
-          onClick={() => handleSelectMode('map_selected')}
-          className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
-            mode === 'map_selected'
-              ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-200 shadow-xs'
-              : 'bg-white border-slate-200 hover:bg-slate-100/60'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-              mode === 'map_selected' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
-            }`}>
-              <MapPin className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <div className="text-xs font-black text-slate-900">
-                {t('set_patient_location', "Set patient's location")}
+          {/* OPTION B: Set Patient's Location (Map + Search) */}
+          <button
+            type="button"
+            onClick={() => handleSelectMode('map_selected')}
+            className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
+              mode === 'map_selected'
+                ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-200 shadow-xs'
+                : 'bg-white border-slate-200 hover:bg-slate-100/60'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                mode === 'map_selected' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
+              }`}>
+                <MapPin className="w-3.5 h-3.5" />
               </div>
-              <div className="text-[10px] text-emerald-700 font-extrabold">Recommended for Family</div>
+              <div>
+                <div className="text-xs font-black text-slate-900">
+                  {t('set_patient_location', "Set patient's location")}
+                </div>
+                <div className="text-[10px] text-emerald-700 font-extrabold">Recommended for Family</div>
+              </div>
             </div>
-          </div>
-          <div className="text-[10px] text-slate-500 mt-2">
-            Search village/town or place map pin
-          </div>
-        </button>
+            <div className="text-[10px] text-slate-500 mt-2">
+              Search village/town or place map pin
+            </div>
+          </button>
 
-        {/* OPTION C: Enter Location Manually */}
-        <button
-          type="button"
-          onClick={() => handleSelectMode('manual')}
-          className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
-            mode === 'manual'
-              ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-200 shadow-xs'
-              : 'bg-white border-slate-200 hover:bg-slate-100/60'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-              mode === 'manual' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'
-            }`}>
-              <Edit3 className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <div className="text-xs font-black text-slate-900">
-                {t('enter_location_manually', 'Enter location manually')}
+          {/* OPTION C: Enter Location Manually */}
+          <button
+            type="button"
+            onClick={() => handleSelectMode('manual')}
+            className={`p-3.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
+              mode === 'manual'
+                ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-200 shadow-xs'
+                : 'bg-white border-slate-200 hover:bg-slate-100/60'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                mode === 'manual' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'
+              }`}>
+                <Edit3 className="w-3.5 h-3.5" />
               </div>
-              <div className="text-[10px] text-amber-700 font-bold">Approximate</div>
+              <div>
+                <div className="text-xs font-black text-slate-900">
+                  {t('enter_location_manually', 'Enter location manually')}
+                </div>
+                <div className="text-[10px] text-amber-700 font-bold">Approximate</div>
+              </div>
             </div>
-          </div>
-          <div className="text-[10px] text-slate-500 mt-2">
-            City, village, locality text entry
-          </div>
-        </button>
-      </div>
+            <div className="text-[10px] text-slate-500 mt-2">
+              City, village, locality text entry
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* MODE A CONTENT: DEVICE GPS */}
       {mode === 'device_gps' && (

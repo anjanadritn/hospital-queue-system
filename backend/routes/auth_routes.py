@@ -16,7 +16,7 @@ auth_bp = Blueprint("auth_bp", __name__)
 # SECURITY: Rate limiting on sensitive endpoints
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["10000 per day", "2000 per hour"]
+    default_limits=["50000 per day", "10000 per hour"]
 )
 
 @auth_bp.route("/auth/send-otp", methods=["POST"])
@@ -59,7 +59,7 @@ def request_register():
     return jsonify(res), 201
 
 @auth_bp.route("/auth/login", methods=["POST"])
-@limiter.limit("10 per minute")
+@limiter.limit("60 per minute")
 def request_login():
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -76,7 +76,7 @@ def request_login():
     return jsonify(res), 200
 
 @auth_bp.route("/auth/login-otp", methods=["POST"])
-@limiter.limit("10 per minute")
+@limiter.limit("60 per minute")
 def request_login_otp():
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
@@ -125,6 +125,16 @@ def get_current_user_profile():
     if user:
         user_clean = dict(user)
         user_clean.pop("password_hash", None)
+        user_clean.pop("password", None)
+        user_clean.pop("otp", None)
+        if not user_clean.get("profile_picture"):
+            try:
+                db = get_db()
+                pdoc = db.patients.find_one({"$or": [{"user_id": user_clean.get("user_id")}, {"patient_id": user_clean.get("patient_id")}]})
+                if pdoc and pdoc.get("profile_picture"):
+                    user_clean["profile_picture"] = pdoc.get("profile_picture")
+            except Exception:
+                pass
         return jsonify(user_clean), 200
 
     return jsonify(decoded), 200

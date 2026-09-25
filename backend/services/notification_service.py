@@ -382,17 +382,6 @@ def resolve_patient_phone(patient_id: str, booking_id: Optional[str] = None) -> 
     except Exception:
         pass
 
-    # In-memory fallback
-    try:
-        from services.auth_service import IN_MEMORY_USERS
-        for u in IN_MEMORY_USERS:
-            if u.get("patient_id") == patient_id or u.get("user_id") == patient_id:
-                if u.get("role") in ("doctor", "admin", "staff"):
-                    return None
-                if u.get("phone"):
-                    return str(u["phone"]).strip()
-    except Exception:
-        pass
 
     return None
 

@@ -122,6 +122,15 @@ def test_forgot_password_flow(client):
     login_res = client.post("/auth/login", json={"phone": "9876543211", "password": "NewResetPassword123!"})
     assert login_res.status_code == 200
 
+    # Restore original password for subsequent tests to maintain isolation
+    from werkzeug.security import generate_password_hash
+    from database.mongodb import get_db
+    try:
+        db = get_db()
+        db.users.update_one({"phone": "9876543211"}, {"$set": {"password_hash": generate_password_hash("PatientPass123!")}})
+    except Exception:
+        pass
+
 def test_auth_otp_sms_disabled(client):
     """When MSG91_SMS_ENABLED=False, OTP generation succeeds and no SMS is sent."""
     from unittest.mock import patch

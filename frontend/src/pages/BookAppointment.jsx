@@ -78,7 +78,14 @@ export default function BookAppointment() {
         if (user.height_cm) setHeightCm(user.height_cm);
         if (user.weight_kg) setWeightKg(user.weight_kg);
       }
-      setLocationSource(originLatitude && originLongitude ? 'device_gps' : 'manual');
+      // Always reset to GPS mode and clear stale family coordinates
+      setLocationSource('device_gps');
+      setOriginLatitude(null);
+      setOriginLongitude(null);
+      setLocationAddress('');
+      setIsApproximateLocation(true);
+      setGpsStatus('idle');
+      setGpsMessage('');
     } else {
       setRelation('Mother');
       // For family member, do not pre-fill user profile; let booker enter patient vitals
@@ -414,7 +421,13 @@ export default function BookAppointment() {
       setIsReviewing(false);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Failed to book appointment. Please verify backend status.');
+      if (err.response?.status === 401) {
+        setError(err.response?.data?.error || 'Authentication required. Please log in with your patient account before booking.');
+      } else if (err.response?.status === 403) {
+        setError(err.response?.data?.error || 'Access forbidden (403). Only registered patient accounts are authorized to schedule outpatient consultations.');
+      } else {
+        setError(err.response?.data?.error || 'Failed to book appointment. Please verify backend status.');
+      }
     } finally {
       setBookingLoading(false);
     }
