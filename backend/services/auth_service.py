@@ -20,13 +20,16 @@ class DatabaseUnavailableError(Exception):
     """Raised when MongoDB is unreachable or query execution fails."""
     pass
 
+# Common demo credentials for testing and evaluation across all portal roles
+COMMON_DEMO_PASSWORD = "PatientPass123!"
+
 INITIAL_USERS = [
     {
         "user_id": "U_ADMIN",
         "name": "System Administrator",
         "phone": "9999999999",
         "email": "admin@smarthospital.org",
-        "password_hash": generate_password_hash("AdminPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "admin",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -38,7 +41,7 @@ INITIAL_USERS = [
         "name": "Dr. Ananya Sharma",
         "phone": "9876543210",
         "email": "ananya.sharma@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -50,7 +53,7 @@ INITIAL_USERS = [
         "name": "Dr. Rajesh Kumar",
         "phone": "9876543220",
         "email": "rajesh.kumar@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -62,7 +65,7 @@ INITIAL_USERS = [
         "name": "Anjan",
         "phone": "9876543211",
         "email": "anjan@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -74,7 +77,7 @@ INITIAL_USERS = [
         "name": "Priya Sharma",
         "phone": "9876543212",
         "email": "priya@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -85,7 +88,7 @@ INITIAL_USERS = [
         "name": "Suresh Pharmacy Officer",
         "phone": "9876543230",
         "email": "pharmacy@hospital.local",
-        "password_hash": generate_password_hash("PharmPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "pharmacist",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -96,7 +99,7 @@ INITIAL_USERS = [
         "name": "Deepa Lab Technologist",
         "phone": "9876543240",
         "email": "lab@hospital.local",
-        "password_hash": generate_password_hash("LabPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "lab_technician",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -106,15 +109,25 @@ INITIAL_USERS = [
 
 def init_seed_users():
     """
-    Initializes initial default users in MongoDB without overwriting
-    any existing user passwords or profile data.
+    Initializes initial default users in MongoDB and ensures all demo portal
+    accounts are synchronized to the common demo password hash without altering roles.
     """
     try:
         db = get_db()
         for seed_u in INITIAL_USERS:
             db.users.update_one(
                 {"phone": seed_u["phone"]},
-                {"$setOnInsert": dict(seed_u)},
+                {
+                    "$set": {
+                        "password_hash": seed_u["password_hash"],
+                        "role": seed_u["role"],
+                        "status": seed_u.get("status", "VERIFIED"),
+                        "phone_verified": True
+                    },
+                    "$setOnInsert": {
+                        k: v for k, v in seed_u.items() if k not in ("password_hash", "role", "status", "phone_verified")
+                    }
+                },
                 upsert=True
             )
     except Exception as e:

@@ -144,10 +144,13 @@ net start MongoDB
 
 ## 🔑 Default Initial Test Logins
 
-The database initializes with seed users on startup:
+The database initializes with seed users on startup using a single common demo password across all portals:
 
-| Role | Phone | Default Password | Initial View |
+| Role | Phone | Common Demo Password | Portal View |
 |---|---|---|---|
 | **Patient** | `9876543211` | `PatientPass123!` | `/patient` |
-| **Doctor** | `9876543210` | `DoctorPass123!` | `/staff` |
-| **Admin** | `9999999999` | `AdminPass123!` | `/staff` |
+| **Doctor** | `9876543210` | `PatientPass123!` | `/doctor` |
+| **Admin** | `9999999999` | `PatientPass123!` | `/admin` |
+| **Pharmacy** | `9876543230` | `PatientPass123!` | `/pharmacy` |
+| **Laboratory** | `9876543240` | `PatientPass123!` | `/laboratory` |
+

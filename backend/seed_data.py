@@ -94,6 +94,9 @@ PATIENTS_DATA = [
     }
 ]
 
+# Common demo credentials for testing and evaluation across all portal roles
+COMMON_DEMO_PASSWORD = "PatientPass123!"
+
 # Users (combined for login)
 USERS_DATA = [
 
@@ -102,7 +105,7 @@ USERS_DATA = [
         "name": "System Administrator",
         "phone": "9999999999",
         "email": "admin@smarthospital.org",
-        "password_hash": generate_password_hash("AdminPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "admin",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -114,7 +117,7 @@ USERS_DATA = [
         "name": "Dr. Ananya Sharma",
         "phone": "9876543210",
         "email": "ananya.sharma@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -126,7 +129,7 @@ USERS_DATA = [
         "name": "Anjan",
         "phone": "9876543211",
         "email": "anjan@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -138,7 +141,7 @@ USERS_DATA = [
         "name": "Priya Sharma",
         "phone": "9876543212",
         "email": "priya@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -150,7 +153,7 @@ USERS_DATA = [
         "name": "Dr. Rajesh Kumar",
         "phone": "9876543220",
         "email": "rajesh.kumar@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -162,7 +165,7 @@ USERS_DATA = [
         "name": "Dr. Sunita Patel",
         "phone": "9876543221",
         "email": "sunita.patel@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -174,7 +177,7 @@ USERS_DATA = [
         "name": "Dr. Vikram Sethi",
         "phone": "9876543222",
         "email": "vikram.sethi@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -186,7 +189,7 @@ USERS_DATA = [
         "name": "Dr. Meera Deshmukh",
         "phone": "9876543223",
         "email": "meera.deshmukh@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -198,7 +201,7 @@ USERS_DATA = [
         "name": "Dr. Arvind Rao",
         "phone": "9876543224",
         "email": "arvind.rao@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -210,7 +213,7 @@ USERS_DATA = [
         "name": "Dr. Kavita Menon",
         "phone": "9876543225",
         "email": "kavita.menon@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -222,7 +225,7 @@ USERS_DATA = [
         "name": "Dr. Manoj Joshi",
         "phone": "9876543226",
         "email": "manoj.joshi@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -234,7 +237,7 @@ USERS_DATA = [
         "name": "Dr. Priya Iyer",
         "phone": "9876543227",
         "email": "priya.iyer@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -246,7 +249,7 @@ USERS_DATA = [
         "name": "Dr. Abhijit Gupta",
         "phone": "9876543228",
         "email": "abhijit.gupta@smarthospital.org",
-        "password_hash": generate_password_hash("DoctorPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -258,7 +261,7 @@ USERS_DATA = [
         "name": "Rohit Verma",
         "phone": "9876543213",
         "email": "rohit@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -270,7 +273,7 @@ USERS_DATA = [
         "name": "Sneha Gupta",
         "phone": "9876543214",
         "email": "sneha@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -282,7 +285,7 @@ USERS_DATA = [
         "name": "Arjun Singh",
         "phone": "9876543215",
         "email": "arjun@hospital.local",
-        "password_hash": generate_password_hash("PatientPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -293,7 +296,7 @@ USERS_DATA = [
         "name": "Suresh Pharmacy Officer",
         "phone": "9876543230",
         "email": "pharmacy@hospital.local",
-        "password_hash": generate_password_hash("PharmPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "pharmacist",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -304,7 +307,7 @@ USERS_DATA = [
         "name": "Deepa Lab Technologist",
         "phone": "9876543240",
         "email": "lab@hospital.local",
-        "password_hash": generate_password_hash("LabPass123!"),
+        "password_hash": generate_password_hash(COMMON_DEMO_PASSWORD),
         "role": "lab_technician",
         "phone_verified": True,
         "status": "VERIFIED",
@@ -538,16 +541,24 @@ def seed_database():
         db.consultations.create_index([("patient_id", 1), ("consultation_date", -1)])
         
         print("\n[SUCCESS] Database seeding complete!")
-        print("\nSample Credentials for Testing:")
+        print("\nSample Credentials for Testing (Common Password for All Roles):")
+        print("-" * 50)
+        print("COMMON DEMO PASSWORD: PatientPass123!")
         print("-" * 50)
         print("ADMIN:")
         print("  Phone: 9999999999")
-        print("  Password: AdminPass123!")
+        print("  Password: PatientPass123!")
         print("\nDOCTOR:")
         print("  Phone: 9876543210")
-        print("  Password: DoctorPass123!")
+        print("  Password: PatientPass123!")
         print("\nPATIENT:")
         print("  Phone: 9876543211")
+        print("  Password: PatientPass123!")
+        print("\nPHARMACY:")
+        print("  Phone: 9876543230")
+        print("  Password: PatientPass123!")
+        print("\nLABORATORY:")
+        print("  Phone: 9876543240")
         print("  Password: PatientPass123!")
         print("-" * 50)
         

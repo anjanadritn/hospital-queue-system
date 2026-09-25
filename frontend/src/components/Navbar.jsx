@@ -51,8 +51,11 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  const isHome = location.pathname === '/' || location.pathname === '';
+  const showAuthUI = !isHome && isAuthenticated && !!user;
+
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'patient') {
+    if (showAuthUI && user?.role === 'patient') {
       hospitalApi.getMyActiveQueue()
         .then((q) => {
           if (q && q.queue_id) setActiveQueueToken(q);
@@ -62,7 +65,7 @@ export default function Navbar() {
     } else {
       setActiveQueueToken(null);
     }
-  }, [isAuthenticated, user, location.pathname]);
+  }, [showAuthUI, user, location.pathname]);
 
 
   const handleLogout = () => {
@@ -70,11 +73,11 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const isPatient = user?.role === 'patient';
-  const isDoctor = user?.role === 'doctor';
-  const isAdmin = user?.role === 'admin';
-  const isPharmacist = user?.role === 'pharmacist' || user?.role === 'pharmacy';
-  const isLabStaff = user?.role === 'lab_technician' || user?.role === 'laboratory' || user?.role === 'lab';
+  const isPatient = showAuthUI && user?.role === 'patient';
+  const isDoctor = showAuthUI && user?.role === 'doctor';
+  const isAdmin = showAuthUI && user?.role === 'admin';
+  const isPharmacist = showAuthUI && (user?.role === 'pharmacist' || user?.role === 'pharmacy');
+  const isLabStaff = showAuthUI && (user?.role === 'lab_technician' || user?.role === 'laboratory' || user?.role === 'lab');
 
   const isActive = (path) => location.pathname === path;
 
@@ -121,7 +124,7 @@ export default function Navbar() {
         <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/70 text-xs font-bold">
           
           {/* 1. PATIENT NAVIGATION (Strictly Patient Tools) */}
-          {isAuthenticated && isPatient && (
+          {isPatient && (
             <>
               <Link
                 to="/patient"
@@ -196,7 +199,7 @@ export default function Navbar() {
           )}
 
           {/* 2. DOCTOR NAVIGATION (Strictly Clinical Doctor Tools) */}
-          {isAuthenticated && isDoctor && (
+          {isDoctor && (
             <>
               <Link
                 to="/doctor"
@@ -251,7 +254,7 @@ export default function Navbar() {
           )}
 
           {/* 3. ADMIN NAVIGATION (Strictly Hospital Management Tools) */}
-          {isAuthenticated && isAdmin && (
+          {isAdmin && (
             <>
               <Link
                 to="/admin"
@@ -336,7 +339,7 @@ export default function Navbar() {
           )}
 
           {/* 4. PHARMACIST NAVIGATION */}
-          {isAuthenticated && isPharmacist && (
+          {isPharmacist && (
             <>
               <Link
                 to="/pharmacy"
@@ -361,7 +364,7 @@ export default function Navbar() {
           )}
 
           {/* 5. LAB STAFF NAVIGATION */}
-          {isAuthenticated && isLabStaff && (
+          {isLabStaff && (
             <>
               <Link
                 to="/laboratory"
@@ -385,8 +388,8 @@ export default function Navbar() {
             </>
           )}
 
-          {/* 4. PUBLIC NAVIGATION (When Logged Out) */}
-          {!isAuthenticated && (
+          {/* 6. PUBLIC NAVIGATION (When on Home or Logged Out) */}
+          {!showAuthUI && (
             <>
               <Link
                 to="/"
@@ -428,7 +431,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to={activeQueueToken?.queue_id ? `/tracking?queue_id=${activeQueueToken.queue_id}` : '/tracking'}
+                to="/tracking"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
                   isActive('/tracking') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
@@ -474,7 +477,7 @@ export default function Navbar() {
           </div>
 
           {/* Active Queue Token Quick Jump Badge */}
-          {isAuthenticated && isPatient && activeQueueToken && (
+          {showAuthUI && isPatient && activeQueueToken && (
             <Link
               to={`/tracking?queue_id=${activeQueueToken.queue_id}`}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-sky-600 to-teal-600 text-white rounded-full text-xs font-extrabold shadow-sm hover:shadow-md hover:scale-105 transition-all"
@@ -486,14 +489,14 @@ export default function Navbar() {
           )}
           
           {/* Notification Bell (Targeted for Patient or Doctor) */}
-          {isAuthenticated && (
+          {showAuthUI && (
             <Tooltip text="Notifications & Alerts" position="bottom">
               <NotificationPanel patientId={notificationTargetId} />
             </Tooltip>
           )}
 
           {/* Authenticated User Profile Badge & Logout */}
-          {isAuthenticated && user ? (
+          {showAuthUI ? (
             <div className="flex items-center gap-2.5 pl-1">
               {/* Profile Avatar (Patient, Doctor, Admin, Pharmacy, Lab) */}
               <Link
@@ -606,7 +609,7 @@ export default function Navbar() {
           </div>
 
           {/* User Info Bar if Authenticated */}
-          {isAuthenticated && user && (
+          {showAuthUI && (
             <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 {user.profile_picture ? (
@@ -635,7 +638,7 @@ export default function Navbar() {
           )}
 
           {/* 1. Mobile Patient Navigation */}
-          {isAuthenticated && isPatient && (
+          {isPatient && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
                 {t('patient_care_portal')}
@@ -676,7 +679,7 @@ export default function Navbar() {
           )}
 
           {/* 2. Mobile Doctor Navigation */}
-          {isAuthenticated && isDoctor && (
+          {isDoctor && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
                 {t('doctor_workstation')}
@@ -701,7 +704,7 @@ export default function Navbar() {
           )}
 
           {/* 3. Mobile Admin Navigation */}
-          {isAuthenticated && isAdmin && (
+          {isAdmin && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
                 {t('admin_management', 'Admin Management')}
@@ -738,7 +741,7 @@ export default function Navbar() {
           )}
 
           {/* 4. Mobile Pharmacist Navigation */}
-          {isAuthenticated && isPharmacist && (
+          {isPharmacist && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
                 Pharmacy Services
@@ -755,7 +758,7 @@ export default function Navbar() {
           )}
 
           {/* 5. Mobile Lab Technician Navigation */}
-          {isAuthenticated && isLabStaff && (
+          {isLabStaff && (
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 py-1">
                 Diagnostic Laboratory Services
@@ -771,34 +774,38 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* 4. Mobile Logged Out Navigation */}
-          {!isAuthenticated && (
+          {/* 6. Mobile Public Navigation (When on Home or Logged Out) */}
+          {!showAuthUI && (
             <div className="space-y-1">
-              <Link to="/" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span>{t('home')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/about" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+              <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><Building2 className="w-4 h-4 text-teal-600" /> {t('about_simsrh')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/doctors" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
-                <span>{t('find_doctors')}</span>
+              <Link to="/doctors" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><Stethoscope className="w-4 h-4 text-sky-600" /> {t('find_doctors')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/departments" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
-                <span>{t('departments')}</span>
+              <Link to="/departments" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><Building2 className="w-4 h-4 text-teal-600" /> {t('departments')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/predict" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-bold text-purple-700">
-                <span>{t('ai_simulator')}</span>
+              <Link to="/tracking" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><Activity className="w-4 h-4 text-sky-600" /> {t('live_token')}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+              <Link to="/predict" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-purple-50 text-xs font-bold text-purple-700">
+                <span className="flex items-center gap-2"><Cpu className="w-4 h-4 text-purple-500" /> {t('ai_simulator')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
               </Link>
               <div className="pt-3 flex gap-2">
-                <Link to="/login?role=patient" className="flex-1 py-2.5 bg-sky-600 text-white rounded-xl text-center text-xs font-bold">
+                <Link to="/login?role=patient" onClick={() => setMobileMenuOpen(false)} className="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 text-white rounded-xl text-center text-xs font-bold shadow-sm">
                   {t('sign_in')}
                 </Link>
-                <Link to="/signup" className="flex-1 py-2.5 bg-slate-100 text-slate-800 rounded-xl text-center text-xs font-bold">
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-center text-xs font-bold">
                   {t('register')}
                 </Link>
               </div>

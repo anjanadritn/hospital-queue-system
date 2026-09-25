@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   HeartPulse,
@@ -9,18 +9,15 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Sparkles,
   GraduationCap,
   ShieldCheck,
   Activity,
   Cpu,
-  Navigation,
-  Clock,
-  CheckCircle2,
   Users,
   Stethoscope,
   Pill,
-  FlaskConical
+  FlaskConical,
+  MoreVertical
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
@@ -32,57 +29,63 @@ export default function Login() {
   const { login } = useAuth();
   const { t } = useLanguage();
 
-  // Read role from URL query param (?role=patient|doctor|admin|pharmacist|lab_technician)
-  const getInitialRole = () => {
-    const params = new URLSearchParams(location.search);
-    const roleParam = params.get('role');
-    if (roleParam && ['patient', 'doctor', 'admin', 'pharmacist', 'lab_technician'].includes(roleParam)) {
-      return roleParam;
-    }
+  // Parse role from URL query param with support for pharmacy and lab aliases
+  const parseRoleParam = (param) => {
+    if (!param) return 'patient';
+    const p = String(param).toLowerCase();
+    if (p === 'doctor') return 'doctor';
+    if (p === 'admin') return 'admin';
+    if (p === 'pharmacy' || p === 'pharmacist') return 'pharmacist';
+    if (p === 'lab' || p === 'laboratory' || p === 'lab_technician') return 'lab_technician';
     return 'patient';
   };
 
-  const [role, setRole] = useState(getInitialRole);
+  const [role, setRole] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return parseRoleParam(params.get('role'));
+  });
+
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [staffMenuOpen, setStaffMenuOpen] = useState(false);
+  const staffMenuRef = useRef(null);
 
-  // Sync role tab if URL search param changes (e.g. navigating from navbar links)
+  // Close three-dot menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (staffMenuRef.current && !staffMenuRef.current.contains(e.target)) {
+        setStaffMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Sync role if URL search param changes
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const roleParam = params.get('role');
-    if (roleParam && ['patient', 'doctor', 'admin', 'pharmacist', 'lab_technician'].includes(roleParam)) {
-      setRole(roleParam);
-      setError(null);
-    }
+    const parsed = parseRoleParam(params.get('role'));
+    setRole(parsed);
+    setError(null);
   }, [location.search]);
 
-  const handleRoleChange = (selectedRole) => {
-    setRole(selectedRole);
+  const handleSelectRole = (targetRoleKey) => {
+    setStaffMenuOpen(false);
     setError(null);
-  };
-
-  const handleQuickDemoFill = (demoRole) => {
-    setRole(demoRole);
-    setError(null);
-    if (demoRole === 'patient') {
-      setPhone('9876543211');
-      setPassword('PatientPass123!');
-    } else if (demoRole === 'doctor') {
-      setPhone('9876543210');
-      setPassword('DoctorPass123!');
-    } else if (demoRole === 'admin') {
-      setPhone('9999999999');
-      setPassword('AdminPass123!');
-    } else if (demoRole === 'pharmacist') {
-      setPhone('9876543230');
-      setPassword('PharmPass123!');
-    } else if (demoRole === 'lab_technician') {
-      setPhone('9876543240');
-      setPassword('LabPass123!');
+    if (targetRoleKey === 'patient') {
+      navigate('/login?role=patient');
+    } else if (targetRoleKey === 'doctor') {
+      navigate('/login?role=doctor');
+    } else if (targetRoleKey === 'admin') {
+      navigate('/login?role=admin');
+    } else if (targetRoleKey === 'pharmacy') {
+      navigate('/login?role=pharmacy');
+    } else if (targetRoleKey === 'lab') {
+      navigate('/login?role=lab');
     }
   };
 
@@ -212,121 +215,186 @@ export default function Login() {
         <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto space-y-6">
             
-            {/* Header */}
-            <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-sky-600 block mb-1">
-                {t('portal_authentication', 'Portal Authentication')}
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {t('sign_in_smarthospital', 'Sign In to SmartHospital')}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                {t('select_account_role_desc', 'Select your account role and enter credentials to continue.')}
-              </p>
+            {/* Top Bar with Three-Dot Staff Portal Menu (Top-Left) & Return to Patient Link */}
+            <div className="flex items-center justify-between pb-1 -mt-2">
+              <div className="relative" ref={staffMenuRef}>
+                <button
+                  type="button"
+                  id="staff-portal-toggle"
+                  onClick={() => setStaffMenuOpen((prev) => !prev)}
+                  className="p-2 -ml-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer flex items-center justify-center border border-transparent hover:border-slate-200"
+                  aria-label="Staff & Hospital Portals"
+                  title="Staff & Hospital Portals"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+
+                {staffMenuOpen && (
+                  <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-2 border-b border-slate-100">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                        Staff & Hospital Portals
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        Clinical and administrative consoles
+                      </span>
+                    </div>
+
+                    <div className="py-1 space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectRole('doctor')}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-left cursor-pointer ${
+                          role === 'doctor' ? 'bg-sky-50 text-sky-800' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Stethoscope className="w-4 h-4 text-sky-600" />
+                          <span>Doctor Login</span>
+                        </span>
+                        {role === 'doctor' && <span className="w-2 h-2 rounded-full bg-sky-600" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectRole('admin')}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-left cursor-pointer ${
+                          role === 'admin' ? 'bg-purple-50 text-purple-800' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <ShieldCheck className="w-4 h-4 text-purple-600" />
+                          <span>Admin Login</span>
+                        </span>
+                        {role === 'admin' && <span className="w-2 h-2 rounded-full bg-purple-600" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectRole('pharmacy')}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-left cursor-pointer ${
+                          role === 'pharmacist' ? 'bg-emerald-50 text-emerald-800' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Pill className="w-4 h-4 text-emerald-600" />
+                          <span>Pharmacy Login</span>
+                        </span>
+                        {role === 'pharmacist' && <span className="w-2 h-2 rounded-full bg-emerald-600" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectRole('lab')}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-left cursor-pointer ${
+                          role === 'lab_technician' ? 'bg-indigo-50 text-indigo-800' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <FlaskConical className="w-4 h-4 text-indigo-600" />
+                          <span>Laboratory Login</span>
+                        </span>
+                        {role === 'lab_technician' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                      </button>
+
+                      <div className="pt-1 mt-1 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectRole('patient')}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-left cursor-pointer ${
+                            role === 'patient' ? 'bg-teal-50 text-teal-800' : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <Users className="w-4 h-4 text-teal-600" />
+                            <span>Patient Login</span>
+                          </span>
+                          {role === 'patient' && <span className="w-2 h-2 rounded-full bg-teal-600" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {role !== 'patient' && (
+                <button
+                  type="button"
+                  onClick={() => handleSelectRole('patient')}
+                  className="text-xs font-bold text-slate-500 hover:text-sky-600 transition flex items-center gap-1 cursor-pointer"
+                >
+                  <span>← Back to Patient Login</span>
+                </button>
+              )}
             </div>
 
-            {/* Quick 1-Click Evaluator Demo Accounts Banner */}
-            <div className="p-3.5 bg-sky-50/70 border border-sky-200/80 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-900 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                  <span>{t('quick_demo_login', '1-Click Examiner Demo Login:')}</span>
-                </span>
-                <span className="text-[10px] text-sky-700 font-bold bg-sky-100/80 px-2 py-0.5 rounded-full">
-                  {t('instant_access', 'Instant Access')}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoFill('patient')}
-                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
-                    role === 'patient'
-                      ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
-                  }`}
-                >
-                  {t('patient', 'Patient')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoFill('doctor')}
-                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
-                    role === 'doctor'
-                      ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
-                  }`}
-                >
-                  {t('doctor', 'Doctor')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoFill('admin')}
-                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
-                    role === 'admin'
-                      ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-sky-50 hover:border-sky-300'
-                  }`}
-                >
-                  {t('admin', 'Admin')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoFill('pharmacist')}
-                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
-                    role === 'pharmacist'
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300'
-                  }`}
-                >
-                  Pharmacy
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoFill('lab_technician')}
-                  className={`py-2 px-2 rounded-xl border transition text-center cursor-pointer ${
-                    role === 'lab_technician'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300'
-                  }`}
-                >
-                  Lab
-                </button>
-              </div>
-            </div>
-
-            {/* Role Switcher Tabs */}
+            {/* Header Content */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                {t('select_account_role', 'Select Account Role')}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
-                {[
-                  { id: 'patient', label: t('patient', 'Patient'), icon: Users },
-                  { id: 'doctor', label: t('doctor', 'Doctor'), icon: Stethoscope },
-                  { id: 'admin', label: t('admin', 'Admin'), icon: ShieldCheck },
-                  { id: 'pharmacist', label: 'Pharmacy', icon: Pill },
-                  { id: 'lab_technician', label: 'Laboratory', icon: FlaskConical }
-                ].map((r) => {
-                  const Icon = r.icon;
-                  const isSelected = role === r.id;
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => handleRoleChange(r.id)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                        isSelected
-                          ? 'bg-white text-sky-700 shadow-xs border border-slate-200/60'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{r.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {role === 'patient' ? (
+                <>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 block mb-1">
+                    Patient Care Portal
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Patient Sign In
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Enter your registered mobile phone number and password to access your health portal.
+                  </p>
+                </>
+              ) : role === 'doctor' ? (
+                <>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-extrabold border border-sky-200 mb-2">
+                    <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Doctor OPD Console</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Doctor Sign In
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Access clinical workstation, OPD live queues, and patient consultation records.
+                  </p>
+                </>
+              ) : role === 'admin' ? (
+                <>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-extrabold border border-purple-200 mb-2">
+                    <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Hospital Administration</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Admin Operations Sign In
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Administrative clearance for hospital operations, department oversight, and staff management.
+                  </p>
+                </>
+              ) : role === 'pharmacist' ? (
+                <>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200 mb-2">
+                    <Pill className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Pharmacy Dispensary</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Pharmacy Staff Sign In
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Fulfill clinical prescriptions, prepare medication packages, and update dispensing statuses.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-extrabold border border-indigo-200 mb-2">
+                    <FlaskConical className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Diagnostic Laboratory</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Laboratory Staff Sign In
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Manage diagnostic investigations, record specimen collections, and upload clinical reports.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Error Message */}
@@ -391,7 +459,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Submit Button (Primary Blue/Teal Gradient) */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -404,22 +472,36 @@ export default function Login() {
                   </>
                 ) : (
                   <>
-                    <span className="capitalize">{t('login_as_role', { role: t(role, role) }, `Sign In as ${role}`)}</span>
+                    <span>
+                      {role === 'patient'
+                        ? 'Sign In as Patient'
+                        : role === 'doctor'
+                          ? 'Sign In as Doctor'
+                          : role === 'admin'
+                            ? 'Sign In as Admin'
+                            : role === 'pharmacist'
+                              ? 'Sign In as Pharmacy Staff'
+                              : role === 'lab_technician'
+                                ? 'Sign In as Laboratory Staff'
+                                : `Sign In as ${role}`}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
 
-            {/* Registration Link */}
-            <div className="pt-4 border-t border-slate-100 text-center">
-              <p className="text-xs text-slate-500">
-                {t('new_to_smarthospital', 'New to SmartHospital?')}{' '}
-                <Link to="/signup" className="text-sky-600 font-extrabold hover:underline">
-                  {t('create_account', 'Register a Patient Account')}
-                </Link>
-              </p>
-            </div>
+            {/* Registration Link (Only for Patient) */}
+            {role === 'patient' && (
+              <div className="pt-4 border-t border-slate-100 text-center">
+                <p className="text-xs text-slate-500">
+                  {t('new_to_smarthospital', 'New to SmartHospital?')}{' '}
+                  <Link to="/signup" className="text-sky-600 font-extrabold hover:underline">
+                    {t('create_account', 'Register a Patient Account')}
+                  </Link>
+                </p>
+              </div>
+            )}
 
           </div>
         </div>
