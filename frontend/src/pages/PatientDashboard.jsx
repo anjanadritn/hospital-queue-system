@@ -74,6 +74,12 @@ export default function PatientDashboard({ initialTab }) {
   };
 
   useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  useEffect(() => {
     if (urlTab && ['overview', 'notifications', 'profile'].includes(urlTab)) {
       setActiveTab(urlTab);
     }

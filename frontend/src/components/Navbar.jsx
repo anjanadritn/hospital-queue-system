@@ -41,7 +41,7 @@ export default function Navbar() {
 
   useEffect(() => {
     hospitalApi.getHealth()
-      .then((res) => setDbHealthy(res.database_connected !== false))
+      .then((res) => setDbHealthy(Boolean(res && res.database_connected !== false)))
       .catch(() => setDbHealthy(false));
   }, []);
 
