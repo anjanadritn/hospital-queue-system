@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from database.mongodb import get_db, serialize_doc, serialize_docs
+from services.time_service import ist_isoformat
 
 DEFAULT_DEPARTMENTS = [
     {
@@ -143,7 +144,7 @@ def create_department(data: dict) -> Tuple[Optional[dict], Optional[str]]:
             return None, "Department with this name already exists"
 
         dept_id = generate_department_id()
-        now = datetime.now(timezone.utc).isoformat()
+        now = ist_isoformat()
 
         dept_doc = {
             "department_id": dept_id,
@@ -180,7 +181,7 @@ def update_department(department_id: str, data: dict) -> Tuple[Optional[dict], O
         if not dept:
             return None, "Department not found"
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = ist_isoformat()
         update_fields = {"updated_at": now}
 
         if "name" in data:
@@ -218,7 +219,7 @@ def soft_delete_department(department_id: str) -> Tuple[bool, Optional[str]]:
         if not dept:
             return False, "Department not found"
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = ist_isoformat()
         db.departments.update_one({"department_id": department_id}, {"$set": {"is_active": False, "updated_at": now}})
         return True, None
     except Exception:

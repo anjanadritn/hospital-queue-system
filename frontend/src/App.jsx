@@ -12,6 +12,9 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import BookAppointment from './pages/BookAppointment';
 import PatientDashboard from './pages/PatientDashboard';
+import PatientMedicalHistory from './pages/PatientMedicalHistory';
+import PatientAppointments from './pages/PatientAppointments';
+import PatientSecurity from './pages/PatientSecurity';
 import Doctors from './pages/Doctors';
 import DoctorProfile from './pages/DoctorProfile';
 import Departments from './pages/Departments';
@@ -58,6 +61,38 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={['patient']}>
                     <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PatientDashboard initialTab="profile" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/history"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PatientMedicalHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/appointments"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PatientAppointments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/security"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PatientSecurity />
                   </ProtectedRoute>
                 }
               />

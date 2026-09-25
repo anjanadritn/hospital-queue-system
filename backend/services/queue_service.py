@@ -1,10 +1,8 @@
 import re
 from datetime import datetime, timezone, timedelta
-try:
-    from zoneinfo import ZoneInfo
-    HOSPITAL_TZ = ZoneInfo("Asia/Kolkata")
-except Exception:
-    HOSPITAL_TZ = timezone(timedelta(hours=5, minutes=30))
+from services.time_service import (
+    HOSPITAL_TZ, now_ist, now_utc, today_iso_ist, ist_isoformat
+)
 from typing import Optional, List, Tuple, Dict
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from services.prediction_service import get_wait_time_prediction, predict_consultation_duration_service
@@ -975,7 +973,7 @@ def recalculate_queue_positions(
         pass
 
     # In-memory queue fallback
-    now = datetime.now(timezone.utc)
+    now = now_utc()
     if not doctor_id:
         active_docs = list({q.get("doctor_id") for q in IN_MEMORY_QUEUE if q.get("doctor_id") and q.get("status") in active_statuses})
         if active_docs:
@@ -1145,7 +1143,7 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         pass
 
     queue_id = generate_queue_id(doctor_id=doctor_id)
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
     clean_priority = "emergency" if priority == "emergency" else "normal"
 
     # ML Consultation Duration Prediction
@@ -1397,7 +1395,7 @@ def update_queue_status(queue_id: str, new_status: str, metadata: Optional[dict]
         if entry:
             q_id = entry.get("queue_id", queue_id)
             b_id = entry.get("booking_id", queue_id)
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = ist_isoformat()
             update_data = {"status": new_status, "updated_at": now_str}
 
             if new_status == "completed" and metadata:
@@ -1473,7 +1471,7 @@ def skip_patient_service(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
     by updating joined_at and missed_at, recalculates positions and Random Forest wait times for all
     remaining patients, and dispatches a missed consultation alert.
     """
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
     try:
         db = get_db()
         entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]}) or db.appointments.find_one({"booking_id": queue_id})
@@ -1605,7 +1603,7 @@ def complete_consultation(booking_id: str, actual_duration_mins: int = 15, docto
         if entry:
             q_id = entry.get("queue_id", booking_id)
             b_id = entry.get("booking_id", booking_id)
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = ist_isoformat()
             update_data = {
                 "status": "completed",
                 "actual_duration_mins": actual_duration_mins,
@@ -1760,7 +1758,7 @@ def escalate_emergency(queue_id: str) -> Tuple[Optional[dict], Optional[str]]:
         entry = db.queue.find_one({"$or": [{"queue_id": queue_id}, {"booking_id": queue_id}]})
         if entry:
             q_id = entry.get("queue_id", queue_id)
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = ist_isoformat()
             db.queue.update_one({"queue_id": q_id}, {"$set": {"priority": "emergency", "updated_at": now_str}})
             recalculate_queue_positions(
                 doctor_id=entry.get("doctor_id"),
@@ -1957,5 +1955,5 @@ def get_public_live_queue(
         "next_patients": next_patients,
         "upcoming_patients": upcoming,
         "total_active_queue": len(sanitized),
-        "last_updated": datetime.now(timezone.utc).isoformat()
+        "last_updated": ist_isoformat()
     }

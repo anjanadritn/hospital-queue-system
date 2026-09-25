@@ -1,7 +1,11 @@
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Optional, Dict, Tuple
 from database.mongodb import get_db, serialize_doc
+from services.time_service import (
+    now_ist, ist_isoformat, ist_timestamp,
+    otp_expiry_ist, is_otp_expired
+)
 
 IN_MEMORY_OTPS = {}
 
@@ -11,10 +15,11 @@ OTP_EXPIRATION_MINUTES = 1440  # Valid for 24 hours (consultation day)
 def generate_consultation_otp(booking_id: str, patient_id: str = "P001", doctor_id: str = "D001") -> Tuple[Optional[dict], Optional[str]]:
     """
     Generates a 6-digit consultation verification OTP associated with a specific booking/queue entry.
-    Default expiration: 5 minutes. Single-use, rate-limited to 5 attempts.
+    Default expiration: 24 hours (consultation day). Single-use, rate-limited to 5 attempts.
+    All timestamps are in IST (Asia/Kolkata) via the centralized time_service.
     """
-    now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(minutes=OTP_EXPIRATION_MINUTES)
+    now = now_ist()
+    expires_dt, expires_iso, expires_ts = otp_expiry_ist(OTP_EXPIRATION_MINUTES)
     otp_code = f"{random.randint(100000, 999999)}"
 
     otp_doc = {
@@ -23,9 +28,9 @@ def generate_consultation_otp(booking_id: str, patient_id: str = "P001", doctor_
         "doctor_id": doctor_id,
         "otp": otp_code,
         "status": "OTP_GENERATED",
-        "created_at": now.isoformat(),
-        "expires_at": expires_at.isoformat(),
-        "expires_at_timestamp": expires_at.timestamp(),
+        "created_at": ist_isoformat(now),
+        "expires_at": expires_iso,
+        "expires_at_timestamp": expires_ts,
         "failed_attempts": 0,
         "used": False
     }
@@ -51,8 +56,7 @@ def get_otp_status(booking_id: str) -> Tuple[Optional[dict], Optional[str]]:
     Returns consultation OTP status for patient.
     Masks/hides OTP if expired or used.
     """
-    now = datetime.now(timezone.utc)
-    now_ts = now.timestamp()
+    now_ts = ist_timestamp()
 
     otp_doc = None
     try:
@@ -104,7 +108,7 @@ def verify_consultation_otp(booking_id: str, input_otp: str) -> Tuple[bool, Opti
     Verifies consultation OTP entered by doctor.
     Enforces expiration, single-use, matching doctor/booking, and 5-attempt rate-limiting.
     """
-    now_ts = datetime.now(timezone.utc).timestamp()
+    now_ts = ist_timestamp()
     clean_otp = str(input_otp).strip()
 
     otp_doc = None
@@ -184,7 +188,7 @@ def verify_arrival_otp(token_or_booking_id: str, input_otp: str, verified_by: st
     """
     clean_id = str(token_or_booking_id).strip()
     clean_otp = str(input_otp).strip()
-    now = datetime.now(timezone.utc)
+    now = now_ist()
     now_ts = now.timestamp()
 
     db = get_db()

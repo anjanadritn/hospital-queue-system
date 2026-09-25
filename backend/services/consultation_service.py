@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from database.mongodb import get_db, serialize_doc, serialize_docs
+from services.time_service import ist_isoformat
 
 logger = logging.getLogger("smart-hospital-backend")
 
@@ -29,7 +30,7 @@ def archive_consultation(
             db.appointments.find_one({"booking_id": queue_or_booking_id})
         )
 
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = ist_isoformat()
         consultation_id = f"CON_{queue_or_booking_id}"
 
         patient_id = entry.get("patient_id") if entry else None

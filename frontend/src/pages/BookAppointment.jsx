@@ -231,6 +231,57 @@ export default function BookAppointment() {
     };
   });
 
+  /**
+   * Determines whether a slot is time-closed based on the CURRENT browser time.
+   * Only applies when the selected date is TODAY — future dates are always open.
+   *
+   * Rules:
+   *   Morning Slot  (09:00 AM – 01:00 PM): closed if today's time >= 13:00
+   *   Evening Slot  (02:00 PM – 09:00 PM): closed if today's time >= 14:00
+   *
+   * @param {string} slotId - 'morning' | 'evening'
+   * @param {string} selectedDate - YYYY-MM-DD
+   * @returns {{ isClosed: boolean, reason: string }}
+   */
+  const getSlotTimeStatus = (slotId, selectedDate) => {
+    const todayIso = new Date().toISOString().split('T')[0];
+    if (selectedDate !== todayIso) {
+      // Future date — never time-closed
+      return { isClosed: false, reason: '' };
+    }
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTotalMinutes = currentHour * 60 + currentMinute;
+
+    // Morning slot: cutoff at 13:00 (1:00 PM)
+    if (slotId === 'morning') {
+      const cutoff = 13 * 60; // 780 minutes
+      if (currentTotalMinutes >= cutoff) {
+        return { isClosed: true, reason: 'Slot closed for today — Morning OPD ended at 1:00 PM' };
+      }
+    }
+    // Evening slot: cutoff at 14:00 (2:00 PM)
+    if (slotId === 'evening') {
+      const cutoff = 14 * 60; // 840 minutes
+      if (currentTotalMinutes >= cutoff) {
+        return { isClosed: true, reason: 'Slot closed for today — Afternoon OPD starts at 2:00 PM, walk-ins only' };
+      }
+    }
+    return { isClosed: false, reason: '' };
+  };
+
+  // Auto-deselect the active slot if it becomes time-closed (e.g. tab was open past cutoff)
+  useEffect(() => {
+    if (selectedSlot) {
+      const { isClosed } = getSlotTimeStatus(selectedSlot, consultationDate);
+      if (isClosed) {
+        setSelectedSlot(null);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consultationDate]);
+
   const [searchParams] = useSearchParams();
   const urlDoctorId = searchParams.get('doctorId');
   const urlDept = searchParams.get('dept');
@@ -285,6 +336,12 @@ export default function BookAppointment() {
     }
     if (!selectedSlot) {
       setError('Please select a consultation slot (Morning or Afternoon/Evening).');
+      return;
+    }
+    // Frontend time-closed guard — matches backend rule
+    const { isClosed, reason } = getSlotTimeStatus(selectedSlot, consultationDate);
+    if (isClosed) {
+      setError(`Cannot book: ${reason}. Please select an available slot or choose a future date.`);
       return;
     }
     if (selectedSymptoms.length === 0 && !customSymptoms.trim()) {
@@ -524,38 +581,54 @@ export default function BookAppointment() {
                   const isSelected = selectedSlot === 'morning';
                   const remaining = mSlot ? mSlot.remaining_capacity : 40;
                   const isFull = mSlot ? mSlot.is_full : false;
+                  const { isClosed: isTimeClosed, reason: closedReason } = getSlotTimeStatus('morning', consultationDate);
+                  const isDisabled = isFull || isTimeClosed;
                   return (
                     <button
                       key="slot-morning"
                       type="button"
-                      disabled={isFull}
-                      onClick={() => setSelectedSlot('morning')}
-                      className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? 'bg-gradient-to-br from-amber-500/10 via-sky-500/10 to-teal-500/10 border-sky-500 ring-2 ring-sky-300 shadow-sm'
+                      disabled={isDisabled}
+                      onClick={() => !isDisabled && setSelectedSlot('morning')}
+                      className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between ${
+                        isSelected && !isTimeClosed
+                          ? 'bg-gradient-to-br from-amber-500/10 via-sky-500/10 to-teal-500/10 border-sky-500 ring-2 ring-sky-300 shadow-sm cursor-pointer'
+                          : isTimeClosed
+                          ? 'bg-slate-100 border-slate-300 opacity-70 cursor-not-allowed'
                           : isFull
                           ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
-                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300 cursor-pointer'
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Sun className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-amber-600'}`} />
+                            <Sun className={`w-4 h-4 ${isSelected && !isTimeClosed ? 'text-amber-500' : 'text-amber-600'}`} />
                             <span className="font-extrabold text-xs text-slate-900">{t('morning_slot_title', 'Morning Slot')}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
-                            isFull
+                            isTimeClosed
+                              ? 'bg-slate-200 text-slate-600'
+                              : isFull
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}>
-                            {isFull ? `● ${t('slot_full', 'Full')}` : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
+                            {isTimeClosed
+                              ? '⏱ Slot Closed'
+                              : isFull
+                              ? `● ${t('slot_full', 'Full')}`
+                              : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
                           </span>
                         </div>
                         <div className="text-xs font-bold text-sky-700 mt-1">09:00 AM – 01:00 PM</div>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                          {t('morning_slot_desc', 'Ideal for morning outpatient checkups, early diagnostic blood work, and standard consultations.')}
-                        </p>
+                        {isTimeClosed ? (
+                          <p className="text-[11px] text-rose-600 font-semibold mt-1">
+                            🔒 {closedReason}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            {t('morning_slot_desc', 'Ideal for morning outpatient checkups, early diagnostic blood work, and standard consultations.')}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">
@@ -577,38 +650,54 @@ export default function BookAppointment() {
                   const isSelected = selectedSlot === 'evening';
                   const remaining = eSlot ? eSlot.remaining_capacity : 50;
                   const isFull = eSlot ? eSlot.is_full : false;
+                  const { isClosed: isTimeClosed, reason: closedReason } = getSlotTimeStatus('evening', consultationDate);
+                  const isDisabled = isFull || isTimeClosed;
                   return (
                     <button
                       key="slot-evening"
                       type="button"
-                      disabled={isFull}
-                      onClick={() => setSelectedSlot('evening')}
-                      className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? 'bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-sky-500/10 border-indigo-500 ring-2 ring-indigo-300 shadow-sm'
+                      disabled={isDisabled}
+                      onClick={() => !isDisabled && setSelectedSlot('evening')}
+                      className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between ${
+                        isSelected && !isTimeClosed
+                          ? 'bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-sky-500/10 border-indigo-500 ring-2 ring-indigo-300 shadow-sm cursor-pointer'
+                          : isTimeClosed
+                          ? 'bg-slate-100 border-slate-300 opacity-70 cursor-not-allowed'
                           : isFull
                           ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
-                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                          : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300 cursor-pointer'
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Moon className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-indigo-500'}`} />
+                            <Moon className={`w-4 h-4 ${isSelected && !isTimeClosed ? 'text-indigo-600' : 'text-indigo-500'}`} />
                             <span className="font-extrabold text-xs text-slate-900">{t('evening_slot_title', 'Afternoon / Evening Slot')}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
-                            isFull
+                            isTimeClosed
+                              ? 'bg-slate-200 text-slate-600'
+                              : isFull
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}>
-                            {isFull ? `● ${t('slot_full', 'Full')}` : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
+                            {isTimeClosed
+                              ? '⏱ Slot Closed'
+                              : isFull
+                              ? `● ${t('slot_full', 'Full')}`
+                              : `● ${t('spots_left', { count: remaining }, `${remaining} spots left`)}`}
                           </span>
                         </div>
                         <div className="text-xs font-bold text-indigo-700 mt-1">02:00 PM – 09:00 PM</div>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                          {t('evening_slot_desc', 'Extended hours for after-work visits, follow-up evaluations, and post-workday clinical appointments.')}
-                        </p>
+                        {isTimeClosed ? (
+                          <p className="text-[11px] text-rose-600 font-semibold mt-1">
+                            🔒 {closedReason}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            {t('evening_slot_desc', 'Extended hours for after-work visits, follow-up evaluations, and post-workday clinical appointments.')}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-slate-200/60 text-[11px]">

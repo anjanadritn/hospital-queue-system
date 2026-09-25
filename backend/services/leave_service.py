@@ -1,10 +1,6 @@
 import logging
-from datetime import datetime, timedelta, timezone
-try:
-    from zoneinfo import ZoneInfo
-    HOSPITAL_TZ = ZoneInfo("Asia/Kolkata")
-except Exception:
-    HOSPITAL_TZ = timezone(timedelta(hours=5, minutes=30))
+from datetime import datetime, timedelta
+from services.time_service import HOSPITAL_TZ, now_ist, ist_isoformat, now_utc
 from typing import Optional, Dict, Tuple
 from database.mongodb import get_db, serialize_doc
 from services.travel_service import calculate_travel_metrics, HOSPITAL_NAME, HOSPITAL_DESTINATION
@@ -79,7 +75,7 @@ def confirm_leaving_now(queue_id: str, origin_coords: Optional[list] = None) -> 
       - leave_reminder_status = "LEAVING_CONFIRMED"
     Safe against duplicate clicks (idempotent).
     """
-    now = datetime.now(timezone.utc)
+    now = now_utc()
     now_str = now.isoformat()
 
     try:
@@ -200,7 +196,7 @@ def evaluate_and_update_leave_reminders(queue_entry: Dict) -> Dict:
     if status in ["completed", "missed", "cancelled", "no_show"]:
         return {"action": "none", "state": status.upper()}
 
-    now = datetime.now(timezone.utc)
+    now = now_utc()
     expected_iso = queue_entry.get("expected_consultation_iso")
     travel_time = queue_entry.get("travel_time_min") or queue_entry.get("travel_info", {}).get("travel_time_min", 15)
     buffer_min = int(queue_entry.get("safety_buffer_min") or queue_entry.get("travel_info", {}).get("safety_buffer_min") or SAFETY_BUFFER_MIN)

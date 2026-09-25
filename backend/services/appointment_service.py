@@ -4,6 +4,7 @@ from database.mongodb import get_db, serialize_doc, serialize_docs
 from services.ml_service import predict_consultation_duration
 from services.travel_service import calculate_travel_metrics
 from services.notification_service import create_notification, format_booking_confirmed_sms
+from services.time_service import ist_isoformat, today_iso_ist
 
 IN_MEMORY_BOOKINGS = []
 
@@ -60,7 +61,7 @@ def book_appointment(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         return None, slot_err
 
     booking_id = generate_booking_id()
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
 
     # Extract clinical data for doctor consultation
     patient_name = data.get("patient_name") or data.get("name") or "Patient"

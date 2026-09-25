@@ -38,7 +38,7 @@ import MyLiveQueueSection from '../components/MyLiveQueueSection';
 import LateArrivalWarningCard from '../components/LateArrivalWarningCard';
 import { getBrowserLocation } from '../services/locationService';
 
-export default function PatientDashboard() {
+export default function PatientDashboard({ initialTab }) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -46,8 +46,9 @@ export default function PatientDashboard() {
 
   const urlTab = searchParams.get('tab');
   const getInitialTab = () => {
+    if (initialTab) return initialTab;
     if (urlTab === 'history' || urlTab === 'medical-history') return 'medical-history';
-    if (urlTab && ['overview', 'appointments', 'notifications', 'profile'].includes(urlTab)) return urlTab;
+    if (urlTab && ['overview', 'notifications', 'profile'].includes(urlTab)) return urlTab;
     return 'overview';
   };
 
@@ -64,19 +65,16 @@ export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState(getInitialTab);
 
   const handleTabChange = (tab) => {
-    const canonicalTab = (tab === 'history' ? 'medical-history' : tab);
-    setActiveTab(canonicalTab);
-    if (canonicalTab === 'overview') {
+    setActiveTab(tab);
+    if (tab === 'overview') {
       setSearchParams({});
     } else {
-      setSearchParams({ tab: canonicalTab });
+      setSearchParams({ tab });
     }
   };
 
   useEffect(() => {
-    if (urlTab === 'history' || urlTab === 'medical-history') {
-      setActiveTab('medical-history');
-    } else if (urlTab && ['overview', 'appointments', 'notifications', 'profile'].includes(urlTab)) {
+    if (urlTab && ['overview', 'notifications', 'profile'].includes(urlTab)) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);
@@ -298,6 +296,39 @@ export default function PatientDashboard() {
     }
   };
 
+  const compressImage = (file, maxWidth = 600, maxHeight = 600, quality = 0.85) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          const dataUri = canvas.toDataURL(mime, quality);
+          resolve({ dataUri, mimeType: mime });
+        };
+        img.onerror = () => reject(new Error('Failed to process image.'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Failed to read image file.'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleProfilePictureChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -306,30 +337,25 @@ export default function PatientDashboard() {
       setPicError('Only JPEG, PNG, or WebP images are allowed.');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setPicError(`Image too large (${(file.size / 1024).toFixed(0)} KB). Maximum allowed size is 2 MB.`);
+    if (file.size > 5 * 1024 * 1024) {
+      setPicError(`Image too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 5 MB.`);
       return;
     }
     setPicError('');
     setPicUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const dataUri = ev.target.result;
-        setProfilePicture(dataUri);
-        try {
-          await hospitalApi.uploadProfilePicture(dataUri, file.type);
-        } catch (uploadErr) {
-          setPicError(uploadErr.response?.data?.error || 'Failed to save profile picture.');
-          setProfilePicture(null);
-        } finally {
-          setPicUploading(false);
-        }
-      };
-      reader.onerror = () => { setPicError('Failed to read image file.'); setPicUploading(false); };
-      reader.readAsDataURL(file);
+      const { dataUri, mimeType } = await compressImage(file, 600, 600, 0.85);
+      setProfilePicture(dataUri);
+      try {
+        await hospitalApi.uploadProfilePicture(dataUri, mimeType);
+      } catch (uploadErr) {
+        setPicError(uploadErr.response?.data?.error || 'Failed to save profile picture.');
+        setProfilePicture(patientProfile?.profile_picture || null);
+      } finally {
+        setPicUploading(false);
+      }
     } catch (err) {
-      setPicError('Unexpected error uploading picture.');
+      setPicError('Unexpected error processing image.');
       setPicUploading(false);
     }
   };
@@ -571,8 +597,8 @@ export default function PatientDashboard() {
           </div>
 
           {/* Completed Consultations (Green) */}
-          <div 
-            onClick={() => handleTabChange('medical-history')}
+          <div
+            onClick={() => navigate('/patient/history')}
             className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-xs hover:border-emerald-300 hover:shadow-sm transition cursor-pointer group"
           >
             <div className="flex items-center justify-between mb-2">
@@ -590,7 +616,7 @@ export default function PatientDashboard() {
 
         </div>
 
-        {/* TAB NAVIGATION: OVERVIEW | MEDICAL HISTORY | APPOINTMENTS | NOTIFICATIONS | PROFILE */}
+        {/* TAB NAVIGATION: OVERVIEW | NOTIFICATIONS | PROFILE | links to separate pages */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 text-xs font-bold scrollbar-thin">
           <button
             onClick={() => handleTabChange('overview')}
@@ -603,34 +629,24 @@ export default function PatientDashboard() {
             {t('overview_live_token', 'Overview & Live Token')}
           </button>
 
-          <button
-            onClick={() => handleTabChange('medical-history')}
-            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-              (activeTab === 'medical-history' || activeTab === 'history')
-                ? 'bg-teal-700 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
+          <Link
+            to="/patient/history"
+            className="px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
           >
-            <Activity className="w-3.5 h-3.5 text-teal-300" />
+            <Activity className="w-3.5 h-3.5 text-teal-600" />
             <span>{t('my_medical_history')}</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-              (activeTab === 'medical-history' || activeTab === 'history') ? 'bg-white text-teal-800' : 'bg-teal-100 text-teal-800'
-            }`}>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-teal-100 text-teal-800">
               {medicalHistory.length}
             </span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleTabChange('appointments')}
-            className={`px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-              activeTab === 'appointments'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
+          <Link
+            to="/patient/appointments"
+            className="px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>{t('appointment_bookings', 'Appointment Bookings')} ({appointments.length})</span>
-          </button>
+          </Link>
 
           <button
             onClick={() => handleTabChange('notifications')}
@@ -643,7 +659,7 @@ export default function PatientDashboard() {
             <Bell className="w-3.5 h-3.5" />
             <span>{t('notifications_tab', 'Notifications')} ({notifications.length})</span>
             {notifications.filter(n => !n.read).length > 0 && (
-              <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black">
+              <span className="px-1.5 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-black">
                 {notifications.filter(n => !n.read).length}
               </span>
             )}
@@ -660,6 +676,14 @@ export default function PatientDashboard() {
             <User className="w-3.5 h-3.5" />
             <span>{t('my_profile')}</span>
           </button>
+
+          <Link
+            to="/patient/security"
+            className="px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0 flex items-center gap-1.5 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Account &amp; Security</span>
+          </Link>
         </div>
 
         {/* TAB 1: OVERVIEW & QUEUE TOKEN */}
@@ -1077,13 +1101,13 @@ export default function PatientDashboard() {
                       <Calendar className="w-3.5 h-3.5 text-teal-600" />
                       {medicalHistory[0].consultation_date || (medicalHistory[0].created_at ? medicalHistory[0].created_at.split('T')[0] : t('recent'))}
                     </span>
-                    <button
-                      onClick={() => handleTabChange('medical-history')}
+                    <Link
+                      to="/patient/history"
                       className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
                     >
                       <span>{t('view_all')} ({medicalHistory.length})</span>
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
 
@@ -1179,8 +1203,8 @@ export default function PatientDashboard() {
           </div>
         )}
 
-        {/* TAB 3: MY MEDICAL HISTORY (Chronological Consultation Timeline) */}
-        {(activeTab === 'medical-history' || activeTab === 'history') && (
+        {/* MEDICAL HISTORY: Now a separate page at /patient/history - redirecting via tab */}
+        {false && (
           <div className="space-y-6">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
@@ -1395,8 +1419,8 @@ export default function PatientDashboard() {
           </div>
         )}
 
-        {/* TAB 3: APPOINTMENT BOOKINGS */}
-        {activeTab === 'appointments' && (
+        {/* APPOINTMENTS: Now a separate page at /patient/appointments - redirecting via tab */}
+        {false && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <div>
@@ -1488,13 +1512,13 @@ export default function PatientDashboard() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleTabChange('medical-history')}
+                <Link
+                  to="/patient/history"
                   className="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-teal-200 cursor-pointer"
                 >
                   <Activity className="w-3.5 h-3.5 text-teal-600" />
                   <span>View Medical History ({medicalHistory.length})</span>
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -1510,10 +1534,10 @@ export default function PatientDashboard() {
               
               {/* LEFT: MASTER PATIENT PROFILE CARD (5 cols) */}
               <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-6">
-                <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
-                  {/* Profile Picture with upload */}
+                <div className="flex items-center gap-5 pb-5 border-b border-slate-100">
+                  {/* Circular Profile Avatar with Small Camera Icon Overlay */}
                   <div className="relative shrink-0">
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-tr from-sky-600 to-teal-600 text-white flex items-center justify-center text-2xl font-black shadow-md shadow-sky-600/20">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-gradient-to-tr from-sky-600 to-teal-600 text-white flex items-center justify-center text-2xl sm:text-3xl font-black shadow-md ring-4 ring-slate-100">
                       {profilePicture ? (
                         <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
@@ -1522,13 +1546,14 @@ export default function PatientDashboard() {
                     </div>
                     <label
                       htmlFor="profile-pic-upload"
-                      className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center cursor-pointer shadow transition ${picUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-600 hover:bg-sky-700 active:scale-95 text-white flex items-center justify-center cursor-pointer shadow-md border-2 border-white transition-all ${picUploading ? 'opacity-70 pointer-events-none' : ''}`}
                       title={t('change_photo', 'Change Photo')}
+                      aria-label="Change Profile Photo"
                     >
                       {picUploading ? (
                         <span className="animate-spin text-[10px]">⟳</span>
                       ) : (
-                        <Camera className="w-3.5 h-3.5" />
+                        <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                       )}
                     </label>
                     <input
@@ -1540,14 +1565,13 @@ export default function PatientDashboard() {
                     />
                   </div>
                   <div>
-                    <h4 className="text-lg font-black text-slate-900 leading-tight">
+                    <h4 className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
                       {profileForm.name || user?.name || 'Valued Patient'}
                     </h4>
-                    <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded mt-1 inline-block border border-sky-200">
+                    <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full mt-1.5 inline-block border border-sky-200">
                       ID: {user?.patient_id || patientProfile?.patient_id || 'N/A'}
                     </span>
-                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
+                    <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
                       {t('photo_size_hint', 'JPEG, PNG or WebP, max 2MB')}
                     </p>
                   </div>

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import re
 from typing import Optional, Tuple, List
 from database.mongodb import get_db, serialize_doc, serialize_docs
+from services.time_service import ist_isoformat
 
 def generate_patient_id() -> str:
     db = get_db()
@@ -22,7 +23,7 @@ def create_patient_profile(user_id: str, data: dict) -> Tuple[Optional[dict], Op
         return serialize_doc(existing), None
 
     patient_id = user.get("patient_id") or generate_patient_id()
-    now = datetime.now(timezone.utc).isoformat()
+    now = ist_isoformat()
 
     patient_doc = {
         "patient_id": patient_id,
@@ -55,7 +56,7 @@ def get_patient_by_id(patient_id: str) -> Optional[dict]:
         u = db.users.find_one({"$or": [{"patient_id": patient_id}, {"user_id": patient_id}]})
         if u and u.get("role") == "patient":
             # auto-create/sync patient record
-            now = datetime.now(timezone.utc).isoformat()
+            now = ist_isoformat()
             p_id = u.get("patient_id") or f"P{patient_id}"
             p_doc = {
                 "patient_id": p_id,
@@ -93,7 +94,7 @@ def update_patient_profile(patient_id: str, data: dict) -> Tuple[Optional[dict],
         if not u:
             return None, "Patient profile not found"
         # Auto create
-        now = datetime.now(timezone.utc).isoformat()
+        now = ist_isoformat()
         real_pid = u.get("patient_id") or patient_id
         db.patients.update_one(
             {"patient_id": real_pid},
@@ -113,7 +114,7 @@ def update_patient_profile(patient_id: str, data: dict) -> Tuple[Optional[dict],
     actual_pid = patient.get("patient_id", patient_id)
     user_id = patient.get("user_id")
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = ist_isoformat()
     update_fields = {"updated_at": now}
 
     if "name" in data and str(data["name"]).strip():
@@ -171,7 +172,7 @@ def sync_or_update_patient_profile(
     if not data:
         data = {}
     db = get_db()
-    now = datetime.now(timezone.utc).isoformat()
+    now = ist_isoformat()
 
     # Locate existing patient by patient_id or phone
     query_conds = []
@@ -384,7 +385,7 @@ def update_profile_picture(patient_id: str, image_bytes: bytes, mime_type: str) 
 
     b64_data = base64.b64encode(image_bytes).decode("utf-8")
     data_uri = f"data:{mime_type};base64,{b64_data}"
-    now = datetime.now(timezone.utc).isoformat()
+    now = ist_isoformat()
 
     try:
         db = get_db()

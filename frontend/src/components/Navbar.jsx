@@ -140,9 +140,9 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to="/patient?tab=medical-history"
+                to="/patient/history"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
-                  isActive('/patient') && location.search.includes('medical-history') ? 'bg-white text-teal-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  isActive('/patient/history') ? 'bg-white text-teal-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Activity className="w-3.5 h-3.5 text-teal-600" />
@@ -177,6 +177,16 @@ export default function Navbar() {
               >
                 <Building2 className="w-3.5 h-3.5 text-teal-600" />
                 <span>{t('departments')}</span>
+              </Link>
+
+              <Link
+                to="/patient/profile"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                  isActive('/patient/profile') ? 'bg-white text-sky-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <User className="w-3.5 h-3.5 text-sky-600" />
+                <span>{t('my_profile')}</span>
               </Link>
 
               <Link
@@ -540,7 +550,7 @@ export default function Navbar() {
                 <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-teal-600" /> {t('book_consultation')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
-              <Link to="/patient?tab=medical-history" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+              <Link to="/patient/history" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-600" /> {t('my_medical_history')}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
@@ -554,6 +564,14 @@ export default function Navbar() {
               </Link>
               <Link to="/departments" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-2"><Building2 className="w-4 h-4 text-teal-600" /> {t('departments')}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+              <Link to="/patient/profile" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><User className="w-4 h-4 text-sky-600" /> {t('my_profile')}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+              <Link to="/patient/security" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-slate-500" /> Account &amp; Security</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </Link>
               <Link to="/about" className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-800">

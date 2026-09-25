@@ -1,6 +1,10 @@
-from datetime import datetime, date, timezone
+from datetime import date
 from typing import Optional, Dict, Tuple, List
 from database.mongodb import get_db
+from services.time_service import (
+    HOSPITAL_TZ, now_ist, today_iso_ist, is_slot_open,
+    MORNING_SLOT_CUTOFF_HOUR, EVENING_SLOT_CUTOFF_HOUR
+)
 
 # Standard Hospital Consultation Slots
 SLOT_DEFINITIONS = {
@@ -12,7 +16,9 @@ SLOT_DEFINITIONS = {
         "display_time": "09:00 AM – 01:00 PM",
         "start_hour": 9,
         "end_hour": 13,
-        "max_capacity": 40
+        "max_capacity": 40,
+        # cutoff_hour: the hour (local 24h) AFTER which this slot is closed for same-day booking
+        "cutoff_hour": 13   # 1:00 PM  — no more morning bookings once 13:00 is reached
     },
     "evening": {
         "slot_id": "evening",
@@ -22,11 +28,23 @@ SLOT_DEFINITIONS = {
         "display_time": "02:00 PM – 09:00 PM",
         "start_hour": 14,
         "end_hour": 21,
-        "max_capacity": 50
+        "max_capacity": 50,
+        # cutoff_hour: 2:00 PM  — walk-ins cannot be pre-booked once the slot starts
+        "cutoff_hour": 14
     }
 }
 
 VALID_SLOT_IDS = list(SLOT_DEFINITIONS.keys())
+
+
+def is_slot_time_closed(slot_id: str, target_date: str) -> Tuple[bool, str]:
+    """
+    Thin wrapper around time_service.is_slot_open for backwards compatibility.
+    Returns (is_closed, reason) — delegates entirely to the centralized time service.
+    """
+    open_flag, reason = is_slot_open(slot_id, target_date)
+    return not open_flag, reason
+
 
 def validate_and_normalize_slot(slot_input, consultation_date: Optional[str] = None) -> Tuple[Optional[Dict], Optional[str]]:
     """
@@ -34,6 +52,9 @@ def validate_and_normalize_slot(slot_input, consultation_date: Optional[str] = N
     Accepts:
       - slot_id string (e.g. 'morning', 'evening')
       - slot dictionary (e.g. {'slot_id': 'morning', ...})
+    Also enforces time-based availability for same-day bookings:
+      - Morning slot is closed for today's bookings at/after 13:00
+      - Evening slot is closed for today's bookings at/after 14:00
     Returns normalized slot dictionary with slot_id, slot_name, start_time, end_time, display_time, date.
     """
     if not slot_input:
@@ -55,7 +76,14 @@ def validate_and_normalize_slot(slot_input, consultation_date: Optional[str] = N
             return None, f"Invalid consultation slot '{slot_input}'. Must be 'morning' (09:00 AM – 01:00 PM) or 'evening' (02:00 PM – 09:00 PM)."
 
     target_date = consultation_date or date.today().isoformat()
+
+    # —— TIME-BASED AVAILABILITY CHECK (server-side enforcement) ——
+    time_closed, close_reason = is_slot_time_closed(slot_id, target_date)
+    if time_closed:
+        return None, close_reason
+
     template = SLOT_DEFINITIONS[slot_id].copy()
+    template.pop("cutoff_hour", None)   # don't expose internal field to clients
     template["date"] = target_date
     return template, None
 
@@ -63,7 +91,7 @@ def get_slot_counts(consultation_date: Optional[str] = None, doctor_id: Optional
     """
     Returns real database-driven counts for Morning and Evening consultation slots.
     """
-    target_date = consultation_date or date.today().isoformat()
+    target_date = consultation_date or today_iso_ist()
     slots_result = {}
 
     try:
@@ -118,27 +146,38 @@ def get_slot_counts(consultation_date: Optional[str] = None, doctor_id: Optional
             completed_count = db.queue.count_documents({**queue_query, "status": "completed"})
 
             slots_result[s_id] = {
-                **s_def,
+                **{k: v for k, v in s_def.items() if k != 'cutoff_hour'},
                 "date": target_date,
                 "total_booked": max(total_booked, waiting_count + arrived_count + completed_count),
                 "waiting": waiting_count,
                 "arrived": arrived_count,
                 "completed": completed_count,
                 "active_queue_count": waiting_count + arrived_count,
-                "available": max(0, s_def["max_capacity"] - max(total_booked, waiting_count + completed_count))
+                "available": max(0, s_def["max_capacity"] - max(total_booked, waiting_count + completed_count)),
+                "booked_count": max(total_booked, waiting_count + arrived_count + completed_count),
+                "remaining_capacity": max(0, s_def["max_capacity"] - max(total_booked, waiting_count + completed_count)),
+                "is_full": max(total_booked, waiting_count + completed_count) >= s_def["max_capacity"],
+                # Time-based availability: closed for same-day once cutoff passes
+                **dict(zip(["time_closed", "time_closed_reason"], is_slot_time_closed(s_id, target_date)))
             }
         return slots_result
     except Exception:
         # Fallback for in-memory or connection issues
         for s_id, s_def in SLOT_DEFINITIONS.items():
+            time_closed, time_closed_reason = is_slot_time_closed(s_id, target_date)
             slots_result[s_id] = {
-                **s_def,
+                **{k: v for k, v in s_def.items() if k != 'cutoff_hour'},
                 "date": target_date,
                 "total_booked": 0,
                 "waiting": 0,
                 "arrived": 0,
                 "completed": 0,
-                "available": s_def["max_capacity"]
+                "available": s_def["max_capacity"],
+                "booked_count": 0,
+                "remaining_capacity": s_def["max_capacity"],
+                "is_full": False,
+                "time_closed": time_closed,
+                "time_closed_reason": time_closed_reason
             }
         return slots_result
 
@@ -155,7 +194,7 @@ def get_admin_slot_analytics(consultation_date: Optional[str] = None) -> Dict:
     - remaining patients
     - live operational averages
     """
-    target_date = consultation_date or date.today().isoformat()
+    target_date = consultation_date or today_iso_ist()
     breakdown = {}
 
     try:

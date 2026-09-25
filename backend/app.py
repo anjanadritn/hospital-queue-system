@@ -153,6 +153,18 @@ def create_app() -> Flask:
         }), 200
 
     # ========================================================
+    # SERVER TIME ENDPOINT (IST / Asia:Kolkata)
+    # Frontend uses this to validate slot availability without
+    # trusting the browser clock for critical booking operations.
+    # ========================================================
+
+    @app.route("/time", methods=["GET"])
+    @app.route("/api/time", methods=["GET"])
+    def server_time():
+        from services.time_service import get_server_time_payload
+        return jsonify(get_server_time_payload()), 200
+
+    # ========================================================
     # ROOT ENDPOINT
     # ========================================================
 

@@ -364,6 +364,12 @@ export const hospitalApi = {
       mime_type: mimeType
     });
     return response.data;
+  },
+
+  // 14. Change Password (authenticated patient)
+  changePassword: async (payload) => {
+    const response = await apiClient.post('/auth/change-password', payload);
+    return response.data;
   }
 };
 

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional, List, Tuple, Set, Any
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from config import config
+from services.time_service import ist_isoformat
 
 logger = logging.getLogger(__name__)
 
@@ -514,7 +515,7 @@ def create_notification(
     suppress_sms: bool = False,
     extra_fields: Optional[dict] = None
 ) -> Tuple[Optional[dict], Optional[str]]:
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
     notif_id = generate_notification_id()
 
     # Attempt SMS dispatch if eligible, enabled, not suppressed, not duplicate, and recipient is patient
@@ -615,7 +616,7 @@ def get_patient_notifications(patient_id: str) -> dict:
     }
 
 def mark_notification_read(notification_id: str) -> Tuple[Optional[dict], Optional[str]]:
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
     try:
         db = get_db()
         db.notifications.update_one(
@@ -637,7 +638,7 @@ def mark_notification_read(notification_id: str) -> Tuple[Optional[dict], Option
     return None, f"Notification '{notification_id}' not found"
 
 def mark_all_notifications_read(patient_id: str) -> Tuple[dict, Optional[str]]:
-    now_str = datetime.now(timezone.utc).isoformat()
+    now_str = ist_isoformat()
     try:
         db = get_db()
         db.notifications.update_many(

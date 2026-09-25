@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from database.mongodb import get_db, serialize_doc, serialize_docs
+from services.time_service import ist_isoformat
 
 # Enriched Practo-grade Doctors metadata across 10 Departments
 DEFAULT_DOCTORS = [
@@ -327,7 +328,7 @@ def add_doctor_review(doctor_id: str, data: dict) -> Tuple[Optional[dict], Optio
         "author": author,
         "rating": max(1, min(5, rating)),
         "comment": comment,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": ist_isoformat(),
         "verified": True
     }
 

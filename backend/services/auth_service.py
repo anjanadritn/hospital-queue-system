@@ -7,6 +7,7 @@ from typing import Optional, Tuple, List
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.mongodb import get_db, serialize_doc, serialize_docs
 from config import config
+from services.time_service import ist_isoformat, now_utc
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ INITIAL_USERS = [
         "role": "admin",
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     },
     {
         "user_id": "U_DOC_D001",
@@ -42,7 +43,7 @@ INITIAL_USERS = [
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     },
     {
         "user_id": "U_DOC_D002",
@@ -54,7 +55,7 @@ INITIAL_USERS = [
         "role": "doctor",
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     },
     {
         "user_id": "U_PAT_P001",
@@ -66,7 +67,7 @@ INITIAL_USERS = [
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     },
     {
         "user_id": "U_PAT_P002",
@@ -78,7 +79,7 @@ INITIAL_USERS = [
         "role": "patient",
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     }
 ]
 
@@ -435,7 +436,7 @@ def register_patient(data: dict) -> Tuple[Optional[dict], Optional[str]]:
         "address": address,
         "phone_verified": True,
         "status": "VERIFIED",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": ist_isoformat()
     }
 
     try:

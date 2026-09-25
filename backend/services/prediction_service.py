@@ -1,6 +1,7 @@
 import os
 import logging
 from datetime import datetime
+from services.time_service import now_ist
 from typing import List, Optional, Tuple, Union, Any
 from ml.model import (
     predict_wait_time,
@@ -74,7 +75,7 @@ def _resolve_model_features(
       6. queue_length_ahead (int)
       7. patient_type (str: 'normal' or 'emergency')
     """
-    now = datetime.now()
+    now = now_ist()
 
     # 1. Department
     dept = str(department).strip() if department else "General Medicine"
