@@ -16,21 +16,23 @@ const resolveApiBaseUrl = () => {
       return (envUrl || 'http://localhost:5000').replace(/\/+$/, '');
     }
 
-    // In production (such as *.vercel.app or custom domain):
+    // In production (such as Render or custom domain):
     // Only use envUrl if it is a real non-localhost URL (e.g. https://api.myhospital.com)
     if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-      return envUrl.replace(/\/+$/, '');
+      const cleanUrl = envUrl.replace(/\/+$/, '');
+      return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
     }
 
-    // Default to relative /api for production so Vercel can proxy/route it
-    return '/api';
+    // Default to Render Flask production backend
+    return 'https://hospital-queue-system-oqz8.onrender.com/api';
   }
 
   // Non-browser / SSR fallback:
   if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-    return envUrl.replace(/\/+$/, '');
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
   }
-  return 'http://localhost:5000';
+  return 'https://hospital-queue-system-oqz8.onrender.com/api';
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -73,7 +75,7 @@ apiClient.interceptors.request.use((config) => {
       hostname.endsWith('.local');
 
     if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1'))) {
-      config.baseURL = '/api';
+      config.baseURL = 'https://hospital-queue-system-oqz8.onrender.com/api';
     }
   }
 
