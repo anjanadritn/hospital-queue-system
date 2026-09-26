@@ -27,6 +27,5 @@ build/
 
 # Sensitive ML files & IDE
 *.joblib
-*.pkl
 .vscode/
 .idea/
