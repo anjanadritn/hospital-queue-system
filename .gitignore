@@ -1,21 +1,45 @@
 # Environment files
 .env
 .env.local
+.env.*.local
 
 # Python Virtual Environments
 venv/
 .venv/
+**/venv/
+**/.venv/
+backend/venv/
 
 # Python Cache & Pytest
-__pycache__/
+**/__pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
+backend/.pytest_cache/
+.coverage
+htmlcov/
 
 # Node modules & Frontend builds
 node_modules/
+frontend/node_modules/
+**/node_modules/
 dist/
+frontend/dist/
+
+# Test Media & Fixtures
+test_fixtures_images/
+
+# Backups & Database dumps
+backend/backups/
+backups/
+
+# Scratch & development experiments
+scratch/
+backend/scratch/
 
 # Logs & IDE
 *.log
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db

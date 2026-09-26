@@ -1,0 +1,70 @@
+# ==============================================================================
+# Vercel Deployment Ignore Configuration (.vercelignore)
+# Excludes heavy development, test, cache, and local virtual environment assets
+# from being uploaded to the Vercel function bundle.
+# ==============================================================================
+
+# Python Virtual Environments (prevents 290+ MB local virtual environment upload)
+backend/venv/
+venv/
+.venv/
+env/
+ENV/
+*.venv
+
+# Node Modules & Development Dependencies (prevents 190+ MB frontend node_modules)
+frontend/node_modules/
+node_modules/
+**/node_modules/
+
+# Test Fixtures & Heavy Test Media (prevents 31+ MB uncompressed camera images)
+test_fixtures_images/
+
+# Database Backups & Dumps (prevents 4+ MB patient data backup JSONs)
+backend/backups/
+backups/
+*.dump
+*.sql
+
+# Scratch Scripts & E2E Verification Artifacts
+scratch/
+backend/scratch/
+
+# Automated Test Suites (Pytest fixtures not needed at runtime)
+backend/tests/
+tests/
+
+# ML Training Data & Offline Generation Scripts (saves model training artifacts)
+backend/ml/dataset.csv
+backend/ml/train_model.py
+backend/ml/generate_dataset.py
+backend/ml/models/wait_time_model.pkl
+
+# Python Cache & Coverage
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.pytest_cache/
+backend/.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs & Temporary Files
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Git & Repository metadata
+.git/
+.github/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+
+# Repository Documentation (saves bundle transfer size)
+API_REFERENCE.md
+IMPLEMENTATION_REPORT.md
+LOCAL_SETUP.md

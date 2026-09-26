@@ -1,0 +1,10 @@
+{
+  "name": "hospital-queue-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Hospital Queue Management and Intelligent Consultation Timing System",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev"
+  }
+}

@@ -3,7 +3,11 @@ import os
 import pickle
 from typing import List, Optional, Any, Union
 from datetime import datetime
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +80,7 @@ class RandomForestWaitTimePredictor:
         if clean_day not in DAYS_OF_WEEK:
             clean_day = datetime.now().strftime("%A")
 
-        if self.model is not None:
+        if self.model is not None and pd is not None:
             try:
                 features_df = pd.DataFrame([
                     {

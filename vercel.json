@@ -1,7 +1,14 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 15,
+      "excludeFiles": "{test_fixtures_images/**,backend/venv/**,backend/backups/**,backend/scratch/**,backend/tests/**,backend/ml/dataset.csv,backend/ml/train_model.py,backend/ml/generate_dataset.py,backend/ml/models/**,scratch/**,frontend/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
