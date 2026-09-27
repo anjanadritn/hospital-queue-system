@@ -48,9 +48,12 @@ def request_verify_otp():
 
     return jsonify({"verified": True, "message": "Phone number verified successfully"}), 200
 
-@auth_bp.route("/auth/register", methods=["POST"])
-@limiter.limit("5 per minute")
+@auth_bp.route("/auth/register", methods=["POST", "OPTIONS"])
+@auth_bp.route("/register", methods=["POST", "OPTIONS"])
+@limiter.limit("5 per minute", exempt_when=lambda: request.method == "OPTIONS")
 def request_register():
+    if request.method == "OPTIONS":
+        return "", 200
     data = request.get_json(silent=True) or {}
     res, error = register_patient(data)
     if error:
@@ -58,9 +61,12 @@ def request_register():
         return jsonify({"error": error}), status_code
     return jsonify(res), 201
 
-@auth_bp.route("/auth/login", methods=["POST"])
-@limiter.limit("60 per minute")
+@auth_bp.route("/auth/login", methods=["POST", "OPTIONS"])
+@auth_bp.route("/login", methods=["POST", "OPTIONS"])
+@limiter.limit("60 per minute", exempt_when=lambda: request.method == "OPTIONS")
 def request_login():
+    if request.method == "OPTIONS":
+        return "", 200
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
     password = data.get("password", "")
@@ -75,9 +81,11 @@ def request_login():
         return jsonify({"error": error}), status_code
     return jsonify(res), 200
 
-@auth_bp.route("/auth/login-otp", methods=["POST"])
-@limiter.limit("60 per minute")
+@auth_bp.route("/auth/login-otp", methods=["POST", "OPTIONS"])
+@limiter.limit("60 per minute", exempt_when=lambda: request.method == "OPTIONS")
 def request_login_otp():
+    if request.method == "OPTIONS":
+        return "", 200
     data = request.get_json(silent=True) or {}
     phone = data.get("phone", "")
     otp = data.get("otp", "")
@@ -92,7 +100,7 @@ def request_login_otp():
         return jsonify({"error": error}), status_code
     return jsonify(res), 200
 
-@auth_bp.route("/auth/me", methods=["GET"])
+@auth_bp.route("/auth/me", methods=["GET", "OPTIONS"])
 def get_current_user_profile():
     auth_header = request.headers.get("Authorization", "")
     if not auth_header:

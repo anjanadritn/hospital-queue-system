@@ -5,14 +5,18 @@ from services.doctor_service import (
 
 doctor_bp = Blueprint("doctors", __name__)
 
-@doctor_bp.route("/doctors", methods=["GET"])
+@doctor_bp.route("/doctors", methods=["GET", "OPTIONS"])
 def list_doctors():
+    if request.method == "OPTIONS":
+        return "", 200
     department = request.args.get("department", "").strip()
     doctors = get_all_doctors(department_filter=department if department else None)
     return jsonify(doctors), 200
 
-@doctor_bp.route("/doctors/<doctor_id>", methods=["GET"])
+@doctor_bp.route("/doctors/<doctor_id>", methods=["GET", "OPTIONS"])
 def get_doctor(doctor_id: str):
+    if request.method == "OPTIONS":
+        return "", 200
     doctor = get_doctor_by_id(doctor_id)
     if not doctor:
         return jsonify({"success": False, "error": "Doctor not found"}), 404
