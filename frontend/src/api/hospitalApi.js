@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 const resolveApiBaseUrl = () => {
-  const envUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim();
+  const envUrl = (
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+    (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
+    ''
+  ).trim();
 
   // In browser environments:
   if (typeof window !== 'undefined' && window.location) {
@@ -16,23 +21,21 @@ const resolveApiBaseUrl = () => {
       return (envUrl || 'http://localhost:5000').replace(/\/+$/, '');
     }
 
-    // In production (such as Render or custom domain):
-    // Only use envUrl if it is a real non-localhost URL (e.g. https://api.myhospital.com)
+    // In production (such as Render https://hqms-frontend.onrender.com or custom domain):
+    // Use envUrl if it is a real non-localhost URL (e.g. https://hospital-queue-system-oqz8.onrender.com)
     if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-      const cleanUrl = envUrl.replace(/\/+$/, '');
-      return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+      return envUrl.replace(/\/+$/, '');
     }
 
-    // Default to Render Flask production backend
-    return 'https://hospital-queue-system-oqz8.onrender.com/api';
+    // Default fallback to Render Flask production backend
+    return 'https://hospital-queue-system-oqz8.onrender.com';
   }
 
   // Non-browser / SSR fallback:
   if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-    const cleanUrl = envUrl.replace(/\/+$/, '');
-    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+    return envUrl.replace(/\/+$/, '');
   }
-  return 'https://hospital-queue-system-oqz8.onrender.com/api';
+  return 'https://hospital-queue-system-oqz8.onrender.com';
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -75,7 +78,15 @@ apiClient.interceptors.request.use((config) => {
       hostname.endsWith('.local');
 
     if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1'))) {
-      config.baseURL = 'https://hospital-queue-system-oqz8.onrender.com/api';
+      const envUrl = (
+        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
+        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+        (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
+        ''
+      ).trim();
+      config.baseURL = (envUrl && !envUrl.includes('localhost'))
+        ? envUrl.replace(/\/+$/, '')
+        : 'https://hospital-queue-system-oqz8.onrender.com';
     }
   }
 
@@ -433,18 +444,95 @@ export const hospitalApi = {
     const response = await apiClient.get(`/location/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
     return response.data;
   },
-  uploadProfilePicture: async (imageDataUri, mimeType) => {
-    const response = await apiClient.put('/patients/me/picture', {
-      image_base64: imageDataUri,
-      mime_type: mimeType
-    });
+
+  // 14. Medicines & Prescriptions
+  searchMedicines: async (query) => {
+    const response = await apiClient.get(`/medicines/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 
-  // 14. Change Password (authenticated patient)
-  changePassword: async (payload) => {
-    const response = await apiClient.post('/auth/change-password', payload);
+  // 15. Pharmacy Orders
+  getPharmacyOrders: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.patient_id) params.append('patient_id', filters.patient_id);
+    if (filters.doctor_id) params.append('doctor_id', filters.doctor_id);
+    if (filters.consultation_id) params.append('consultation_id', filters.consultation_id);
+    const qs = params.toString();
+    const response = await apiClient.get(`/pharmacy/orders${qs ? `?${qs}` : ''}`);
+    return response.data?.orders || response.data || [];
+  },
+  getPharmacyOrder: async (orderId) => {
+    const response = await apiClient.get(`/pharmacy/orders/${orderId}`);
+    return response.data?.order || response.data;
+  },
+  createPharmacyOrder: async (payload) => {
+    const response = await apiClient.post('/pharmacy/orders', payload);
+    return response.data?.order || response.data;
+  },
+  updatePharmacyOrderStatus: async (orderId, status, notes = '', updatedBy = 'pharmacist') => {
+    const response = await apiClient.patch(`/pharmacy/orders/${orderId}/status`, {
+      status,
+      notes,
+      updated_by: updatedBy,
+    });
+    return response.data?.order || response.data;
+  },
+
+  // 16. Laboratory Orders
+  getLabOrders: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.patient_id) params.append('patient_id', filters.patient_id);
+    if (filters.doctor_id) params.append('doctor_id', filters.doctor_id);
+    if (filters.consultation_id) params.append('consultation_id', filters.consultation_id);
+    const qs = params.toString();
+    const response = await apiClient.get(`/lab/orders${qs ? `?${qs}` : ''}`);
+    return response.data?.orders || response.data || [];
+  },
+  getLabOrder: async (orderId) => {
+    const response = await apiClient.get(`/lab/orders/${orderId}`);
+    return response.data?.order || response.data;
+  },
+  createLabOrder: async (payload) => {
+    const response = await apiClient.post('/lab/orders', payload);
+    return response.data?.order || response.data;
+  },
+  updateLabOrderStatus: async (orderId, status, notes = '', reportData = null, updatedBy = 'lab_technician') => {
+    const payload = { status, notes, updated_by: updatedBy };
+    if (reportData) payload.report_data = reportData;
+    const response = await apiClient.patch(`/lab/orders/${orderId}/status`, payload);
+    return response.data?.order || response.data;
+  },
+
+  // 17. Change Password (authenticated patient)
+  changePassword: async (currentPasswordOrPayload, newPassword, confirmPassword) => {
+    let payload;
+    if (typeof currentPasswordOrPayload === 'object' && currentPasswordOrPayload !== null) {
+      const cur = currentPasswordOrPayload.current_password || currentPasswordOrPayload.currentPassword;
+      const np = currentPasswordOrPayload.new_password || currentPasswordOrPayload.newPassword;
+      const cp = currentPasswordOrPayload.confirm_password || currentPasswordOrPayload.confirmPassword || np;
+      payload = {
+        current_password: cur,
+        new_password: np,
+        confirm_password: cp,
+      };
+    } else {
+      payload = {
+        current_password: currentPasswordOrPayload,
+        new_password: newPassword,
+        confirm_password: confirmPassword || newPassword,
+      };
+    }
+    const response = await apiClient.post('/patients/me/change-password', payload);
     return response.data;
-  }
+  },
+
+  // 18. Server Time (IST)
+  getServerTime: async () => {
+    const response = await apiClient.get('/time');
+    return response.data;
+  },
 };
+
 

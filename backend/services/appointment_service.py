@@ -695,6 +695,7 @@ def cancel_appointment(
         pass
 
     try:
+        booking_patient_id = apt.get("patient_id") or apt.get("booked_by")
         patient_notif_target = booking_patient_id or authenticated_patient_id
         create_notification(
             patient_id=patient_notif_target,

@@ -103,7 +103,7 @@ def change_my_password():
     data = request.get_json(silent=True) or {}
     current_password = data.get("current_password", "").strip()
     new_password = data.get("new_password", "").strip()
-    confirm_password = data.get("confirm_password", "").strip()
+    confirm_password = data.get("confirm_password", "").strip() or new_password
 
     if not current_password:
         return jsonify({"success": False, "error": "Current password is required."}), 400

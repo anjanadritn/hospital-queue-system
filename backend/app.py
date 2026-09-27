@@ -89,8 +89,11 @@ def create_app() -> Flask:
         for origin in cors_origins_str.split(",")
         if origin.strip()
     ]
-    # Allow all Vercel deployment and preview URLs
+    # Allow all Render and Vercel deployment and preview URLs
     import re
+    if "https://hqms-frontend.onrender.com" not in allowed_origins:
+        allowed_origins.append("https://hqms-frontend.onrender.com")
+    allowed_origins.append(re.compile(r"^https://.*\.onrender\.com$"))
     allowed_origins.append(re.compile(r"^https://.*\.vercel\.app$"))
 
     logger.info("Allowed CORS origins: %s", allowed_origins)

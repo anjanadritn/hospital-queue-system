@@ -163,3 +163,10 @@ def request_reset_password():
         return jsonify({"error": error}), 400
 
     return jsonify({"success": True, "message": "Password reset successfully. Please login."}), 200
+    
+
+@auth_bp.route("/auth/change-password", methods=["POST"])
+def request_change_password():
+    from routes.patient_routes import change_my_password
+    return change_my_password()
+

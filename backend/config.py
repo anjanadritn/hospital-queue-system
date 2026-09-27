@@ -63,10 +63,10 @@ class Config:
     PORT = int(os.getenv("PORT", 5000))
     DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
     
-    # CORS Origins (Allowing development ports 3003, 3002, 3001, 3000, 5173)
+    # CORS Origins (Allowing development ports 3003, 3002, 3001, 3000, 5173, and Render production frontend)
     CORS_ORIGINS = os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:3003,http://localhost:3002,http://localhost:3001,http://localhost:3000,http://localhost:5173,http://127.0.0.1:3003,http://127.0.0.1:3002,http://127.0.0.1:3001,http://127.0.0.1:3000,http://127.0.0.1:5173"
+        "http://localhost:3003,http://localhost:3002,http://localhost:3001,http://localhost:3000,http://localhost:5173,http://127.0.0.1:3003,http://127.0.0.1:3002,http://127.0.0.1:3001,http://127.0.0.1:3000,http://127.0.0.1:5173,https://hqms-frontend.onrender.com"
     )
 
     # OTP Provider Mode (development / twilio / sms)

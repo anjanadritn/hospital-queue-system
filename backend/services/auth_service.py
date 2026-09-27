@@ -585,7 +585,7 @@ def change_authenticated_password(user_identifier: str, current_password: str, n
 
     stored_hash = user.get("password_hash", "")
     if not stored_hash or not check_password_hash(stored_hash, current_password):
-        return False, "Incorrect current password."
+        return False, "Current password is incorrect."
 
     new_hash = generate_password_hash(new_password)
     try:
