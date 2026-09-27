@@ -1,12 +1,28 @@
 import axios from 'axios';
 
+const sanitizeApiUrl = (rawUrl) => {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim().replace(/\/+$/, '');
+  // Auto-correct truncated/broken Render backend hostname if injected via Render Dashboard env vars
+  if (url.includes('ue-system-oqz8.onrender.com')) {
+    url = url.replace('ue-system-oqz8.onrender.com', 'hospital-queue-system-oqz8.onrender.com');
+  }
+  // Strip trailing /api if provided so endpoints cleanly append relative paths
+  if (url.endsWith('/api')) {
+    url = url.slice(0, -4);
+  }
+  return url;
+};
+
 const resolveApiBaseUrl = () => {
-  const envUrl = (
+  const rawEnv = (
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
     (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
     ''
   ).trim();
+
+  const envUrl = sanitizeApiUrl(rawEnv);
 
   // In browser environments:
   if (typeof window !== 'undefined' && window.location) {
@@ -18,13 +34,13 @@ const resolveApiBaseUrl = () => {
       hostname.endsWith('.local');
 
     if (isLocalhost) {
-      return (envUrl || 'http://localhost:5000').replace(/\/+$/, '');
+      return envUrl || 'http://localhost:5000';
     }
 
     // In production (such as Render https://hqms-frontend.onrender.com or custom domain):
     // Use envUrl if it is a real non-localhost URL (e.g. https://hospital-queue-system-oqz8.onrender.com)
     if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-      return envUrl.replace(/\/+$/, '');
+      return envUrl;
     }
 
     // Default fallback to Render Flask production backend
@@ -33,7 +49,7 @@ const resolveApiBaseUrl = () => {
 
   // Non-browser / SSR fallback:
   if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-    return envUrl.replace(/\/+$/, '');
+    return envUrl;
   }
   return 'https://hospital-queue-system-oqz8.onrender.com';
 };
@@ -67,7 +83,7 @@ const safeClearTokens = () => {
   } catch (e) {}
 };
 
-// Add JWT Token Interceptor using access_token key & ensure production never hits localhost
+// Add JWT Token Interceptor using access_token key & ensure production never hits localhost or broken hostnames
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined' && window.location) {
     const hostname = window.location.hostname || '';
@@ -77,15 +93,16 @@ apiClient.interceptors.request.use((config) => {
       hostname === '0.0.0.0' ||
       hostname.endsWith('.local');
 
-    if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1'))) {
-      const envUrl = (
+    if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1') || config.baseURL.includes('ue-system-oqz8.onrender.com'))) {
+      const rawEnv = (
         (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
         (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
         (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
         ''
       ).trim();
+      const envUrl = sanitizeApiUrl(rawEnv);
       config.baseURL = (envUrl && !envUrl.includes('localhost'))
-        ? envUrl.replace(/\/+$/, '')
+        ? envUrl
         : 'https://hospital-queue-system-oqz8.onrender.com';
     }
   }

@@ -1,12 +1,26 @@
 import axios from 'axios';
 
+const sanitizeApiUrl = (rawUrl) => {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim().replace(/\/+$/, '');
+  if (url.includes('ue-system-oqz8.onrender.com')) {
+    url = url.replace('ue-system-oqz8.onrender.com', 'hospital-queue-system-oqz8.onrender.com');
+  }
+  if (url.endsWith('/api')) {
+    url = url.slice(0, -4);
+  }
+  return url;
+};
+
 const resolveApiBaseUrl = () => {
-  const envUrl = (
+  const rawEnv = (
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
     (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
     ''
   ).trim();
+
+  const envUrl = sanitizeApiUrl(rawEnv);
 
   if (typeof window !== 'undefined' && window.location) {
     const hostname = window.location.hostname || '';
@@ -52,13 +66,14 @@ api.interceptors.request.use(
         hostname === '0.0.0.0' ||
         hostname.endsWith('.local');
 
-      if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1'))) {
-        const envUrl = (
+      if (!isLocalhost && config.baseURL && (config.baseURL.includes('localhost') || config.baseURL.includes('127.0.0.1') || config.baseURL.includes('ue-system-oqz8.onrender.com'))) {
+        const rawEnv = (
           (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
           (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
           (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
           ''
         ).trim();
+        const envUrl = sanitizeApiUrl(rawEnv);
         config.baseURL = (envUrl && !envUrl.includes('localhost'))
           ? envUrl.replace(/\/+$/, '')
           : 'https://hospital-queue-system-oqz8.onrender.com';
