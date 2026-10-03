@@ -116,6 +116,14 @@ def test_admin_authorized_access(client):
     assert admin_res.get_json()["status"] == "OPERATIONAL"
 
 def test_forgot_password_flow(client):
+    from database.mongodb import get_db
+    try:
+        get_db().auth_otps.delete_many({"phone": "9876543211"})
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_AUTH_OTPS
+    IN_MEMORY_AUTH_OTPS.pop("9876543211_PASSWORD_RESET", None)
+
     fp_res = client.post("/auth/forgot-password", json={"phone": "9876543211"})
     assert fp_res.status_code == 200
     otp = fp_res.get_json()["development_otp"]
