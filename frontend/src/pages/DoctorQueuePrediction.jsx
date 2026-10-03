@@ -34,13 +34,15 @@ export default function DoctorQueuePrediction() {
     ? rawUserDoc.replace('U_DOC_', '')
     : (user?.doctor_id || 'D001');
   const [selectedDoctorId, setSelectedDoctorId] = useState(initialDoctorId);
+  const [doctors, setDoctors] = useState([]);
+  const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
   // Active doctor details
-  const activeDoctor = doctors.find((d) => d.doctor_id === selectedDoctorId);
+  const activeDoctor = (doctors || []).find((d) => d.doctor_id === selectedDoctorId);
   const doctorName = selectedDoctorId === 'all'
     ? 'All Assigned Physicians'
     : (activeDoctor?.name || user?.name || 'Dr. Ananya Sharma');
