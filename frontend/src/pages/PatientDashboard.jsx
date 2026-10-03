@@ -25,7 +25,8 @@ import {
   Save,
   Check,
   Camera,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
 import { useAuth } from '../context/AuthContext';
