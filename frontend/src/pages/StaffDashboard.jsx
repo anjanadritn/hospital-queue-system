@@ -78,11 +78,29 @@ export default function StaffDashboard() {
   const handleMedicineChange = (index, field, value, extraData = null) => {
     setPrescriptions((prev) => {
       const updated = [...prev];
+      const current = updated[index] || {};
       updated[index] = {
-        ...updated[index],
+        ...current,
         [field]: value,
         ...(extraData?.rxcui ? { rxcui: extraData.rxcui } : {})
       };
+
+      // Auto-fill smart defaults from selected medicine if fields are currently empty
+      if (field === 'medicine' && extraData) {
+        if (!current.dosage && extraData.default_dosage) {
+          updated[index].dosage = extraData.default_dosage;
+        }
+        if (!current.frequency && extraData.default_frequency) {
+          updated[index].frequency = extraData.default_frequency;
+        }
+        if (!current.duration && extraData.default_duration) {
+          updated[index].duration = extraData.default_duration;
+        }
+        if (!current.instructions && extraData.default_instructions) {
+          updated[index].instructions = extraData.default_instructions;
+        }
+      }
+
       return updated;
     });
   };

@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Loader2, Pill, AlertCircle, Check, X } from 'lucide-react';
+import { Search, Loader2, Pill, AlertCircle, Check, X, Sparkles } from 'lucide-react';
 import { hospitalApi } from '../api/hospitalApi';
+import { searchLocalMedicines } from '../constants/medicinesCatalog';
 
 /**
  * MedicineSearchInput
- * Integrates official NLM RxNorm Prescribe API autocomplete with debounce,
- * loading state, empty state, API error fallback, and manual input support.
+ * High-speed autocomplete for prescribing medicines:
+ * - 0ms instant local lookup for 1 to 3+ characters (e.g. 'p', 'pa', 'par', 'dolo', 'amox')
+ * - Full hospital formulary with standard Indian & international brand names
+ * - Background integration with backend RxNorm catalog for exhaustive coverage
+ * - Auto-populates dosage, frequency, duration, and instructions on selection
  */
 export default function MedicineSearchInput({
   value = '',
   onChange,
-  placeholder = 'Medicine Name (e.g. Paracetamol)',
+  placeholder = 'Medicine Name (e.g. Paracetamol, Dolo, Amoxicillin)',
   className = ''
 }) {
   const [query, setQuery] = useState(value || '');
@@ -41,7 +45,7 @@ export default function MedicineSearchInput({
     };
   }, []);
 
-  // Debounced search effect
+  // Multi-tier search effect (Instant local matching + debounced backend fetch)
   useEffect(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -49,8 +53,8 @@ export default function MedicineSearchInput({
 
     const trimmed = (query || '').trim();
 
-    // Only search when at least 2 characters are typed
-    if (trimmed.length < 2) {
+    // Show suggestions starting from 1 letter!
+    if (trimmed.length < 1) {
       setSuggestions([]);
       setIsLoading(false);
       setApiError(null);
@@ -58,30 +62,53 @@ export default function MedicineSearchInput({
       return;
     }
 
-    // Do not trigger search if the current query equals the already selected value
-    if (trimmed.toLowerCase() === (value || '').trim().toLowerCase() && suggestions.length === 0) {
+    // Do not trigger search if the current query equals the already selected value and suggestions are closed
+    if (trimmed.toLowerCase() === (value || '').trim().toLowerCase() && !isOpen) {
       return;
     }
 
-    setIsLoading(true);
-    setApiError(null);
+    // 1. INSTANT LOCAL LOOKUP (0ms latency, works even on 1-3 letters)
+    const localMatches = searchLocalMedicines(trimmed, 25);
+    setSuggestions(localMatches);
+    setHasSearched(true);
     setIsOpen(true);
 
-    debounceTimerRef.current = setTimeout(async () => {
-      try {
-        const results = await hospitalApi.searchMedicines(trimmed);
-        const list = Array.isArray(results) ? results : (results?.results || results?.suggestions || []);
-        setSuggestions(list);
-        setHasSearched(true);
-      } catch (err) {
-        console.warn('[MedicineSearch] RxNorm API query failed:', err);
-        setApiError('Unable to connect to RxNorm medicine catalog. You can still type the medicine name manually.');
-        setSuggestions([]);
-        setHasSearched(true);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300); // 300ms debounce
+    // 2. BACKGROUND DEBOUNCED BACKEND SEARCH (For queries >= 2 chars)
+    if (trimmed.length >= 2) {
+      setIsLoading(true);
+      setApiError(null);
+
+      debounceTimerRef.current = setTimeout(async () => {
+        try {
+          const results = await hospitalApi.searchMedicines(trimmed);
+          const backendList = Array.isArray(results) ? results : (results?.results || results?.suggestions || []);
+
+          if (backendList.length > 0) {
+            // Merge local and backend suggestions, avoiding duplicate names
+            setSuggestions(prevLocal => {
+              const seenNames = new Set(
+                prevLocal.map(m => (m.prescribable_name || m.name || '').toLowerCase().trim())
+              );
+              const uniqueBackend = backendList.filter(m => {
+                const bName = (m.prescribable_name || m.name || '').toLowerCase().trim();
+                return bName && !seenNames.has(bName);
+              });
+              return [...prevLocal, ...uniqueBackend].slice(0, 35);
+            });
+          }
+        } catch (err) {
+          console.warn('[MedicineSearch] Backend query failed (local catalog active):', err);
+          // If local matches exist, do NOT show error banner to disrupt user
+          if (localMatches.length === 0) {
+            setApiError('External medicine catalog is temporarily unreachable. You can still type the medicine name manually.');
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }, 250);
+    } else {
+      setIsLoading(false);
+    }
 
     return () => {
       if (debounceTimerRef.current) {
@@ -96,7 +123,7 @@ export default function MedicineSearchInput({
     if (onChange) {
       onChange(val, null);
     }
-    if (val.trim().length >= 2) {
+    if (val.trim().length >= 1) {
       setIsOpen(true);
     }
   };
@@ -105,7 +132,6 @@ export default function MedicineSearchInput({
     const chosenName = item.prescribable_name || item.name || item.synonym;
     setQuery(chosenName);
     setIsOpen(false);
-    setSuggestions([]);
     if (onChange) {
       onChange(chosenName, item);
     }
@@ -145,7 +171,10 @@ export default function MedicineSearchInput({
           value={query}
           onChange={handleInputChange}
           onFocus={() => {
-            if ((query || '').trim().length >= 2) {
+            const trimmed = (query || '').trim();
+            if (trimmed.length >= 1) {
+              const localMatches = searchLocalMedicines(trimmed, 25);
+              setSuggestions(localMatches);
               setIsOpen(true);
             }
           }}
@@ -172,38 +201,30 @@ export default function MedicineSearchInput({
       </div>
 
       {/* Autocomplete Dropdown Popup */}
-      {isOpen && query.trim().length >= 2 && (
-        <div className="absolute left-0 top-full mt-1 w-full sm:min-w-[340px] max-w-md bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-50 overflow-hidden divide-y divide-white/10">
+      {isOpen && query.trim().length >= 1 && (
+        <div className="absolute left-0 top-full mt-1 w-full sm:min-w-[360px] max-w-lg bg-slate-900/98 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-50 overflow-hidden divide-y divide-white/10">
           
           {/* Header Info */}
-          <div className="px-3 py-1.5 bg-slate-800/80 flex items-center justify-between text-[10px] text-slate-300">
+          <div className="px-3 py-1.5 bg-slate-800/90 flex items-center justify-between text-[10px] text-slate-300">
             <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-sky-300">
-              <Pill className="w-3 h-3 text-sky-400" />
-              NLM RxNorm Catalog
+              <Pill className="w-3.5 h-3.5 text-sky-400" />
+              Hospital Formulary & Medicine Catalog
             </span>
-            <span>
-              {isLoading
+            <span className="text-[10px] text-slate-400 font-mono">
+              {isLoading && suggestions.length === 0
                 ? 'Searching...'
-                : `${suggestions.length} suggestion${suggestions.length === 1 ? '' : 's'}`}
+                : `${suggestions.length} match${suggestions.length === 1 ? '' : 'es'}`}
             </span>
           </div>
 
           {/* Body Content */}
-          <div className="max-h-60 overflow-y-auto">
-            {/* 1. Loading State */}
-            {isLoading && (
-              <div className="p-4 flex items-center justify-center gap-2 text-xs text-slate-300">
-                <Loader2 className="w-4 h-4 text-sky-400 animate-spin" />
-                <span>Searching prescribable medicines...</span>
-              </div>
-            )}
-
-            {/* 2. API Error Fallback */}
-            {!isLoading && apiError && (
+          <div className="max-h-64 overflow-y-auto">
+            {/* 1. API Error Fallback (only when 0 suggestions) */}
+            {!isLoading && apiError && suggestions.length === 0 && (
               <div className="p-3 bg-amber-500/10 border-l-2 border-amber-400 text-amber-200 text-xs space-y-1">
                 <div className="flex items-center gap-1.5 font-semibold">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>RxNorm Service Notice</span>
+                  <span>Notice</span>
                 </div>
                 <p className="text-[11px] text-amber-300/90 leading-tight">
                   {apiError}
@@ -211,27 +232,27 @@ export default function MedicineSearchInput({
               </div>
             )}
 
-            {/* 3. Empty State */}
-            {!isLoading && !apiError && hasSearched && suggestions.length === 0 && (
+            {/* 2. Empty State */}
+            {!isLoading && hasSearched && suggestions.length === 0 && !apiError && (
               <div className="p-4 text-center space-y-1">
                 <p className="text-xs font-semibold text-slate-300">
-                  No matching prescribable medicines found
+                  No predefined medicine found for "{query}"
                 </p>
                 <p className="text-[11px] text-slate-400">
-                  You can keep "{query}" and prescribe it manually.
+                  You can keep typing to prescribe custom medicine "{query}".
                 </p>
               </div>
             )}
 
-            {/* 4. Suggestions List */}
-            {!isLoading && suggestions.length > 0 && (
+            {/* 3. Suggestions List */}
+            {suggestions.length > 0 && (
               <ul className="divide-y divide-white/5">
                 {suggestions.map((item, idx) => {
                   const displayName = item.prescribable_name || item.name;
                   const isMatch = (value || '').toLowerCase() === displayName.toLowerCase();
 
                   return (
-                    <li key={`${item.rxcui}-${idx}`}>
+                    <li key={`${item.rxcui || item.name}-${idx}`}>
                       <button
                         type="button"
                         onClick={() => handleSelectMedicine(item)}
@@ -240,7 +261,7 @@ export default function MedicineSearchInput({
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <span className="text-xs font-semibold text-white group-hover:text-sky-200 transition leading-snug">
+                          <span className="text-xs font-bold text-white group-hover:text-sky-200 transition leading-snug">
                             {displayName}
                           </span>
                           {isMatch && (
@@ -248,30 +269,43 @@ export default function MedicineSearchInput({
                           )}
                         </div>
 
-                        {/* Synonym if available and different */}
-                        {item.synonym && item.synonym !== displayName && (
-                          <span className="text-[10px] text-slate-400 italic line-clamp-1">
-                            Syn: {item.synonym}
-                          </span>
-                        )}
-
-                        {/* Badges: RxCUI & Term Type */}
-                        <div className="flex items-center gap-2 pt-0.5">
-                          {item.term_type && (
-                            <span
-                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase ${getTtyBadgeColor(
-                                item.term_type
-                              )}`}
-                            >
-                              {item.term_type}
-                            </span>
+                        {/* Brand names & Category */}
+                        <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                          {item.brand_names && item.brand_names.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-slate-400">Brands:</span>
+                              {item.brand_names.map((b, bIdx) => (
+                                <span
+                                  key={bIdx}
+                                  className="px-1.5 py-0.2 rounded bg-sky-400/10 text-sky-300 font-semibold border border-sky-400/20"
+                                >
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
                           )}
-                          {item.rxcui && (
-                            <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
-                              RxCUI: {item.rxcui}
+
+                          {item.category && (
+                            <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 font-medium border border-emerald-500/20 ml-auto">
+                              {item.category}
                             </span>
                           )}
                         </div>
+
+                        {/* Synonym or Default dosage preview */}
+                        {(item.default_dosage || item.default_frequency || item.synonym) && (
+                          <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                            {item.default_dosage && (
+                              <span>Dosage: <strong className="text-slate-300">{item.default_dosage}</strong></span>
+                            )}
+                            {item.default_frequency && (
+                              <span>• Freq: <strong className="text-slate-300">{item.default_frequency}</strong></span>
+                            )}
+                            {item.default_instructions && (
+                              <span>• <em className="text-slate-400">{item.default_instructions}</em></span>
+                            )}
+                          </div>
+                        )}
                       </button>
                     </li>
                   );
@@ -280,10 +314,10 @@ export default function MedicineSearchInput({
             )}
           </div>
 
-          {/* Footer Attribution Micro-Strip */}
-          <div className="px-3 py-1 bg-slate-950/70 text-[9px] text-slate-500 flex items-center justify-between">
-            <span>U.S. National Library of Medicine</span>
-            <span>RxNorm Prescribe</span>
+          {/* Footer Guidance Micro-Strip */}
+          <div className="px-3 py-1 bg-slate-950/80 text-[9px] text-slate-400 flex items-center justify-between">
+            <span>Tip: Click any medicine to auto-fill dosage & frequency</span>
+            <span className="font-mono text-sky-400">Type 1+ letters to filter</span>
           </div>
 
         </div>
