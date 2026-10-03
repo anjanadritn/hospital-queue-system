@@ -9,6 +9,14 @@ def client():
         yield client
 
 def test_patient_otp_send_and_verify(client):
+    from database.mongodb import get_db
+    try:
+        get_db().auth_otps.delete_many({"phone": "9888877777"})
+    except Exception:
+        pass
+    from services.auth_service import IN_MEMORY_AUTH_OTPS
+    IN_MEMORY_AUTH_OTPS.pop("9888877777_ACCOUNT_VERIFICATION", None)
+
     # 1. Send OTP
     send_res = client.post("/auth/send-otp", json={"phone": "9888877777", "purpose": "ACCOUNT_VERIFICATION"})
     assert send_res.status_code == 200
@@ -565,4 +573,36 @@ def test_mongodb_failure_returns_server_error(monkeypatch, client):
     })
     assert res.status_code == 503
     assert "Database service is temporarily unavailable" in res.get_json()["error"]
+
+
+def test_options_preflight_login_cors(client):
+    headers = {
+        "Origin": "https://hospital-queue-system-1-yd7t.onrender.com",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "Content-Type, Authorization, X-Requested-With, Accept"
+    }
+    res = client.open("/auth/login", method="OPTIONS", headers=headers)
+    assert res.status_code == 200
+    assert res.headers.get("Access-Control-Allow-Origin") == "https://hospital-queue-system-1-yd7t.onrender.com"
+    methods = res.headers.get("Access-Control-Allow-Methods", "")
+    for m in ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]:
+        assert m in methods
+    req_headers = res.headers.get("Access-Control-Allow-Headers", "")
+    for h in ["Content-Type", "Authorization", "X-Requested-With", "Accept"]:
+        assert h in req_headers
+    assert res.headers.get("Access-Control-Allow-Credentials") == "true"
+
+
+def test_options_preflight_other_origins(client):
+    for origin in ["https://hqms-frontend.onrender.com", "http://localhost:5173", "http://localhost:3000"]:
+        headers = {
+            "Origin": origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "Content-Type, Authorization"
+        }
+        res = client.open("/auth/login", method="OPTIONS", headers=headers)
+        assert res.status_code == 200
+        assert res.headers.get("Access-Control-Allow-Origin") == origin
+        assert res.headers.get("Access-Control-Allow-Credentials") == "true"
+
 

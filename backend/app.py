@@ -88,7 +88,7 @@ class ApiPrefixAndCorsMiddleware:
 
         # Globally handle CORS preflight OPTIONS requests
         if method == "OPTIONS":
-            allow_origin = origin if (origin and self.is_allowed(origin)) else "https://hqms-frontend.onrender.com"
+            allow_origin = origin if (origin and self.is_allowed(origin)) else "https://hospital-queue-system-1-yd7t.onrender.com"
             headers = [
                 ("Access-Control-Allow-Origin", allow_origin),
                 ("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS"),
@@ -109,6 +109,10 @@ class ApiPrefixAndCorsMiddleware:
                     response_headers.append(("Access-Control-Allow-Origin", origin))
                 if "access-control-allow-credentials" not in header_names:
                     response_headers.append(("Access-Control-Allow-Credentials", "true"))
+                if "access-control-allow-methods" not in header_names:
+                    response_headers.append(("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS"))
+                if "access-control-allow-headers" not in header_names:
+                    response_headers.append(("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept"))
                 if "vary" not in header_names:
                     response_headers.append(("Vary", "Origin"))
             return start_response(status, response_headers, exc_info)
@@ -132,7 +136,7 @@ def create_app() -> Flask:
     # ========================================================
     # CORS CONFIGURATION
     # Supported development origins: 3003, 3002, 3001, 3000, 5173
-    # Production: https://hqms-frontend.onrender.com, *.onrender.com, *.vercel.app
+    # Production: https://hospital-queue-system-1-yd7t.onrender.com, https://hqms-frontend.onrender.com, *.onrender.com, *.vercel.app
     # ========================================================
 
     cors_origins_str = getattr(config, "CORS_ORIGINS", "")
@@ -141,8 +145,16 @@ def create_app() -> Flask:
         for origin in cors_origins_str.split(",")
         if origin.strip()
     ]
-    if "https://hqms-frontend.onrender.com" not in allowed_origins:
-        allowed_origins.append("https://hqms-frontend.onrender.com")
+    explicit_origins = [
+        "https://hospital-queue-system-1-yd7t.onrender.com",
+        "https://hqms-frontend.onrender.com",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ]
+    for orig in explicit_origins:
+        if orig not in allowed_origins:
+            allowed_origins.append(orig)
+
     allowed_origins.append(re.compile(r"^https://.*\.onrender\.com$"))
     allowed_origins.append(re.compile(r"^https://.*\.vercel\.app$"))
     allowed_origins.append(re.compile(r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"))
