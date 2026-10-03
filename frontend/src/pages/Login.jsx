@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  GraduationCap,
   ShieldCheck,
   Activity,
   Cpu,
@@ -211,11 +210,11 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Academic Attribution Footer */}
-          <div className="relative z-10 pt-6 mt-6 border-t border-white/10 text-xs text-slate-400 flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-teal-400 shrink-0" />
-            <span className="leading-tight">
-              {t('academic_project_tag', 'Final-Year Engineering Project • Shridevi Institute of Engineering and Technology, Tumkur')}
+          {/* Health Thought & Care Motto */}
+          <div className="relative z-10 pt-6 mt-6 border-t border-white/10 text-xs text-slate-300 flex items-center gap-2">
+            <HeartPulse className="w-4 h-4 text-teal-400 shrink-0" />
+            <span className="leading-tight font-medium">
+              {t('academic_project_tag', '“The greatest wealth is health.” • Dedicated to Compassionate Patient Care & Smart Healing')}
             </span>
           </div>
         </div>

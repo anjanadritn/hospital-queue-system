@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Stethoscope,
   Activity,
-  GraduationCap,
   Calendar,
   Sparkles,
   ArrowRight,
@@ -338,17 +337,17 @@ export default function AboutHospital() {
 
               </div>
 
-              {/* Academic Connection Card */}
+              {/* Patient-Centered Innovation Card */}
               <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 space-y-3">
-                <div className="flex items-center gap-2 text-sky-400 text-xs font-bold">
-                  <GraduationCap className="w-4 h-4" />
-                  <span>Academic Engineering Innovation</span>
+                <div className="flex items-center gap-2 text-teal-400 text-xs font-bold">
+                  <HeartPulse className="w-4 h-4" />
+                  <span>Patient-Centered Digital Healthcare</span>
                 </div>
                 <h4 className="font-black text-sm text-white">
-                  SmartHospital Platform Collaboration
+                  Smart OPD Queue & Patient Care Platform
                 </h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  This intelligent OPD queue tracking and consultation system was developed as a final-year engineering project at <strong>Shridevi Institute of Engineering and Technology (SIET), Tumkur</strong>, designed to streamline outpatient flow and reduce waiting room crowding at SIMSRH.
+                  This intelligent OPD queue tracking and consultation system was designed to eliminate waiting room congestion, empower outpatients with real-time transit and arrival timing, and elevate the clinical care experience at <strong>Shridevi Institute of Medical Sciences and Research Hospital (SIMSRH)</strong>.
                 </p>
                 <div className="pt-2 flex items-center gap-3">
                   <Link

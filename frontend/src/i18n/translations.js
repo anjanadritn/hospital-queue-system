@@ -497,7 +497,8 @@ export const translations = {
     doctor_workstation: 'Doctor Workstation',
     patient_care_portal: 'Patient Care Portal',
     smart_features: 'Smart Features',
-    academic_project_tag: 'Final-Year Engineering Project • Shridevi Institute of Engineering and Technology, Tumkur',
+    academic_project_tag: '“The greatest wealth is health.” • Dedicated to Compassionate Patient Care & Smart Healing',
+    health_footer_strip: 'Dedicated to compassionate patient care, clinical excellence & smart healing.',
 
     // Auth Showcase & Form Details
     enterprise_healthcare_platform: 'Enterprise Healthcare Platform',
@@ -864,8 +865,8 @@ export const translations = {
     queue_dist_by_dept: "Queue Distribution by Department",
     live_patient_load: "Live patient load across specialized hospital OPD wings",
     peak_traffic_patterns: "Peak Traffic & Arrival Patterns",
-    capstone_project_title: "College Capstone Project",
-    capstone_project_desc: "Smart Hospital Queue Management System demonstrates full-stack software engineering, real-time MongoDB data modeling, and machine learning decision support for smart healthcare.",
+    capstone_project_title: "Patient Care & Digital Innovation",
+    capstone_project_desc: "Smart Hospital OPD Queue System combines intelligent AI scheduling, real-time consultation tracking, and seamless patient flow to deliver exceptional outpatient care.",
     clinically_confirmed: "Clinically Confirmed",
     days_of_symptoms: "day(s) of symptoms",
     syncing_smarthospital: "Synchronizing with SmartHospital Engine",
@@ -1627,7 +1628,8 @@ export const translations = {
     doctor_workstation: 'ವೈದ್ಯರ ಕಾರ್ಯಸ್ಥಳ',
     patient_care_portal: 'ರೋಗಿ ಆರೈಕೆ ಪೋರ್ಟಲ್',
     smart_features: 'ಸ್ಮಾರ್ಟ್ ವೈಶಿಷ್ಟ್ಯಗಳು',
-    academic_project_tag: 'ಅಂತಿಮ ವರ್ಷದ ಇಂಜಿನಿಯರಿಂಗ್ ಯೋಜನೆ • ಶ್ರೀದೇವಿ ಇನ್‌ಸ್ಟಿಟ್ಯೂಟ್ ಆಫ್ ಇಂಜಿನಿಯರಿಂಗ್ & ಟೆಕ್ನಾಲಜಿ, ತುಮಕೂರು',
+    academic_project_tag: '“ಆರೋಗ್ಯವೇ ಭಾಗ್ಯ” • ಸಹಾನುಭೂತಿಯುಕ್ತ ರೋಗಿ ಆರೈಕೆ ಮತ್ತು ಸ್ಮಾರ್ಟ್ ಚಿಕಿತ್ಸೆಗೆ ಸಮರ್ಪಿತ',
+    health_footer_strip: 'ಸಹಾನುಭೂತಿಯುಕ್ತ ರೋಗಿ ಆರೈಕೆ, ವೈದ್ಯಕೀಯ ಶ್ರೇಷ್ಠತೆ ಮತ್ತು ಸ್ಮಾರ್ಟ್ ಚಿಕಿತ್ಸೆಗೆ ಸಮರ್ಪಿತ.',
 
     // Auth Showcase & Form Details
     enterprise_healthcare_platform: 'ಉದ್ಯಮ ಮಟ್ಟದ ಆರೋಗ್ಯ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್',
@@ -1995,8 +1997,8 @@ export const translations = {
     queue_dist_by_dept: "ವಿಭಾಗವಾರು ಸರತಿ ವಿತರಣೆ",
     live_patient_load: "ವಿಶೇಷ ಆಸ್ಪತ್ರೆಯ ಒಪಿಡಿ ವಿಭಾಗಗಳಲ್ಲಿ ಲೈವ್ ರೋಗಿಗಳ ಹೊರೆ",
     peak_traffic_patterns: "ಗರಿಷ್ಠ ದಟ್ಟಣೆ ಮತ್ತು ಆಗಮನದ ಮಾದರಿಗಳು",
-    capstone_project_title: "ಕಾಲೇಜು ಕ್ಯಾಪ್‌ಸ್ಟೋನ್ ಯೋಜನೆ",
-    capstone_project_desc: "ಸ್ಮಾರ್ಟ್ ಆಸ್ಪತ್ರೆ ಸರತಿ ನಿರ್ವಹಣಾ ವ್ಯವಸ್ಥೆಯು ಫುಲ್-ಸ್ಟ್ಯಾಕ್ ಸಾಫ್ಟ್‌ವೇರ್ ಎಂಜಿನಿಯರಿಂಗ್, ರಿಯಲ್-ಟೈಮ್ ಮೊಂಗೋಡಿಬಿ ಡೇಟಾ ಮಾಡೆಲಿಂಗ್ ಮತ್ತು ಯಂತ್ರ ಕಲಿಕೆಯ ನಿರ್ಧಾರ ಬೆಂಬಲವನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತದೆ.",
+    capstone_project_title: "ರೋಗಿ ಆರೈಕೆ ಮತ್ತು ಡಿಜಿಟಲ್ ನಾವೀನ್ಯತೆ",
+    capstone_project_desc: "ಸ್ಮಾರ್ಟ್ ಆಸ್ಪತ್ರೆ ಒಪಿಡಿ ಸರತಿ ವ್ಯವಸ್ಥೆಯು ಕೃತಕ ಬುದ್ಧಿಮತ್ತೆ ಆಧಾರಿತ ಕಾಯುವಿಕೆ ಅಂದಾಜು, ನೈಜ-ಸಮಯದ ಸಮಾಲೋಚನೆ ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ರೋಗಿಗಳಿಗೆ ಅತ್ಯುತ್ತಮ ಆರೈಕೆಯನ್ನು ಒದಗಿಸುತ್ತದೆ.",
     clinically_confirmed: "ವೈದ್ಯಕೀಯವಾಗಿ ದೃಢೀಕರಿಸಲಾಗಿದೆ",
     days_of_symptoms: "ದಿನಗಳ ರೋಗಲಕ್ಷಣಗಳು",
     syncing_smarthospital: "ಸ್ಮಾರ್ಟ್ ಆಸ್ಪತ್ರೆ ಎಂಜಿನ್‌ನೊಂದಿಗೆ ಸಿಂಕ್ ಆಗುತ್ತಿದೆ",
@@ -2758,7 +2760,8 @@ export const translations = {
     doctor_workstation: 'डॉक्टर कार्यस्थल',
     patient_care_portal: 'मरीज़ देखभाल पोर्टल',
     smart_features: 'स्मार्ट सुविधाएं',
-    academic_project_tag: 'अंतिम वर्ष इंजीनियरिंग प्रोजेक्ट • श्रीदेवी इंस्टीट्यूट ऑफ इंजीनियरिंग एंड टेक्नोलॉजी, तुमकुरु',
+    academic_project_tag: '“पहला सुख निरोगी काया” • समर्पित रोगी देखभाल और आधुनिक उपचार',
+    health_footer_strip: 'समर्पित रोगी देखभाल, नैदानिक उत्कृष्टता और स्मार्ट उपचार।',
 
     // Auth Showcase & Form Details
     enterprise_healthcare_platform: 'उन्नत स्वास्थ्य सेवा मंच',
@@ -3126,8 +3129,8 @@ export const translations = {
     queue_dist_by_dept: "विभागवार कतार वितरण",
     live_patient_load: "विशेष अस्पताल ओपीडी विंगों में लाइव मरीज भार",
     peak_traffic_patterns: "शीर्ष यातायात और आगमन पैटर्न",
-    capstone_project_title: "कॉलेज कैपस्टोन प्रोजेक्ट",
-    capstone_project_desc: "स्मार्ट अस्पताल कतार प्रबंधन प्रणाली फुल-स्टैक सॉफ्टवेयर इंजीनियरिंग, रीयल-टाइम मोंगोडीबी डेटा मॉडलिंग और मशीन लर्निंग निर्णय समर्थन प्रदर्शित करती है।",
+    capstone_project_title: "रोगी देखभाल एवं डिजिटल नवाचार",
+    capstone_project_desc: "स्मार्ट अस्पताल ओपीडी कतार प्रणाली एआई-आधारित प्रतीक्षा समय अनुमान, वास्तविक समय परामर्श ट्रैकिंग और उत्कृष्ट रोगी देखभाल प्रदान करती है।",
     clinically_confirmed: "चिकित्सकीय रूप से पुष्ट",
     days_of_symptoms: "दिनों के लक्षण",
     syncing_smarthospital: "स्मार्टहॉस्पिटल इंजन के साथ सिंक्रनाइज़ हो रहा है",

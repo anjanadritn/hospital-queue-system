@@ -24,7 +24,6 @@ import {
   Users,
   Search,
   Building2,
-  GraduationCap,
   Car,
   Calendar,
   AlertTriangle,
@@ -171,10 +170,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             
-            {/* College Project Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-sky-200 text-sky-800 text-xs font-bold mb-6 shadow-sm hover:scale-105 transition-transform">
-              <GraduationCap className="w-4 h-4 text-sky-600" />
-              <span>Shridevi Institute of Engineering & Technology, Tumkur • Final Year Project 2025–26</span>
+            {/* Health Thought & Wellness Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-teal-200 text-teal-800 text-xs font-bold mb-6 shadow-sm hover:scale-105 transition-transform">
+              <Sparkles className="w-4 h-4 text-teal-600" />
+              <span>“Your Health Is Your Greatest Wealth” • Smart Outpatient Care & Zero-Wait Consultations</span>
             </div>
 
             {/* Main Headline */}
@@ -727,20 +726,20 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 8. ACADEMIC PROJECT SHOWCASE BANNER */}
+      {/* 8. PATIENT WELLNESS & CLINICAL EXCELLENCE BANNER */}
       <section className="py-12 bg-slate-100 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-r from-sky-900 to-teal-900 rounded-3xl p-8 text-white flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xl">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white shrink-0 border border-white/20">
-                <GraduationCap className="w-8 h-8" />
+                <HeartPulse className="w-8 h-8" />
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-black tracking-tight mb-1">
-                  Shridevi Institute of Engineering & Technology (SIET), Tumkur
+                  Compassionate Patient Care & Smart Healing
                 </h3>
                 <p className="text-xs text-slate-200 max-w-xl leading-relaxed">
-                  Final Year Major Project • Department of Computer Science & Engineering. Affiliated to VTU Belagavi & Approved by AICTE, New Delhi.
+                  “Health is not merely the absence of disease, but a state of complete physical, mental, and social well-being.” — Empowering patients with smart virtual queuing, reduced waiting times, and continuous clinical care at SIMSRH.
                 </p>
               </div>
             </div>

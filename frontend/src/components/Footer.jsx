@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   HeartPulse,
-  GraduationCap,
   MapPin,
   Phone,
   Mail,
@@ -49,17 +48,17 @@ export default function Footer() {
               An intelligent healthcare management and virtual queue system designed to eradicate lobby overcrowding, dynamically predict consultation durations using Random Forest regression, and calculate smart departure times for outpatients in Tumkur.
             </p>
 
-            {/* Academic Badge */}
+            {/* Health Thought & Wellness Mission */}
             <div className="p-3.5 bg-slate-800/80 border border-slate-700/70 rounded-2xl max-w-sm space-y-1.5">
-              <div className="flex items-center gap-2 text-sky-400 font-bold text-xs">
-                <GraduationCap className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>Final Year Major Project (2025–2026)</span>
+              <div className="flex items-center gap-2 text-teal-400 font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />
+                <span>Healing Hands, Caring Hearts</span>
               </div>
-              <div className="text-[11px] text-slate-300 font-medium">
-                Shridevi Institute of Engineering & Technology (SIET)
+              <div className="text-[11px] text-slate-300 font-medium italic">
+                “The greatest wealth is health. We are committed to timely, compassionate, and zero-wait care for every patient.”
               </div>
               <div className="text-[10px] text-slate-400">
-                Affiliated to Visvesvaraya Technological University (VTU), Belagavi • Approved by AICTE, New Delhi
+                Shridevi Institute of Medical Sciences & Research Hospital (SIMSRH) • Tumakuru
               </div>
             </div>
           </div>
@@ -198,7 +197,7 @@ export default function Footer() {
           <div className="flex items-center gap-2">
             <span>© {new Date().getFullYear()} {t('brand_title', 'SmartHospital Platform')}.</span>
             <span className="hidden sm:inline">•</span>
-            <span>{t('academic_project_tag', 'Developed at Shridevi Institute of Engineering and Technology, Tumkur.')}</span>
+            <span>{t('health_footer_strip', 'Dedicated to compassionate patient care, clinical excellence & smart healing.')}</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">

@@ -268,16 +268,16 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {/* Academic Acknowledgement Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-sky-950 text-white rounded-3xl p-6 shadow-md border border-slate-800">
-              <span className="text-[10px] font-bold text-sky-300 uppercase tracking-widest block mb-1">
-                {t('capstone_project_title', 'College Capstone Project')}
+            {/* Clinical Intelligence & Patient Care Card */}
+            <div className="bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-3xl p-6 shadow-md border border-slate-800">
+              <span className="text-[10px] font-bold text-teal-300 uppercase tracking-widest block mb-1">
+                {t('capstone_project_title', 'Patient Care & Digital Innovation')}
               </span>
               <h4 className="text-sm font-bold text-white mb-2">
-                Shridevi Institute of Engineering & Technology, Tumkur
+                SIMSRH Clinical Intelligence & Outpatient Flow
               </h4>
               <p className="text-xs text-slate-300 leading-relaxed">
-                {t('capstone_project_desc', 'Smart Hospital Queue Management System demonstrates full-stack software engineering, real-time MongoDB data modeling, and machine learning decision support for smart healthcare.')}
+                {t('capstone_project_desc', 'Smart Hospital OPD Queue System combines intelligent AI scheduling, real-time consultation tracking, and seamless patient flow to deliver exceptional outpatient care.')}
               </p>
             </div>
 

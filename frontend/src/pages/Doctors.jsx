@@ -138,7 +138,7 @@ export default function Doctors() {
     <div className="min-h-screen bg-slate-50/70 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header with College Project & Practo Styling */}
+        {/* Header with Specialist Directory Styling */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-3.5 py-1 rounded-full border border-sky-200 mb-3">
             <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
