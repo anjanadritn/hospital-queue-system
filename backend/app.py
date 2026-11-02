@@ -180,6 +180,7 @@ def create_app() -> Flask:
     # RATE LIMITER INITIALIZATION
     # ========================================================
 
+    app.config["RATELIMIT_ENABLED"] = os.getenv("RATELIMIT_ENABLED", "true").lower() == "true"
     limiter.init_app(app)
     logger.info("Flask-Limiter initialized")
 
@@ -229,6 +230,11 @@ def create_app() -> Flask:
                 "detail": "connected" if db_ok else "disconnected"
             }
         }), 200
+
+    @app.route("/health/live", methods=["GET"])
+    @app.route("/api/health/live", methods=["GET"])
+    def health_live():
+        return jsonify({"status": "ok"}), 200
 
     # ========================================================
     # SERVER TIME ENDPOINT (IST / Asia:Kolkata)

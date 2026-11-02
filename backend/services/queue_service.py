@@ -1204,9 +1204,9 @@ def join_queue(data: dict) -> Tuple[Optional[dict], Optional[str]]:
     # Slot and Consultation Date handling
     consultation_date_str = str(data.get("consultation_date") or "").strip()
     raw_slot = data.get("consultation_slot") or data.get("slot") or data.get("slot_id") or "morning"
-    slot_info, _ = validate_and_normalize_slot(raw_slot, consultation_date=consultation_date_str or None)
+    slot_info, slot_err = validate_and_normalize_slot(raw_slot, consultation_date=consultation_date_str or None)
     if not slot_info:
-        slot_info, _ = validate_and_normalize_slot("morning", consultation_date=consultation_date_str or None)
+        return None, slot_err
     slot_id = slot_info.get("slot_id", "morning")
 
     queue_entry = {
